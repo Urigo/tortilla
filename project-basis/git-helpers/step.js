@@ -1,9 +1,11 @@
 var Minimist = require('minimist');
 var Path = require('path');
+var Utils = require('./utils');
 
 
+var git = Utils.git;
 var argv = Minimist(process.argv.slice(2));
-var editorPath = Path.resolve('./git-editor');
+var editorPath = Path.resolve('./editor');
 
 if (argv.push)
   pushStep(argv.message);
@@ -21,35 +23,7 @@ function pushStep(message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  var recentCommitHash = git('log --format="%h" --max-count=1');
-  var recentStepHash = git('log --grep="^Step \\d+\\:" --format="%h" --max-count=1');
-  var followedByStep = recentStepHash == recentCommitHash;
-
-  if (followedByStep) {
-    var recentCommitMessage = git('log --format="%s" --max-count=1');
-    var recentSuperStep = recentCommitMessage.match(/^Step (\d+)/)[1];
-    var superStep = recentSuperStep + 1;
-    var subStep = 1;
-  }
-  else {
-    var recentSubStepHash = git('log --grep="^Step \\d+\\.\\d+\\:" --format="%h" --max-count=1');
-    var followedBySubStep = recentSubStepHash == recentCommitHash;
-
-    if (followedBySubStep) {
-      var recentCommitMessage = git('log --format="%s" --max-count=1');
-      var recentStepParts = recentCommitMessage.match(/^Step (\d+).(\d+)/);
-      var recentSuperStep = recentStepParts[1];
-      var recentSubStep = recentStepParts[2];
-      var superStep = recentSuperStep;
-      var subStep = recentSubStep + 1;
-    }
-    else {
-      var superStep = 1;
-      var subStep = 1;
-    }
-  }
-
-  var step = superStep + '.' + subStep;
+  var step = getNextStep();
   git('commit -m "Step ' + step + ': ' + message + '"');
 }
 
@@ -80,16 +54,7 @@ function tagStep(message) {
 }
 
 function editStep(step) {
-  if (step) {
-    var base = git('log --grep="^Step ' + step + '" --format="%h" --max-count=1');
-    base = base + '~1';
-
-    if (!base)
-      throw Error('Step not found');
-  }
-  else {
-    var base = '--root';
-  }
+  var base = getStepBase(step);
 
   git('rebase -i ' + base, {
     GIT_EDITOR: "node " + editorPath + ' --edit'
@@ -100,27 +65,63 @@ function rewordStep(step, message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  if (step) {
-    var base = git('log --grep="^Step ' + step + '" --format="%h" --max-count=1');
-    base = base + '~1';
-
-    if (!base)
-      throw Error('Step not found');
-  }
-  else {
-    var base = '--root';
-  }
+  var base = getStepBase(step);
 
   git('rebase -i ' + base, {
     GIT_EDITOR: 'node ' + editorPath + ' --reword --message="' + message + '"'
   });
 }
 
-function git(args, env) {
-  var cmd = 'git ' + args;
-  return exec(cmd, env);
+function getNextStep() {
+  var recentCommitHash = git('log --format="%h" --max-count=1');
+  var recentStepHash = git('log --grep="^Step \\d+\\:" --format="%h" --max-count=1');
+  var followedByStep = recentStepHash == recentCommitHash;
+
+  if (followedByStep) {
+    var recentCommitMessage = git('log --format="%s" --max-count=1');
+    var recentSuperStep = recentCommitMessage.match(/^Step (\d+)/)[1];
+    var superStep = recentSuperStep + 1;
+    var subStep = 1;
+  }
+  else {
+    var recentSubStepHash = git('log --grep="^Step \\d+\\.\\d+\\:" --format="%h" --max-count=1');
+    var followedBySubStep = recentSubStepHash == recentCommitHash;
+
+    if (followedBySubStep) {
+      var recentCommitMessage = git('log --format="%s" --max-count=1');
+      var recentStepParts = recentCommitMessage.match(/^Step (\d+).(\d+)/);
+      var recentSuperStep = recentStepParts[1];
+      var recentSubStep = recentStepParts[2];
+      var superStep = recentSuperStep;
+      var subStep = recentSubStep + 1;
+    }
+    else {
+      var superStep = 1;
+      var subStep = 1;
+    }
+  }
+
+  return superStep + '.' + subStep;
 }
 
-function exec(cmd, env) {
-  return child_process.execSync(cmd, { env: env }).toString();
+function getStepBase(step) {
+  if (!step) return '--root';
+
+  var hash = git('log --grep="^Step ' + step + '" --format="%h" --max-count=1');
+
+  if (!hash)
+    throw Error('Step not found');
+
+  return hash + '~1';
 }
+
+
+module.exports = {
+  pushStep: pushStep,
+  popStep: popStep,
+  tagStep: tagStep,
+  editStep: editStep,
+  rewordStep: rewordStep,
+  getNextStep: getNextStep,
+  getStepBase: getStepBase
+};

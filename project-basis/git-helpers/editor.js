@@ -1,5 +1,6 @@
 var Fs = require('fs');
 var Minimist = require('minimist');
+var Step = require('./step');
 
 
 var argv = Minimist(process.argv.slice(2));
@@ -31,13 +32,12 @@ function editStep() {
     newRebaseFileContent = assemblyCommits(commits);
   }
   else {
-    var stepParts = rebaseFileContent.match(/^Step (\d+)\.(\d+)((?:\n|.)*)$/);
+    var match = rebaseFileContent.match(/^Step \d+\.\d+\: ((?:\n|.)*)$/);
+    if (!match) return;
 
-    if (stepParts) {
-      var superStep = stepParts[1];
-      var subStep = stepParts[2];
-      var rest = stepParts[3];
-    }
+    var message = match[1];
+    var step = Step.getNextStep();
+    newRebaseFileContent = 'Step ' + step ': ' + message;
   }
 }
 
