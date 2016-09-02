@@ -18,6 +18,7 @@ Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
 
 
 function editStep() {
+  // TODO: Edit the first commit
   var commits = disassemblyCommits();
 
   if (commits) {
@@ -30,6 +31,7 @@ function editStep() {
       }
     });
 
+    // TODO: Push exec for post rebase logic
     newRebaseFileContent = assemblyCommits(commits);
   }
   else {
@@ -37,7 +39,7 @@ function editStep() {
     if (!match) return;
 
     var message = match[1];
-    var step = Step.getNextStep();
+    var step = Step.next();
     newRebaseFileContent = 'Step ' + step ': ' + message;
   }
 }

@@ -1,9 +1,12 @@
 var Minimist = require('minimist');
 var Path = require('path');
+var LocalStorage = require('./local-storage');
 var Utils = require('./utils');
 
 
 var git = Utils.git;
+var exec = Utils.exec;
+
 var argv = Minimist(process.argv.slice(2));
 
 var editorPath = Path.resolve('./editor');
@@ -27,20 +30,35 @@ function pushStep(message) {
 
   var step = getNextStep();
   git('commit -m "Step ' + step + ': ' + message + '"');
+
+  LocalStorage.setItem('STEP', step);
 }
 
 function popStep() {
+  var removedCommitMessage = Utils.recentCommit({format: '%s'});
   git('reset --hard HEAD~1');
+
+  var isStep = !!extractStep(removedCommitMessage);
+
+  if (!isStep) {
+    return console.warn('Removed commit was not a step');
+  }
+
+  var recentStepMessage = getRecentStepCommit('%s')
+  var step = extractStep(recentStepMessage);
+  step = step ? step.number : '';
+
+  LocalStorage.setItem('STEP', step);
 }
 
 function tagStep(message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  var recentStepMessage = git('log --grep="^Step \\d+\\:" --format="%s" --max-count=1');
+  var recentStepMessage = getRecentSuperStepCommit('%s');
 
   if (recentStepMessage) {
-    var recentStep = recentStepMessage.match(/^Step (\d+)/)[1];
+    var recentStep = extractSuperStep(recentStepMessage).number;
     var step = recentStep + 1;
   }
   else {
@@ -52,26 +70,54 @@ function tagStep(message) {
 
   git('add ' + stepFilePath);
   git('commit -m "Step ' + step + ': ' + message + '"');
-  git('tag -a step' + step);
+
+  if (Utils.isOrigHead()) git('tag -a step' + step);
+
+  LocalStorage.setItem('STEP', step);
+}
+
+function retagStep(oldStep, newStep) {
+  if (oldStep == newStep) return;
+  var newStepTagExists = !!git('git describe --tags --match step' + newStep);
+
+  if (newStepTagExists) {
+    var diff = newStep - oldStep;
+    var increment = diff / Math.abs(diff);
+
+    retagStep(oldStep + increment, newStep + increment);
+    retagStep(oldStep, newStep);
+  }
+
+  git('tag step' + newStep + ' step' + oldStep);
+  git('tag -d step' + oldStep);
 }
 
 function editStep(step) {
+  if (!step)
+    throw TypeError('A step must be provided');
+
   var base = getStepBase(step);
 
   git('rebase -i ' + base, {
     GIT_EDITOR: "node " + editorPath + ' --edit'
   });
 
-  while (!isOrigHead()) {
-    var currentCommitMessage = git('log --format="%s" --max-count=1');
-    var currentStepParts = currentCommitMessage.match(/^Step (.+)\: (?:(.|\n)*)$/);
+  LocalStorage.setItem('STEP', step);
 
-    var currentStep = currentStepParts[0];
-    var message = currentStepParts[1];
-    var nexStep = getNextStep();
+  // TODO: Move to rebase exec method
+  while (!Utils.isOrigHead()) {
+    var currentCommitMessage = Utils.recentCommit({format: '%s'});
+    var currentStep = extractStep(currentCommitMessage);
 
-    var currentStepFilePath = stepsDirPath + '/' + currentStep;
-    var newStepFilePath = stepsDirPath + '/' + nexStep;
+    var message = currentStep.message;
+    var nextStep = getNextStep();
+    currentStep = currentStep.number;
+
+    var currentStepFileName = exec('ls step' + currentStep + '~*');
+    var nextStepFileName = exec('ls step' + nextStep + '~*');
+
+    var currentStepFilePath = stepsDirPath + '/' + currentStepFileName;
+    var newStepFilePath = stepsDirPath + '/' + nextStepFileName;
 
     Fs.renameSync(currentStepFilePath, newStepFilePath);
     git('add ' + newStepFilePath);
@@ -80,14 +126,15 @@ function editStep(step) {
       GIT_EDITOR: 'node ' + editorPath + ' --reword --message="' + message + '"'
     });
 
-    git('tag step' + nexStep + ' step' + currentStep);
-    git('tag -d step' + currentStep);
+    retagStep(currentStep, nextStep);
 
     git('rebase --continue');
   }
 }
 
 function rewordStep(step, message) {
+  if (!step)
+    throw TypeError('A step must be provided');
   if (!message)
     throw TypeError('A message must be provided');
 
@@ -96,34 +143,30 @@ function rewordStep(step, message) {
   git('rebase -i ' + base, {
     GIT_EDITOR: 'node ' + editorPath + ' --reword --message="' + message + '"'
   });
-}
 
-function isOrigHead() {
-  var head = git('rev-parse HEAD');
-  var origHead = git('rev-parse ORIG_HEAD');
-  return head == origHead;
+  LocalStorage.setItem('STEP', step);
 }
 
 function getNextStep() {
-  var recentCommitHash = git('log --format="%h" --max-count=1');
-  var recentStepHash = git('log --grep="^Step \\d+\\:" --format="%h" --max-count=1');
+  var recentCommitHash = Utils.recentCommit({format: '%h'});
+  var recentStepHash = getRecentSuperStepCommit('%h');
   var followedByStep = recentStepHash == recentCommitHash;
 
   if (followedByStep) {
-    var recentCommitMessage = git('log --format="%s" --max-count=1');
-    var recentSuperStep = recentCommitMessage.match(/^Step (\d+)/)[1];
+    var recentCommitMessage = Utils.recentCommit({format: '%s'});
+    var recentSuperStep = extractSuperStep(recentCommitMessage).number;
     var superStep = recentSuperStep + 1;
     var subStep = 1;
   }
   else {
-    var recentSubStepHash = git('log --grep="^Step \\d+\\.\\d+\\:" --format="%h" --max-count=1');
+    var recentSubStepHash = getRecentSubStepCommit('%h');
     var followedBySubStep = recentSubStepHash == recentCommitHash;
 
     if (followedBySubStep) {
-      var recentCommitMessage = git('log --format="%s" --max-count=1');
-      var recentStepParts = recentCommitMessage.match(/^Step (\d+).(\d+)/);
-      var recentSuperStep = recentStepParts[1];
-      var recentSubStep = recentStepParts[2];
+      var recentCommitMessage = Utils.recentCommit({format: '%s'});
+      var recentStep = extractSubStep(recentCommitMessage);
+      var recentSuperStep = recentStep.superNumber;
+      var recentSubStep = recentStep.subNumber;
       var superStep = recentSuperStep;
       var subStep = recentSubStep + 1;
     }
@@ -136,10 +179,49 @@ function getNextStep() {
   return superStep + '.' + subStep;
 }
 
-function getStepBase(step) {
-  if (!step) return '--root';
+function getRecentStepCommit(format) {
+  return Utils.recentCommit({grep: '^Step .+\\:', format: format});
+}
 
-  var hash = git('log --grep="^Step ' + step + '" --format="%h" --max-count=1');
+function getRecentSuperStepCommit(format) {
+  return Utils.recentCommit({grep: '^Step \\d+\\:', format: format});
+}
+
+function getRecentSubStep(format) {
+  return Utils.recentCommit({grep: '^Step \\d+\\.\\d+\\:', format: format});
+}
+
+function extractStep(message) {
+  var match = message.match(/^Step (.+)\: (?:(.|\n)*)$/);
+
+  return match && {
+    number: match[1],
+    message: match[2]
+  };
+}
+
+function extractSuperStep(message) {
+  var match = message.match(/^Step (\d+)\: (?:(.|\n)*)$/);
+
+  return match && {
+    number: match[1],
+    message: match[2]
+  };
+}
+
+function extractSubStep(message) {
+  var match = message.match(/^Step ((\d+)\.(\d+))\: (?:(.|\n)*)$/);
+
+  return match && {
+    number: match[1],
+    superNumber: match[2],
+    subNumber: match[3],
+    message: match[4]
+  };
+}
+
+function getStepBase(step) {
+  var hash = Utils.recentCommit({grep: '^Step ' + step, format: '%h'});
 
   if (!hash)
     throw Error('Step not found');
@@ -149,12 +231,18 @@ function getStepBase(step) {
 
 
 module.exports = {
-  pushStep: pushStep,
-  popStep: popStep,
-  tagStep: tagStep,
-  editStep: editStep,
-  rewordStep: rewordStep,
-  isOrigHead: isOrigHead,
-  getNextStep: getNextStep,
-  getStepBase: getStepBase
+  push: pushStep,
+  pop: popStep,
+  tag: tagStep,
+  retag: retagStep,
+  edit: editStep,
+  reword: rewordStep,
+  next: getNextStep,
+  recentStepCommit: getRecentStepCommit,
+  recentSuperStepCommit: getRecentSuperStepCommit,
+  recentSubStepCommit: getRecentSubStepCommit,
+  extractStep: extractStep,
+  extractSuperStep: extractSuperStep,
+  extractSubStep: extractSubStep,
+  stepBase: getStepBase
 };
