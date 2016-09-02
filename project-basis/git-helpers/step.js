@@ -5,18 +5,20 @@ var Utils = require('./utils');
 
 var git = Utils.git;
 var argv = Minimist(process.argv.slice(2));
+
 var editorPath = Path.resolve('./editor');
+var stepsDirPath = Path.resolve('../steps');
 
 if (argv.push)
-  pushStep(argv.message);
+  pushStep(argv.message || argv.m);
 else if (argv.pop)
   popStep();
 else if (argv.tag)
-  tagStep(argv.message);
+  tagStep(argv.message || argv.m);
 else if (argv.edit)
-  editStep(argv.step);
+  editStep(argv.step || argv.s);
 else if (argv.reword)
-  rewordStep(argv.step, argv.message);
+  rewordStep(argv.step || argv.s, argv.message || argv.m);
 
 
 function pushStep(message) {
@@ -59,6 +61,30 @@ function editStep(step) {
   git('rebase -i ' + base, {
     GIT_EDITOR: "node " + editorPath + ' --edit'
   });
+
+  while (!isOrigHead()) {
+    var currentCommitMessage = git('log --format="%s" --max-count=1');
+    var currentStepParts = currentCommitMessage.match(/^Step (.+)\: (?:(.|\n)*)$/);
+
+    var currentStep = currentStepParts[0];
+    var message = currentStepParts[1];
+    var nexStep = getNextStep();
+
+    var currentStepFilePath = stepsDirPath + '/' + currentStep;
+    var newStepFilePath = stepsDirPath + '/' + nexStep;
+
+    Fs.renameSync(currentStepFilePath, newStepFilePath);
+    git('add ' + newStepFilePath);
+
+    git('commit --ammend', {
+      GIT_EDITOR: 'node ' + editorPath + ' --reword --message="' + message + '"'
+    });
+
+    git('tag step' + nexStep + ' step' + currentStep);
+    git('tag -d step' + currentStep);
+
+    git('rebase --continue');
+  }
 }
 
 function rewordStep(step, message) {
@@ -70,6 +96,12 @@ function rewordStep(step, message) {
   git('rebase -i ' + base, {
     GIT_EDITOR: 'node ' + editorPath + ' --reword --message="' + message + '"'
   });
+}
+
+function isOrigHead() {
+  var head = git('rev-parse HEAD');
+  var origHead = git('rev-parse ORIG_HEAD');
+  return head == origHead;
 }
 
 function getNextStep() {
@@ -122,6 +154,7 @@ module.exports = {
   tagStep: tagStep,
   editStep: editStep,
   rewordStep: rewordStep,
+  isOrigHead: isOrigHead,
   getNextStep: getNextStep,
   getStepBase: getStepBase
 };

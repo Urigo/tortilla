@@ -5,13 +5,14 @@ var Step = require('./step');
 
 var argv = Minimist(process.argv.slice(2));
 var rebaseFilePath = argv._[0];
+
 var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
 var newRebaseFileContent = rebaseFileContent;
 
 if (argv.edit)
   editStep();
 else if (argv.reword)
-  rewordStep(argv.message);
+  rewordStep(argv.message || argv.m);
 
 Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
 
@@ -50,7 +51,7 @@ function rewordStep(message) {
   }
   else {
     newRebaseFileContent = rebaseFileContent
-      .replace(/^(Step \d+\.\d+)\: (?:.|\n)*$/, "$1: " + message);
+      .replace(/^(Step \d+\.\d+)\: ((?:.|\n)*)$/, "$1: " + message);
   }
 }
 
