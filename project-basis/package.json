@@ -1,0 +1,11 @@
+{
+  "name": "project-name",
+  "description": "Tutorial: A tutorial project",
+  "scripts": {
+    "step": "node ./git-helpers/step"
+  },
+  "devDependencies": {
+    "minimist": "^1.2.0",
+    "husky": "^0.11.7"
+  }
+}
