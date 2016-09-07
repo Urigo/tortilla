@@ -9,13 +9,20 @@ var rebaseFilePath = argv._[0];
 var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
 var newRebaseFileContent = rebaseFileContent;
 
-if (argv.edit)
-  editStep();
-else if (argv.reword)
-  rewordStep(argv.message || argv.m);
+invoke();
 
-Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
 
+function invoke() {
+  var method = argv._[1];
+  var message = argv.message || argv.m;
+
+  switch (method) {
+    case 'edit': editStep(); break;
+    case 'reword': rewordStep(); break;
+  }
+
+  Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
+}
 
 function editStep() {
   // TODO: Edit the first commit

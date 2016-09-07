@@ -3,8 +3,8 @@ var ChildProcess = require('child_process');
 
 function calcIsOrigHead() {
   try {
-    var head = git('rev-parse HEAD');
-    var origHead = git('rev-parse ORIG_HEAD');
+    var head = git(['rev-parse', 'HEAD']);
+    var origHead = git(['rev-parse', 'ORIG_HEAD']);
     return head == origHead;
   }
   catch (err) {
@@ -12,21 +12,22 @@ function calcIsOrigHead() {
   }
 }
 
-function getRecentCommit(options) {
-  var cmd = git('log --max-count=1');
-  if (options.grep) cmd += ' --grep=' + options.grep;
-  if (options.format) cmd += ' --format=' + options.format;
-
-  return git(cmd);
+function getRecentCommit(args) {
+  var args = ['log', '--max-count=1'].concat(args);
+  return git(args);
 }
 
 function git(args, env) {
-  var cmd = 'git ' + args;
-  return exec(cmd, env);
+  return exec('git', args, env);
 }
 
-function exec(cmd, env) {
-  return ChildProcess.execSync(cmd, { env: env }).toString();
+function exec(file, args, env) {
+  if (!(args instanceof Array)) {
+    env = args;
+    args = [];
+  }
+
+  return ChildProcess.execFileSync(file, args, { env: env }).toString();
 }
 
 
