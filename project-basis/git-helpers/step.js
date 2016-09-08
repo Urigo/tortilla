@@ -9,23 +9,23 @@ var git = Utils.git;
 var editorPath = Path.resolve('./editor');
 var stepsDirPath = Path.resolve('../steps');
 
-if (require.main === module) invoke();
 
+(function () {
+  if (require.main !== module) return;
 
-function invoke() {
   var argv = Minimist(process.argv.slice(2));
   var method = argv._[0];
   var message = argv.message || argv.m;
   var step = argv.step || arg.s;
 
   switch (method) {
-    case 'push': return pushStep();
+    case 'push': return pushStep(message);
     case 'pop': return popStep();
-    case 'tag': return tagStep();
-    case 'edit': return editStep();
-    case 'reword': return rewordStep();
+    case 'tag': return tagStep(message);
+    case 'edit': return editStep(step);
+    case 'reword': return rewordStep(step, message);
   }
-}
+})();
 
 function pushStep(message) {
   if (!message)
@@ -71,7 +71,7 @@ function tagStep(message) {
   var stepFilePath = Path.resolve('./steps/step' + step + '.md');
   Fs.writeFileSync(stepFilePath);
 
-  git('add ' + stepFilePath);
+  git(['add', stepFilePath]);
   commitStep(step, message);
 
   if (Utils.isOrigHead()) git(['tag', '-a', 'step' + step]);
@@ -255,7 +255,7 @@ function extractStep(message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  var match = message.match(/^Step (\d+(?:\.\d+)?\:)\: (?:(.|\n)*)$/);
+  var match = message.match(/^Step (\d+(?:\.\d+)?\:)\: ((?:.|\n)*)$/);
 
   return match && {
     number: match[1],
@@ -267,7 +267,7 @@ function extractSuperStep(message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  var match = message.match(/^Step (\d+)\: (?:(.|\n)*)$/);
+  var match = message.match(/^Step (\d+)\: ((?:.|\n)*)$/);
 
   return match && {
     number: match[1],
@@ -279,7 +279,7 @@ function extractSubStep(message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  var match = message.match(/^Step ((\d+)\.(\d+))\: (?:(.|\n)*)$/);
+  var match = message.match(/^Step ((\d+)\.(\d+))\: ((?:.|\n)*)$/);
 
   return match && {
     number: match[1],

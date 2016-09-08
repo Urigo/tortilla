@@ -3,64 +3,61 @@ var Minimist = require('minimist');
 var Step = require('./step');
 
 
-var argv = Minimist(process.argv.slice(2));
-var rebaseFilePath = argv._[0];
-
-var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
-var newRebaseFileContent = rebaseFileContent;
-
-invoke();
-
-
-function invoke() {
+(function () {
+  var argv = Minimist(process.argv.slice(2));
+  var rebaseFilePath = argv._[0];
   var method = argv._[1];
   var message = argv.message || argv.m;
 
+  var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
+  var newRebaseFileContent;
+
   switch (method) {
-    case 'edit': editStep(); break;
-    case 'reword': rewordStep(); break;
+    case 'edit': newRebaseFileContent = editStep(rebaseFileContent); break;
+    case 'reword': newRebaseFileContent = rewordStep(rebaseFileContent, message); break;
   }
 
+  newRebaseFileContent = newRebaseFileContent || rebaseFileContent;
   Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
-}
+})();
 
-function editStep() {
+function editStep(rebaseFileContent) {
   // TODO: Edit the first commit
-  var commits = disassemblyCommits();
+  var commits = disassemblyCommits(rebaseFileContent);
 
   if (commits) {
     commits.forEach(function (commit) {
-      if (commit.message.match(/Step \d+\:/)) {
+      if (Step.extractSuperStep(commit.message)) {
         return commit.method = 'edit';
       }
-      if (commit.message.match(/Step \d+\.\d+:/)) {
+
+      if (Step.extractSubStep(commit.message)) {
         return commit.method = 'reword';
       }
     });
 
     // TODO: Push exec for post rebase logic
-    newRebaseFileContent = assemblyCommits(commits);
+    return assemblyCommits(commits);
   }
   else {
-    var match = rebaseFileContent.match(/^Step \d+\.\d+\: ((?:\n|.)*)$/);
-    if (!match) return;
+    var step = Step.extractStep(rebaseFileContent);
+    if (!step) return;
 
-    var message = match[1];
-    var step = Step.next();
-    newRebaseFileContent = 'Step ' + step ': ' + message;
+    step.number = Step.next();
+    return 'Step ' + step.number ': ' + step.message;
   }
 }
 
-function rewordStep(message) {
-  var commits = disassemblyCommits();
+function rewordStep(rebaseFileContent, message) {
+  var commits = disassemblyCommits(rebaseFileContent);
 
   if (commits) {
     commit.method = 'reword';
-    newRebaseFileContent = assemblyCommits(commits);
+    return assemblyCommits(commits);
   }
   else {
-    newRebaseFileContent = rebaseFileContent
-      .replace(/^(Step \d+\.\d+)\: ((?:.|\n)*)$/, "$1: " + message);
+    var step = Step.extractStep(rebaseFileContent);
+    return 'Step ' + step.number + ': ' + message;
   }
 }
 
