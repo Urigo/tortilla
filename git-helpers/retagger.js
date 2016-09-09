@@ -7,18 +7,24 @@ var Utils = require('./utils');
 var git = Utils.git;
 
 
-git('rebase -i ' + Step.stepBase(Step.current()), {
+// Rebase onto the last step manipulated
+git(['rebase',  '-i', Step.stepBase(Step.lastOperation())], {
   GIT_EDITOR: 'node ' + Paths.editor + ' retag'
 });
 
+// As long as we are rebasing
 while (!Utils.isOrigHead()) {
+  // Grab the message of the recent step in the current log
   var currentCommitMessage = Step.recentStepCommit('%s');
   var currentStep = Step.extractStep(currentCommitMessage);
 
+  // Get the message of the recent step
   var message = currentStep.message;
+  // Predict the next step
   var nextStep = Step.next();
   currentStep = currentStep.number;
 
+  // Find current step file and rename it
   var stepFiles = Fs.readdirSync(stepsDirPath);
   var currentStepFile;
   var nextStepFile;
@@ -41,13 +47,11 @@ while (!Utils.isOrigHead()) {
   var newStepFilePath = stepsDirPath + '/' + nextStepFile;
 
   Fs.renameSync(currentStepFilePath, newStepFilePath);
+
+  // Commit our changes
   git(['add', newStepFilePath]);
-
-  git(['commit',  '--ammend'], {
-    GIT_EDITOR: 'node ' + editorPath + ' reword --message="' + message + '"'
-  });
-
-  Step.retag(currentStep, nextStep);
-
   git(['rebase', '--continue']);
+
+  // Update the name of the tag
+  Step.retag(currentStep, nextStep);
 }

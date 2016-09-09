@@ -1,9 +1,13 @@
 var ChildProcess = require('child_process');
 
 
+// Calculate if in the middle of rebase or not
 function calcIsOrigHead() {
   try {
+    // Get HEAD hash
     var head = git(['rev-parse', 'HEAD']);
+    // Get ORIG_HEAD hash
+    // Note that ORIG_HEAD may not exist and an error might be thrown
     var origHead = git(['rev-parse', 'ORIG_HEAD']);
     return head == origHead;
   }
@@ -12,15 +16,18 @@ function calcIsOrigHead() {
   }
 }
 
+// Get the recent commit by the provided arguments
 function getRecentCommit(args) {
   var args = ['log', '--max-count=1'].concat(args);
   return git(args);
 }
 
+// Launch git
 function git(args, env) {
   return exec('git', args, env);
 }
 
+// Execute file
 function exec(file, args, env) {
   if (!(args instanceof Array)) {
     env = args;
