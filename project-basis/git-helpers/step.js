@@ -1,13 +1,11 @@
 var Minimist = require('minimist');
 var Path = require('path');
 var LocalStorage = require('./local-storage');
+var Paths = require('./paths');
 var Utils = require('./utils');
 
 
 var git = Utils.git;
-
-var editorPath = Path.resolve('./editor');
-var stepsDirPath = Path.resolve('../steps');
 
 
 (function () {
@@ -107,52 +105,10 @@ function editStep(step) {
   var base = getStepBase(step);
 
   git(['rebase', '-i', base, {
-    GIT_EDITOR: 'node "' + editorPath + ' edit' + '"'
+    GIT_EDITOR: 'node ' + Paths.editor + ' edit'
   });
 
   LocalStorage.setItem('STEP', step);
-
-  // TODO: Move to rebase exec method
-  while (!Utils.isOrigHead()) {
-    var currentCommitMessage = getRecentStepCommit('%s');
-    var currentStep = extractStep(currentCommitMessage);
-
-    var message = currentStep.message;
-    var nextStep = getNextStep();
-    currentStep = currentStep.number;
-
-    var stepFiles = Fs.readdirSync(stepsDirPath);
-    var currentStepFile;
-    var nextStepFile;
-
-    stepFiles.some(function (stepFile) {
-      if (stepFile.match(new RegExp('step' + currentStep + '*')) {
-        currentStepFile = stepFile;
-        return false;
-      }
-
-      if (stepFile.match(new RegExp('step' + nextStep + '*')) {
-        nextStepFile = stepFile;
-        return false;
-      }
-
-      return currentStepFile && nextStep;
-    });
-
-    var currentStepFilePath = stepsDirPath + '/' + currentStepFile;
-    var newStepFilePath = stepsDirPath + '/' + nextStepFile;
-
-    Fs.renameSync(currentStepFilePath, newStepFilePath);
-    git(['add', newStepFilePath]);
-
-    git(['commit',  '--ammend'], {
-      GIT_EDITOR: 'node "' + editorPath + ' reword --message="' + message + '"'
-    });
-
-    retagStep(currentStep, nextStep);
-
-    git(['rebase', '--continue']);
-  }
 }
 
 function rewordStep(step, message) {
@@ -164,7 +120,7 @@ function rewordStep(step, message) {
   var base = getStepBase(step);
 
   git(['rebase', '-i', base], {
-    GIT_EDITOR: 'node "' + editorPath + ' reword --message="' + message + '"'
+    GIT_EDITOR: 'node ' + Paths.editor + ' reword --message="' + message + '"'
   });
 
   LocalStorage.setItem('STEP', step);
@@ -220,7 +176,7 @@ function getStepBase(step) {
     throw TypeError('A step must be provided');
 
   var hash = Utils.recentCommit.recentCommit([
-    '--grep="' + (/^Step/).toString() + '"',
+    '--grep="^Step ' + step + '"',
     '--format="%h"'
   ]);
 

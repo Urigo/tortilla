@@ -1,6 +1,11 @@
 var Fs = require('fs');
 var Minimist = require('minimist');
+var Paths = require('./paths');
 var Step = require('./step');
+var Utils = require('./utils');
+
+
+var git = Utils.git;
 
 
 (function () {
@@ -15,6 +20,7 @@ var Step = require('./step');
   switch (method) {
     case 'edit': newRebaseFileContent = editStep(rebaseFileContent); break;
     case 'reword': newRebaseFileContent = rewordStep(rebaseFileContent, message); break;
+    case 'retag': newRebaseFileContent = retagStep(rebaseFileContent); break;
   }
 
   newRebaseFileContent = newRebaseFileContent || rebaseFileContent;
@@ -22,22 +28,16 @@ var Step = require('./step');
 })();
 
 function editStep(rebaseFileContent) {
-  // TODO: Edit the first commit
   var commits = disassemblyCommits(rebaseFileContent);
+  commits[0].method = 'edit';
 
   if (commits) {
-    commits.forEach(function (commit) {
-      if (Step.extractSuperStep(commit.message)) {
-        return commit.method = 'edit';
-      }
-
-      if (Step.extractSubStep(commit.message)) {
-        return commit.method = 'reword';
-      }
+    commits.slice(1).forEach(function (commit) {
+      commit.method = 'reword';
     });
 
-    // TODO: Push exec for post rebase logic
-    return assemblyCommits(commits);
+    var retagStepCommit = 'exec git rebase --continue && node ' + Paths.retagger;
+    return assemblyCommits(commits) + '\n' + retagStepCommit;
   }
   else {
     var step = Step.extractStep(rebaseFileContent);
@@ -52,13 +52,25 @@ function rewordStep(rebaseFileContent, message) {
   var commits = disassemblyCommits(rebaseFileContent);
 
   if (commits) {
-    commit.method = 'reword';
+    commits[0].method = 'reword';
     return assemblyCommits(commits);
   }
   else {
     var step = Step.extractStep(rebaseFileContent);
     return 'Step ' + step.number + ': ' + message;
   }
+}
+
+function retagStep(rebaseFileContent) {
+  var commits = disassemblyCommits(rebaseFileContent);
+
+  commits.forEach(function (commit) {
+    if (Step.extractSuperStep(commit.message)) {
+      commit.method = 'edit'
+    }
+  });
+
+  return assemblyCommits(commits);
 }
 
 function disassemblyCommits() {
