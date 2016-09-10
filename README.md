@@ -32,7 +32,7 @@ A sub-step is a small portion of the whole step, each sub-step should usually re
 
 A super-step should **always** come at the end of each step, it should contain a single index and it should be tagged by its step name (e.g. super-step 1 should be tagged "step1", super-step 2 should be tagged "step2" etc). The super-step should add an instruction file on how to create the current step. The instruction file is a somple markdown file which should be located under the `steps` directory and its name should be `step(step index).md` (The step index **must** be the same index as the current step's, otherwise deployment will fail). The instruction file can contain whatever you desire, and in addition you will be provided with the following template helpers:
 
-- {{#diff oldStep newStep}} - Show the differences between `oldStep` and `newStep` using [git's diff algorithm](git-scm.com/docs/git-diff).
+- {{#diff oldStep newStep}} - Show the differences between `oldStep` and `newStep` using [git's diff algorithm](git-scm.com/docs/git-diff). Note that in order for this helper to work both steps **have** to modify a single file, otherwise an error will be thrown on deployment.
 - {{#step}} - Retreive the number of the current step.
 
 ### Git Helpers
