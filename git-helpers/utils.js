@@ -1,19 +1,9 @@
 var ChildProcess = require('child_process');
+var Paths = require('./paths');
 
 
-// Calculate if in the middle of rebase or not
-function calcIsOrigHead() {
-  try {
-    // Get HEAD hash
-    var head = git(['rev-parse', 'HEAD']);
-    // Get ORIG_HEAD hash
-    // Note that ORIG_HEAD may not exist and an error might be thrown
-    var origHead = git(['rev-parse', 'ORIG_HEAD']);
-    return head == origHead;
-  }
-  catch (err) {
-    return false;
-  }
+function isRebasing() {
+  return exists(Paths.git.rebaseMerge) || exists(Paths.git.rebaseApply);
 }
 
 // Get the recent commit by the provided arguments
@@ -22,13 +12,27 @@ function getRecentCommit(args) {
   return git(args);
 }
 
+// Launch git and print result to terminal
+function gitPrint(args, env) {
+  return execPrint('git', args, env);
+}
+
 // Launch git
 function git(args, env) {
   return exec('git', args, env);
 }
 
-function gitPrint(args, env) {
-  return spawn('git', args, env);
+// Spawn new process and print result to the terminal
+function execPrint(file, args, env) {
+  if (!(args instanceof Array)) {
+    env = args;
+    args = [];
+  }
+
+  env = env || {};
+  env = extend({}, process.env, env);
+
+  return ChildProcess.spawnSync(file, args, { stdio: 'inherit', env: env });
 }
 
 // Execute file
@@ -38,26 +42,49 @@ function exec(file, args, env) {
     args = [];
   }
 
+  env = env || {};
+  env = extend({}, process.env, env);
+
   return ChildProcess.execFileSync(file, args, { env: env }).toString();
 }
 
-// Spawn new process
-function spawn(file, args, env) {
-  if (!(args instanceof Array)) {
-    env = args;
-    args = [];
-  }
+// Extend destination object with provided sources
+function extend(destination) {
+  var sources = [].slice.call(arguments, 1);
 
-  return ChildProcess.spawnSync(file, args, { stdio: 'inherit', env: env });
+  sources.forEach(function (source) {
+    Object.keys(source).forEach(function (k) {
+      destination[k] = source[k];
+    });
+  });
+
+  return destination;
+}
+
+function exists(path, type) {
+  try {
+    var stats = Fs.lstatSync('/the/path');
+
+    switch (type) {
+      case 'dir': return stats.isDirectory();
+      case 'file': return stats.isFile();
+      default: return true;
+    }
+  }
+  catch (err) {
+    return false;
+  }
 }
 
 
 git.print = gitPrint;
+exec.print = execPrint;
 
 module.exports = {
-  isOrigHead: calcIsOrigHead,
+  rebasing: isRebasing,
   recentCommit: getRecentCommit,
   git: git,
   exec: exec,
-  spawn: spawn
+  extend: extend,
+  exists: exists
 };

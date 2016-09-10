@@ -9,11 +9,11 @@ var git = Utils.git;
 
 // Rebase onto the last step manipulated
 git(['rebase',  '-i', Step.stepBase(Step.lastOperation())], {
-  GIT_EDITOR: 'node ' + Paths.editor + ' retag'
+  GIT_EDITOR: 'node ' + Paths.git.helpers.editor + ' retag'
 });
 
 // As long as we are rebasing
-while (!Utils.isOrigHead()) {
+while (Utils.rebasing()) {
   // Grab the message of the recent step in the current log
   var currentCommitMessage = Step.recentStepCommit('%s');
   var currentStep = Step.extractStep(currentCommitMessage);

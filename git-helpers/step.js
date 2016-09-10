@@ -76,7 +76,7 @@ function tagStep(message) {
   commitStep(step, message);
 
   // If in the middle of rebase, add the tag later on in case we abort it
-  if (Utils.isOrigHead()) git.print(['tag', 'step' + step]);
+  if (!Utils.rebasing()) git.print(['tag', 'step' + step]);
 
   LocalStorage.setItem('STEP', step);
 }
@@ -111,7 +111,7 @@ function editStep(step) {
   var base = getStepBase(step);
 
   git(['rebase', '-i', base], {
-    GIT_EDITOR: 'node ' + Paths.editor + ' edit'
+    GIT_EDITOR: 'node ' + Paths.git.helpers.editor + ' edit'
   });
 
   LocalStorage.setItem('STEP', step);
@@ -127,7 +127,7 @@ function rewordStep(step, message) {
   var base = getStepBase(step);
 
   git(['rebase', '-i', base], {
-    GIT_EDITOR: 'node ' + Paths.editor + ' reword --message="' + message + '"'
+    GIT_EDITOR: 'node ' + Paths.git.helpers.editor + ' reword --message="' + message + '"'
   });
 
   LocalStorage.setItem('STEP', step);
@@ -190,7 +190,7 @@ function getStepBase(step) {
   if (!step)
     throw TypeError('A step must be provided');
 
-  var hash = Utils.recentCommit.recentCommit([
+  var hash = Utils.recentCommit([
     '--grep=^Step ' + step,
     '--format=%h'
   ]);
@@ -198,7 +198,7 @@ function getStepBase(step) {
   if (!hash)
     throw Error('Step not found');
 
-  return hash + '~1';
+  return hash.trim() + '~1';
 }
 
 // Get the recent step commit

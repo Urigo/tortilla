@@ -12,8 +12,8 @@ var git = Utils.git;
 (function () {
   var argv = Minimist(process.argv.slice(2));
   // The first argument will be the rebase file path provided to us by git
-  var rebaseFilePath = argv._[0];
-  var method = argv._[1];
+  var method = argv._[0];
+  var rebaseFilePath = argv._[1];
   var message = argv.message || argv.m;
 
   // Grab the contents of the rebase file
@@ -48,7 +48,7 @@ function editStep(rebaseFileContent) {
     });
 
     // After rebase, rename all the step tags
-    var retagStepCommit = 'exec git rebase --continue && node ' + Paths.retagger;
+    var retagStepCommit = 'exec git rebase --continue && node ' + Paths.git.helpers.retagger;
     return assemblyCommits(commits) + '\n' + retagStepCommit;
   }
   // If ammend
@@ -59,7 +59,7 @@ function editStep(rebaseFileContent) {
 
     // Update the number of the step
     step.number = Step.next();
-    return 'Step ' + step.number ': ' + step.message;
+    return 'Step ' + step.number + ': ' + step.message;
   }
 }
 
@@ -96,11 +96,11 @@ function retagStep(rebaseFileContent) {
 }
 
 // Convert rebase file content to commits array
-function disassemblyCommits() {
+function disassemblyCommits(rebaseFileContent) {
   var commits = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
   if (!commits) return;
 
-  return commit.map(function (line) {
+  return commits.map(function (line) {
     var split = line.split(' ');
 
     return {
