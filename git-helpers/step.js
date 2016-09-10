@@ -41,19 +41,15 @@ function pushStep(message) {
 // Pop the last step
 function popStep() {
   var removedCommitMessage = Utils.recentCommit(['--format=%s']);
-  git(['reset', '--hard', 'HEAD~1']);
+  git.print(['reset', '--hard', 'HEAD~1']);
 
-  var isStep = !!extractStep(removedCommitMessage);
+  var step = extractStep(removedCommitMessage);
 
-  if (!isStep) {
+  if (!step) {
     return console.warn('Removed commit was not a step');
   }
 
-  var recentStepMessage = getRecentStepCommit('%s')
-  var step = extractStep(recentStepMessage);
-  step = step ? step.number : '';
-
-  LocalStorage.setItem('STEP', step);
+  LocalStorage.setItem('STEP', step.number);
 }
 
 // Finish the current with the provided message and tag it
@@ -204,24 +200,24 @@ function getStepBase(step) {
 
 // Get the recent step commit
 function getRecentStepCommit(format) {
-  var args = ['--grep=^Step [0-9]\\+']
-  if (format) args.push('--format=' + format)
+  var args = ['--grep=^Step [0-9]\\+'];
+  if (format) args.push('--format=' + format);
 
   return Utils.recentCommit(args);
 }
 
 // Get the recent super step commit
 function getRecentSuperStepCommit(format) {
-  var args = ['--grep=^Step [0-9]\\+:']
-  if (format) args.push('--format=' + format)
+  var args = ['--grep=^Step [0-9]\\+:'];
+  if (format) args.push('--format=' + format);
 
   return Utils.recentCommit(args);
 }
 
 // Get the recent sub step commit
 function getRecentSubStepCommit(format) {
-  var args = ['--grep=^Step [0-9]\\+\\.[0-9]\\+:']
-  if (format) args.push('--format=' + format)
+  var args = ['--grep=^Step [0-9]\\+\\.[0-9]\\+:'];
+  if (format) args.push('--format=' + format);
 
   return Utils.recentCommit(args);
 }
@@ -231,7 +227,7 @@ function extractStep(message) {
   if (!message)
     throw TypeError('A message must be provided');
 
-  var match = message.match(/^Step (\d+(?:\.\d+)?\:)\: ((?:.|\n)*)$/);
+  var match = message.match(/^Step (\d+(?:\.\d+)?)\: ((?:.|\n)*)$/);
 
   return match && {
     number: match[1],
