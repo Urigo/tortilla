@@ -9,7 +9,6 @@ var Path = require('path');
 var gitHelpers = {
   _: Path.resolve('./git-helpers'),
   editor: Path.resolve('./git-helpers/editor.js'),
-  localStorage: Path.resolve('./git-helpers/local-storage.js'),
   retagger: Path.resolve('./git-helpers/retagger.js'),
   step: Path.resolve('./git-helpers/step.js'),
   utils: Path.resolve('./git-helpers/utils.js')
@@ -23,7 +22,7 @@ var git = {
 };
 
 module.exports = {
-  _: Path.resolve('.');
-  steps: Path.resolve('./step');
+  _: Path.resolve('.'),
+  steps: Path.resolve('./steps'),
   git: git
 };

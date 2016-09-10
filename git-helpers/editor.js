@@ -16,7 +16,6 @@ var git = Utils.git;
   var rebaseFilePath = argv._[1];
   var message = argv.message || argv.m;
 
-  // Grab the contents of the rebase file
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   var newRebaseFileContent;
 
@@ -24,7 +23,6 @@ var git = Utils.git;
   switch (method) {
     case 'edit': newRebaseFileContent = editStep(rebaseFileContent); break;
     case 'reword': newRebaseFileContent = rewordStep(rebaseFileContent, message); break;
-    case 'retag': newRebaseFileContent = retagStep(rebaseFileContent); break;
   }
 
   // If content was edited
@@ -36,71 +34,82 @@ var git = Utils.git;
 
 // Edit the last step in the rebase file
 function editStep(rebaseFileContent) {
-  var commits = disassemblyCommits(rebaseFileContent);
-  // Edit the first commit
-  commits[0].method = 'edit';
+  var operations = disassemblyOperations(rebaseFileContent);
 
-  // If rebase
-  if (commits) {
-    // Reword the rest of the commits in case steps were added or removed
-    commits.slice(1).forEach(function (commit) {
-      commit.method = 'reword';
+  // If rewording
+  if (!operations) {
+    // Update commit's step number
+    var stepDescriptor = Step.descriptor(rebaseFileContent);
+    var isSuperStep = !!Step.superDescriptor(rebaseFileContent);
+    var nextStep = Step.next(1);
+
+    if (isSuperStep) nextStep = nextStep.split('.')[0];
+
+    return 'Step ' + nextStep + ': ' + stepDescriptor.message;
+  }
+
+  // If rebasing, edit the first commit
+  operations[0].method = 'edit';
+
+  // Creating a clone of the operations array otherwise splices couldn't be applied
+  // without aborting the itration. In addition we hold an offset variable to handle
+  // the changes that are made in the array's length
+  operations.slice().reduce(function (offset, operation, index) {
+    // Reword commit
+    operations.splice(index + ++offset, 0, {
+      method: 'exec',
+      command: [
+        'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' edit"',
+        'git commit --amend',
+      ].join(' ')
     });
 
-    // After rebase, rename all the step tags
-    var retagStepCommit = 'exec git rebase --continue && node ' + Paths.git.helpers.retagger;
-    return assemblyCommits(commits) + '\n' + retagStepCommit;
-  }
-  // If ammend
-  else {
-    // Escape if the current commit is not a step
-    var step = Step.extractStep(rebaseFileContent);
-    if (!step) return;
+    var isSuperStep = !!Step.superDescriptor(operation.message);
+    if (!isSuperStep) return offset;
 
-    // Update the number of the step
-    step.number = Step.next();
-    return 'Step ' + step.number + ': ' + step.message;
-  }
+    // If this is a super step, launch retagger
+    operations.splice(index + ++offset, 0, {
+      method: 'exec',
+      command: [
+        'node', Paths.git.helpers.retagger, operation.hash, '"' + operation.message + '"'
+      ].join(' ')
+    });
+
+    return offset;
+  }, 0);
+
+  return assemblyOperations(operations);
 }
 
 // Reword the last step in the rebase file
 function rewordStep(rebaseFileContent, message) {
-  var commits = disassemblyCommits(rebaseFileContent);
+  var operations = disassemblyOperations(rebaseFileContent);
 
-  // If rebase
-  if (commits) {
-    // Reword the first commit
-    commits[0].method = 'reword';
-    return assemblyCommits(commits);
-  }
-  // If ammend
-  else {
+  // If rewording
+  if (!operations) {
     // Replace original message with the provided message
-    var step = Step.extractStep(rebaseFileContent);
-    return 'Step ' + step.number + ': ' + message;
+    var stepDescriptor = Step.descriptor(rebaseFileContent);
+    return 'Step ' + stepDescriptor.number + ': ' + message;
   }
-}
 
-// Rename step tags
-function retagStep(rebaseFileContent) {
-  var commits = disassemblyCommits(rebaseFileContent);
-
-  // Edit all the super step commits, since we wanna update the names of the step files
-  commits.forEach(function (commit) {
-    if (Step.extractSuperStep(commit.message)) {
-      commit.method = 'edit'
-    }
+  // If rebasing, reword the first commit
+  operations.splice(1, 0, {
+    method: 'exec',
+    command: [
+      'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' reword --message=\'' + message + '\'"',
+      'git commit --amend',
+    ].join(' ')
   });
 
-  return assemblyCommits(commits);
+  return assemblyOperations(operations);
 }
 
-// Convert rebase file content to commits array
-function disassemblyCommits(rebaseFileContent) {
-  var commits = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
-  if (!commits) return;
+// Convert rebase file content to operations array
+function disassemblyOperations(rebaseFileContent) {
+  var operations = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
+  if (!operations) return;
 
-  return commits.map(function (line) {
+  return operations.map(function (line) {
     var split = line.split(' ');
 
     return {
@@ -111,9 +120,13 @@ function disassemblyCommits(rebaseFileContent) {
   });
 }
 
-// Convert commits array to rebase file content
-function assemblyCommits(commits) {
-  return commits
-    .map(function (commit) { return [commit.method, commit.hash, commit.message].join(' ') })
+// Convert operations array to rebase file content
+function assemblyOperations(operations) {
+  return operations
+    .map(function (operation) {
+      return Object.keys(operation)
+        .map(function (k) { return operation[k] })
+        .join(' ');
+    })
     .join('\n') + '\n';
 }

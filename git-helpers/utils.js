@@ -1,14 +1,36 @@
 var ChildProcess = require('child_process');
+var Fs = require('fs');
 var Paths = require('./paths');
 
 
+// Tells if rebasing or not
 function isRebasing() {
   return exists(Paths.git.rebaseMerge) || exists(Paths.git.rebaseApply);
 }
 
-// Get the recent commit by the provided arguments
-function getRecentCommit(args) {
-  args = ['log', '--max-count=1'].concat(args);
+// Tells if tag exists or not
+function tagExists(tag) {
+  try {
+    return !!git(['rev-parse', tag]);
+  }
+  catch (err) {
+    return false;
+  }
+}
+
+// Get the recent commit by the provided arguments. An offset can be specified which
+// means that the recent commit from several times back can be fetched as well
+function getRecentCommit(offset, args) {
+  if (offset instanceof Array) {
+    args = offset;
+    offset = 0;
+  }
+  else {
+    args = args || [];
+    offset = offset || 0;
+  }
+
+  args = ['log', 'HEAD~' + offset, '--max-count=1'].concat(args);
   return git(args);
 }
 
@@ -48,6 +70,20 @@ function exec(file, args, env) {
   return ChildProcess.execFileSync(file, args, { env: env }).toString();
 }
 
+// Find an element in an array by a provided test function
+function find(arr, test, defaultValue) {
+  var result;
+
+  arr.some(function (el) {
+    if (test.apply(null, arguments)) {
+      result = el;
+      return true;
+    }
+  });
+
+  return result == null ? defaultValue : result;
+}
+
 // Extend destination object with provided sources
 function extend(destination) {
   var sources = [].slice.call(arguments, 1);
@@ -61,9 +97,10 @@ function extend(destination) {
   return destination;
 }
 
+// Tells if entity exists or not by an optional document type
 function exists(path, type) {
   try {
-    var stats = Fs.lstatSync('/the/path');
+    var stats = Fs.lstatSync(path);
 
     switch (type) {
       case 'dir': return stats.isDirectory();
@@ -82,9 +119,11 @@ exec.print = execPrint;
 
 module.exports = {
   rebasing: isRebasing,
+  tagExists: tagExists,
   recentCommit: getRecentCommit,
   git: git,
   exec: exec,
+  find: find,
   extend: extend,
   exists: exists
 };
