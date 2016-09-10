@@ -41,25 +41,25 @@ You've probably noticed that the rules for a valid tutorial project are very str
 
 #### Push Step
 
-$ npm run step push --message="step message"
+$ npm run step -- push --message="step message"
 
 Push a new step to the top of the stack with the provided message. If you would like to add a new step in the middle of the stack, first use the [step editing](#edit-step) helper, and then push a new step to the top of the stack.
 
 #### Pop Step
 
-$ npm run step pop
+$ npm run step -- pop
 
 Pop the last step from the top of the stack. If you would like to remove a step from the middle of the stack, first use the [step editing](#edit-step) helper, and then pop the step from the top of the stack.
 
 #### Edit Step
 
-$ npm run step edit --step="step number"
+$ npm run step -- edit --step="step number"
 
 Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the up-comming commits, this helper is smart enough to adjust their content and messages based on your actions.
 
 #### Reword Step
 
-$ npm run step reword --step="step number" --message="step message"
+$ npm run step -- reword --step="step number" --message="step message"
 
 Replace the provided step's message with the provided step.
 

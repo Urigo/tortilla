@@ -18,13 +18,17 @@ function calcIsOrigHead() {
 
 // Get the recent commit by the provided arguments
 function getRecentCommit(args) {
-  var args = ['log', '--max-count=1'].concat(args);
+  args = ['log', '--max-count=1'].concat(args);
   return git(args);
 }
 
 // Launch git
 function git(args, env) {
   return exec('git', args, env);
+}
+
+function gitPrint(args, env) {
+  return spawn('git', args, env);
 }
 
 // Execute file
@@ -37,10 +41,23 @@ function exec(file, args, env) {
   return ChildProcess.execFileSync(file, args, { env: env }).toString();
 }
 
+// Spawn new process
+function spawn(file, args, env) {
+  if (!(args instanceof Array)) {
+    env = args;
+    args = [];
+  }
+
+  return ChildProcess.spawnSync(file, args, { stdio: 'inherit', env: env });
+}
+
+
+git.print = gitPrint;
 
 module.exports = {
   isOrigHead: calcIsOrigHead,
   recentCommit: getRecentCommit,
   git: git,
-  exec: exec
+  exec: exec,
+  spawn: spawn
 };

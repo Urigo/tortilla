@@ -16,7 +16,7 @@ var git = Utils.git;
   var argv = Minimist(process.argv.slice(2));
   var method = argv._[0];
   var message = argv.message || argv.m;
-  var step = argv.step || arg.s;
+  var step = argv.step || argv.s;
 
   switch (method) {
     case 'push': return pushStep(message);
@@ -100,7 +100,7 @@ function retagStep(oldStep, newStep) {
     retagStep(oldStep, newStep);
   }
 
-  git(['tag', 'step' + newStep, 'step' + oldStep);
+  git(['tag', 'step' + newStep, 'step' + oldStep]);
   git(['tag', '-d', 'step' + oldStep]);
 }
 
@@ -111,7 +111,7 @@ function editStep(step) {
 
   var base = getStepBase(step);
 
-  git(['rebase', '-i', base, {
+  git(['rebase', '-i', base], {
     GIT_EDITOR: 'node ' + Paths.editor + ' edit'
   });
 
@@ -136,7 +136,7 @@ function rewordStep(step, message) {
 
 // Add a new commit of the provided step with the provided message
 function commitStep(step, message) {
-  return git(['commit', '-m', 'Step ' + step + ': ' + message]);
+  return git.print(['commit', '-m', 'Step ' + step + ': ' + message]);
 }
 
 // Get the current step
@@ -147,15 +147,15 @@ function getCurrentStep() {
 
 // Get the next step
 function getNextStep() {
-  var recentCommitHash = Utils.recentCommit(['format=%h']);
+  var recentCommitHash = Utils.recentCommit(['--format=%h']);
   var recentStepHash = getRecentSuperStepCommit('%h');
   var followedByStep = recentStepHash == recentCommitHash;
 
   // If followed by a whole step, start a new super step
   if (followedByStep) {
-    var recentCommitMessage = Utils.recentCommit(['format=%s']);
+    var recentCommitMessage = Utils.recentCommit(['--format=%s']);
     var recentSuperStep = extractSuperStep(recentCommitMessage).number;
-    var superStep = recentSuperStep + 1;
+    var superStep = Number(recentSuperStep) + 1;
     var subStep = 1;
   }
   else {
@@ -164,12 +164,12 @@ function getNextStep() {
 
     // If followed by a sub step, increase the sub step index
     if (followedBySubStep) {
-      var recentCommitMessage = Utils.recentCommit(['format=%s']);
+      var recentCommitMessage = Utils.recentCommit(['--format=%s']);
       var recentStep = extractSubStep(recentCommitMessage);
       var recentSuperStep = recentStep.superNumber;
       var recentSubStep = recentStep.subNumber;
       var superStep = recentSuperStep;
-      var subStep = recentSubStep + 1;
+      var subStep = Number(recentSubStep) + 1;
     }
     // If not followed by any step, compose the initial step
     else {
@@ -192,8 +192,8 @@ function getStepBase(step) {
     throw TypeError('A step must be provided');
 
   var hash = Utils.recentCommit.recentCommit([
-    '--grep="^Step ' + step + '"',
-    '--format="%h"'
+    '--grep=^Step ' + step,
+    '--format=%h'
   ]);
 
   if (!hash)
@@ -204,24 +204,24 @@ function getStepBase(step) {
 
 // Get the recent step commit
 function getRecentStepCommit(format) {
-  var args = ['--grep="' + (/^Step \d+(?:\.\d+)?\:/).toString() + '"']
-  if (format) args.push('--format="' + format + '"')
+  var args = ['--grep=^Step [0-9]\\+']
+  if (format) args.push('--format=' + format)
 
   return Utils.recentCommit(args);
 }
 
 // Get the recent super step commit
 function getRecentSuperStepCommit(format) {
-  var args = ['--grep="' + (/^Step \d+\:/).toString() + '"']
-  if (format) args.push('--format="' + format + '"')
+  var args = ['--grep=^Step [0-9]\\+:']
+  if (format) args.push('--format=' + format)
 
   return Utils.recentCommit(args);
 }
 
 // Get the recent sub step commit
-function getRecentSubStep(format) {
-  var args = ['--grep="' + (/^Step \d+\.\d+\:/).toString() + '"']
-  if (format) args.push('--format="' + format + '"')
+function getRecentSubStepCommit(format) {
+  var args = ['--grep=^Step [0-9]\\+\\.[0-9]\\+:']
+  if (format) args.push('--format=' + format)
 
   return Utils.recentCommit(args);
 }
