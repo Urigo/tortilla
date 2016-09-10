@@ -25,7 +25,7 @@ while (!Utils.isOrigHead()) {
   currentStep = currentStep.number;
 
   // Find current step file and rename it
-  var stepFiles = Fs.readdirSync(stepsDirPath);
+  var stepFiles = Fs.readdirSync(Paths.steps);
   var currentStepFile;
   var nextStepFile;
 
@@ -43,8 +43,8 @@ while (!Utils.isOrigHead()) {
     }
   });
 
-  var currentStepFilePath = stepsDirPath + '/' + currentStepFile;
-  var newStepFilePath = stepsDirPath + '/' + nextStepFile;
+  var currentStepFilePath = Paths.steps + '/' + currentStepFile;
+  var newStepFilePath = Paths.steps + '/' + nextStepFile;
 
   Fs.renameSync(currentStepFilePath, newStepFilePath);
 

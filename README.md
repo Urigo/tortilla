@@ -65,6 +65,6 @@ Replace the provided step's message with the provided step.
 
 #### Tag Step
 
-$ npm run step tag --step="step number"
+$ npm run step -- tag --step="step number"
 
 Add a new super-step and finish the current step. This will add a new step tag to your commits list and it will initialize an empty instructions markdown file. If you would like to edit the instruction file, simply us the [step editing](#edit-step) helper and ammend you changes to the recent commit.

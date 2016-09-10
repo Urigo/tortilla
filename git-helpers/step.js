@@ -1,3 +1,4 @@
+var Fs = require('fs');
 var Minimist = require('minimist');
 var Path = require('path');
 var LocalStorage = require('./local-storage');
@@ -61,19 +62,21 @@ function tagStep(message) {
 
   if (recentStepMessage) {
     var recentStep = extractSuperStep(recentStepMessage).number;
-    var step = recentStep + 1;
+    var step = Number(recentStep) + 1;
   }
   else {
     var step = 1;
   }
 
-  var stepFilePath = Path.resolve('./steps/step' + step + '.md');
+  var stepFilePath = Path.resolve(Paths.steps, 'step' + step + '.md');
+  Fs.mkdirSync(Paths.steps);
   Fs.writeFileSync(stepFilePath);
 
   git(['add', stepFilePath]);
   commitStep(step, message);
 
-  if (Utils.isOrigHead()) git(['tag', '-a', 'step' + step]);
+  // If in the middle of rebase, add the tag later on in case we abort it
+  if (Utils.isOrigHead()) git.print(['tag', 'step' + step]);
 
   LocalStorage.setItem('STEP', step);
 }
