@@ -90,9 +90,10 @@ function tagStep(message) {
 // is handy in case the old step tag does'nt exist anymore in the current commits history
 function retagStep(oldStep, newStep, hash) {
   if (oldStep == null)
-    throw TypeError('An old step must be provided');
-  if (newStep == null)
-    throw TypeError('A new step must be provided');
+    throw TypeError('A step must be provided');
+
+  // Step might be 0
+  newStep = newStep == null ? oldStep : newStep;
 
   // Converting to numbers just in case
   oldStep = Number(oldStep);
@@ -107,12 +108,8 @@ function retagStep(oldStep, newStep, hash) {
     return git(['tag', '-d', oldTag]);
   }
 
-  if (!hash) {
-    // If both steps are the same and the hash remained there is no need in renaming
-    if (oldStep == newStep) return;
-    // The new tag will just be a reference to the old tag
-    hash = oldTag;
-  }
+  // If both steps are the same and the hash remained there is no need in renaming
+  if (oldStep == newStep) return;
 
   var diff = newStep - oldStep;
 
@@ -121,6 +118,13 @@ function retagStep(oldStep, newStep, hash) {
     var increment = diff / Math.abs(diff);
     retagStep(oldStep + increment, newStep + increment);
   }
+
+  // This will be the reference for the new tag.
+  // By default it will target to the step's commit
+  hash = hash || Utils.recentCommit([
+    '--grep=^Step ' + newStep + ':',
+    '--format=%h'
+  ]).trim();
 
   // Set a new tag and delete the old one. Note that some tags might share the same name
   // but would stil need retagging since the hash might have changed

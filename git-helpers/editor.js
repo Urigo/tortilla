@@ -70,11 +70,10 @@ function editStep(rebaseFileContent) {
     // If this is a super step, launch retagger
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: [
-        'node', Paths.git.helpers.retagger, operation.hash, '"' + operation.message + '"'
-      ].join(' ')
+      command: 'node ' + Paths.git.helpers.retagger + ' "' + operation.message + '"'
     });
 
+    // TODO: Use manualy cherry-pick so we can automatically solve conflicts!
     return offset;
   }, 0);
 

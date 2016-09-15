@@ -17,9 +17,8 @@ var git = Utils.git;
 (function () {
   // The last step is not guaranteed to remain a super step after editing, hence it is
   // important to first check if we're dealing with a super step
-  var commitFormat = '{ "hash": "%h", "message": "%s" }';
-  var currentCommit = JSON.parse(Utils.recentCommit(['--format=' + commitFormat]));
-  var isSuperStep = !!Step.superDescriptor(currentCommit.message);
+  var currentCommitMessage = Utils.recentCommit(['--format=%s']);
+  var isSuperStep = !!Step.superDescriptor(currentCommitMessage);
   if (!isSuperStep) return;
 
   // A descriptor for the rebased commit should be passed as process arguments. By this
@@ -27,32 +26,27 @@ var git = Utils.git;
   // middle of rebasing which changes the hashes of the commits as we make progress,
   // therefore it's important to forward the metadata and not rely on git operations
   var argv = Minimist(process.argv.slice(2));
+  var rebasedCommitMessage = argv._[0];
 
-  var rebasedCommit = {
-    hash: argv._[0],
-    message: argv._[1]
-  };
+  var rebasedStepDescriptor = Step.superDescriptor(rebasedCommitMessage);
 
-  var rebasedStepDescriptor = Step.superDescriptor(rebasedCommit.message);
   // The old (not updated) step lies within the rebased commit's message
   var oldStep = rebasedStepDescriptor.number;
-  var oldTag = 'step' + oldStep;
   // The new (updated) step lies within the current commit's message
   var newStep = Step.current();
+
+  // Take care of gaps between steps, or retag the current step, if at all
+  for (var step = oldStep; step <= newStep; step++) {
+    Step.retag(step);
+    if (step == newStep) return;
+  }
+
+  var oldTag = 'step' + oldStep;
   var newTag = 'step' + newStep;
 
   var stepFiles = Fs.readdirSync(Paths.steps);
 
-  // There might be conflicts during rebase when renaming a step file into one that is
-  // already exist in the new steps. Conflicted renamed files will have the following
-  // pattern:
-  //
-  //    step(number).md~(hash)... (message)
-  //
-  var oldStepFile = Utils.find(stepFiles, function (stepFile) {
-    return stepFile.match(new RegExp('^' + oldTag + '\\.md~*$'));
-  }, oldTag + '.md');
-
+  var oldStepFile = oldTag + '.md';
   var newStepFile = newTag + '.md';
 
   var oldStepFilePath = Path.resolve(Paths.steps, oldStepFile);
@@ -68,5 +62,5 @@ var git = Utils.git;
   });
 
   // Update the name of the tag
-  Step.retag(oldStep, newStep, currentCommit.hash);
+  Step.retag(oldStep, newStep);
 })();
