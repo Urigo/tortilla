@@ -13,7 +13,10 @@ var git = Utils.git;
   // Disable the automatic invokation unless this is the main module of the node process
   if (require.main !== module) return;
 
-  var argv = Minimist(process.argv.slice(2));
+  var argv = Minimist(process.argv.slice(2), {
+    string: ['message', 'm', 'step', 's']
+  });
+
   var method = argv._[0];
   var message = argv.message || argv.m;
   var step = argv.step || argv.s;

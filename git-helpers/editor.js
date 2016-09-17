@@ -10,7 +10,10 @@ var git = Utils.git;
 
 // Automatically invoke a method by the provided arguments
 (function () {
-  var argv = Minimist(process.argv.slice(2));
+  var argv = Minimist(process.argv.slice(2), {
+    string: ['message', 'm']
+  });
+
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
   var rebaseFilePath = argv._[1];
