@@ -43,11 +43,9 @@ function editStep(rebaseFileContent) {
   if (!operations) {
     // Update commit's step number
     var stepDescriptor = Step.descriptor(rebaseFileContent);
-    var isSuperStep = !!Step.superDescriptor(rebaseFileContent);
+    if (!stepDescriptor) return;
+
     var nextStep = Step.next(1);
-
-    if (isSuperStep) nextStep = nextStep.split('.')[0];
-
     return 'Step ' + nextStep + ': ' + stepDescriptor.message;
   }
 
@@ -91,6 +89,8 @@ function rewordStep(rebaseFileContent, message) {
   if (!operations) {
     // Replace original message with the provided message
     var stepDescriptor = Step.descriptor(rebaseFileContent);
+    if (!stepDescriptor) return;
+
     return 'Step ' + stepDescriptor.number + ': ' + message;
   }
 
