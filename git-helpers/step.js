@@ -174,36 +174,36 @@ function getCurrentStep() {
 
 // Get the next step
 function getNextStep(offset) {
-  var recentCommitHash = Utils.recentCommit(offset, ['--format=%h']);
-  var recentStepHash = getRecentSuperStepCommit(offset, '%h');
-  var followedByStep = recentStepHash == recentCommitHash;
+  // Fetch data about recent step commit
+  var recentStepCommitMessage = getRecentStepCommit(offset, '%m');
+  var followedByStep = !!recentStepCommitMessage;
 
-  // If followed by a whole step, start a new super step
-  if (followedByStep) {
-    var recentCommitMessage = Utils.recentCommit(offset, ['--format=%s']);
-    var recentSuperStep = getSuperStepDescriptor(recentCommitMessage).number;
-    var superStep = recentSuperStep + 1;
-    var subStep = 1;
-  }
-  else {
-    var recentSubStepHash = getRecentSubStepCommit(offset, '%h');
-    var followedBySubStep = recentSubStepHash == recentCommitHash;
+  // If no previous steps found return the first one
+  if (!followedByStep) return '1.1';
 
-    // If followed by a sub step, increase the sub step index
-    if (followedBySubStep) {
-      var recentCommitMessage = Utils.recentCommit(offset, ['--format=%s']);
-      var recentStepDescriptor = getSubStepDescriptor(recentCommitMessage);
-      var superStep = recentStepDescriptor.superNumber;
-      var subStep = recentStepDescriptor.subNumber + 1;
-    }
-    // If not followed by any step, compose the initial step
-    else {
-      var superStep = 1;
-      var subStep = 1;
-    }
-  }
+  // Fetch data about current step
+  var recentStepDescriptor = getStepDescriptor(recentStepCommitMessage);
+  var stepNumbers = recentStepDescriptor.number.split('.');
+  var superStepNumber = Number(stepNumbers[0]);
+  var subStepNumber = Number(stepNumbers[1]);
+  var isSuperStep = !!subStepNumber;
 
-  return superStep + '.' + subStep;
+  // If this is a super step return the first sub step of a new step
+  if (isSuperStep) return (superStepNumber + 1) + '.' + 1;
+  // If no offset exists return the next step as expected
+  if (!offset) return superStepNumber + '.' + (subStepNumber + 1);
+
+  // Fetch data about next step
+  var nextStep = getNextStep(offset - 1);
+  var nextStepNumbers = nextStep.split('.');
+  var nextSuperStepNumber = Number(nextStepNumbers[0]);
+  var nextSubStepNumber = Number(nextStepNumbers[1]);
+  var isNextSuperStep = !!nextSubStepNumber;
+
+  // If super step numbers are not equal then the next step should be a super step
+  if (superStepNumber != nextSuperStepNumber) return superStepNumber;
+  // Return the next step as expected
+  return superStepNumber + '.' + (subStepNumber + 1);
 }
 
 // Get the hash of the step followed by ~1, mostly useful for a rebase
