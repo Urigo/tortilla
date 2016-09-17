@@ -1,5 +1,6 @@
 var ChildProcess = require('child_process');
 var Fs = require('fs');
+var Path = require('path');
 var Paths = require('./paths');
 
 
@@ -8,14 +9,14 @@ function isRebasing() {
   return exists(Paths.git.rebaseMerge) || exists(Paths.git.rebaseApply);
 }
 
-// Tells if tag exists or not
+// Tells if cherry-picking or not
+function isCherryPicking() {
+  return exists(Paths.git.heads.cherryPick) || exists(Paths.git.heads.revert);
+}
+
+// Tells if a tag exists or not
 function tagExists(tag) {
-  try {
-    return !!git(['rev-parse', tag]);
-  }
-  catch (err) {
-    return false;
-  }
+  return exists(Path.resolve(Paths.git.refs.tags, tag));
 }
 
 // Get the recent commit by the provided arguments. An offset can be specified which
@@ -119,6 +120,7 @@ exec.print = execPrint;
 
 module.exports = {
   rebasing: isRebasing,
+  cherryPicking: isCherryPicking,
   tagExists: tagExists,
   recentCommit: getRecentCommit,
   git: git,

@@ -6,19 +6,35 @@ var Path = require('path');
   therefore this module was created.
  */
 
+ var gitHeads = {
+  _: Path.resolve('./.git/HEAD'),
+  cherryPick: Path.resolve('./.git/CHERRY_PICK_HEAD'),
+  orig: Path.resolve('./.git/ORIG_HEAD'),
+  revert: Path.resolve('./.git/REVERT_HEAD')
+};
+
 var gitHelpers = {
   _: Path.resolve('./git-helpers'),
   editor: Path.resolve('./git-helpers/editor.js'),
-  retagger: Path.resolve('./git-helpers/retagger.js'),
   step: Path.resolve('./git-helpers/step.js'),
+  tagPicker: Path.resolve('./git-helpers/tag-picker.js'),
   utils: Path.resolve('./git-helpers/utils.js')
+};
+
+var gitRefs = {
+  _: Path.resolve('./.git/refs'),
+  heads: Path.resolve('./.git/refs/heads'),
+  remotes: Path.resolve('./.git/refs/remotes'),
+  tags: Path.resolve('./.git/refs/tags')
 };
 
 var git = {
   _: Path.resolve('./.git'),
   rebaseMerge: Path.resolve('./.git/rebase-merge'),
   rebaseApply: Path.resolve('./.git/rebase-apply'),
-  helpers: gitHelpers
+  heads: gitHeads,
+  helpers: gitHelpers,
+  refs: gitRefs
 };
 
 module.exports = {

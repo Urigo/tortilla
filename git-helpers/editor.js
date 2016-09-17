@@ -56,7 +56,32 @@ function editStep(rebaseFileContent) {
   // without aborting the itration. In addition we hold an offset variable to handle
   // the changes that are made in the array's length
   operations.slice().reduce(function (offset, operation, index) {
-    // Reword commit
+    var isSuperStep = !!Step.superDescriptor(operation.message);
+
+    // If this is a super step, replace pick operation with the tag picker
+    if (isSuperStep) {
+      var hash = ''
+      var deleteCount = 0;
+      var argv = [Paths.git.helpers.tagPicker];
+
+      // We don't wanna use cherry-pick on the first commit since there never
+      // gonna be any conflicts with the step instuction files
+      if (operation.method == 'pick') {
+        hash = operation.hash;
+        argv.push('--hash=' + hash);
+        deleteCount++;
+      }
+      else {
+        offset++;
+      }
+
+      operations.splice(index + offset, deleteCount, {
+        method: 'exec',
+        command: 'node ' + argv.join(' ')
+      });
+    }
+
+    // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
       command: [
@@ -65,16 +90,6 @@ function editStep(rebaseFileContent) {
       ].join(' ')
     });
 
-    var isSuperStep = !!Step.superDescriptor(operation.message);
-    if (!isSuperStep) return offset;
-
-    // If this is a super step, launch retagger
-    operations.splice(index + ++offset, 0, {
-      method: 'exec',
-      command: 'node ' + Paths.git.helpers.retagger + ' "' + operation.message + '"'
-    });
-
-    // TODO: Use manualy cherry-pick so we can automatically solve conflicts!
     return offset;
   }, 0);
 
@@ -94,11 +109,11 @@ function rewordStep(rebaseFileContent, message) {
     return 'Step ' + stepDescriptor.number + ': ' + message;
   }
 
-  // If rebasing, reword the first commit
+  // If rebasing, replace original message with the provided message
   operations.splice(1, 0, {
     method: 'exec',
     command: [
-      'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' reword --message=\'' + message + '\'"',
+      'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' reword -m \'' + message + '\'"',
       'git commit --amend',
     ].join(' ')
   });

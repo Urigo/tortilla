@@ -157,7 +157,7 @@ function rewordStep(step, message) {
   var base = getStepBase(step);
 
   git.print(['rebase', '-i', base], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.git.helpers.editor + ' reword --message="' + message + '"'
+    GIT_SEQUENCE_EDITOR: 'node ' + Paths.git.helpers.editor + ' reword -m "' + message + '"'
   });
 }
 
@@ -175,34 +175,44 @@ function getCurrentStep() {
 // Get the next step
 function getNextStep(offset) {
   // Fetch data about recent step commit
-  var recentStepCommitMessage = getRecentStepCommit(offset, '%m');
-  var followedByStep = !!recentStepCommitMessage;
+  var stepCommitMessage = getRecentStepCommit(offset, '%s');
+  var followedByStep = !!stepCommitMessage;
 
   // If no previous steps found return the first one
   if (!followedByStep) return '1.1';
 
   // Fetch data about current step
-  var recentStepDescriptor = getStepDescriptor(recentStepCommitMessage);
-  var stepNumbers = recentStepDescriptor.number.split('.');
+  var stepDescriptor = getStepDescriptor(stepCommitMessage);
+  var stepNumbers = stepDescriptor.number.split('.');
   var superStepNumber = Number(stepNumbers[0]);
   var subStepNumber = Number(stepNumbers[1]);
-  var isSuperStep = !!subStepNumber;
+  var isSuperStep = !subStepNumber;
 
-  // If this is a super step return the first sub step of a new step
-  if (isSuperStep) return (superStepNumber + 1) + '.' + 1;
-  // If no offset exists return the next step as expected
-  if (!offset) return superStepNumber + '.' + (subStepNumber + 1);
+  if (!offset) {
+    // If this is a super step return the first sub step of a new step
+    if (isSuperStep) return (superStepNumber + 1) + '.' + 1;
+    // Else, return the next step as expected
+    return superStepNumber + '.' + (subStepNumber + 1);
+  }
 
   // Fetch data about next step
-  var nextStep = getNextStep(offset - 1);
-  var nextStepNumbers = nextStep.split('.');
+  var nextStepCommitMessage = getRecentStepCommit(offset - 1, '%s');
+  var nextStepDescriptor = getStepDescriptor(nextStepCommitMessage);
+  var nextStepNumbers = nextStepDescriptor.number.split('.');
   var nextSuperStepNumber = Number(nextStepNumbers[0]);
   var nextSubStepNumber = Number(nextStepNumbers[1]);
-  var isNextSuperStep = !!nextSubStepNumber;
+  var isNextSuperStep = !nextSubStepNumber;
 
-  // If super step numbers are not equal then the next step should be a super step
-  if (superStepNumber != nextSuperStepNumber) return superStepNumber;
-  // Return the next step as expected
+  if (isNextSuperStep) {
+    // If this is a super step return the next super step right away
+    if (isSuperStep) return (superStepNumber + 1).toString();
+    // Else, return the current super step
+    return superStepNumber.toString();
+  }
+
+  // If this is a super step return the first sub step of the next step
+  if (isSuperStep) return (superStepNumber + 1) + '.' + 1;
+  // Else, return the next step as expected
   return superStepNumber + '.' + (subStepNumber + 1);
 }
 
