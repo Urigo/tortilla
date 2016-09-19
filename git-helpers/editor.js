@@ -4,6 +4,11 @@ var Paths = require('./paths');
 var Step = require('./step');
 var Utils = require('./utils');
 
+/*
+  This is the editor for interactive rebases and ammended commits. Instead of openning
+  an editing software like nano or vim, this module will edit the file by specified
+  methods we choose.
+ */
 
 var git = Utils.git;
 
@@ -11,7 +16,7 @@ var git = Utils.git;
 // Automatically invoke a method by the provided arguments
 (function () {
   var argv = Minimist(process.argv.slice(2), {
-    string: ['message', 'm']
+    string: ['_', 'message', 'm']
   });
 
   // The first argument will be the rebase file path provided to us by git
@@ -55,29 +60,14 @@ function editStep(rebaseFileContent) {
   // Creating a clone of the operations array otherwise splices couldn't be applied
   // without aborting the itration. In addition we hold an offset variable to handle
   // the changes that are made in the array's length
-  operations.slice().reduce(function (offset, operation, index) {
+  operations.slice(1).reduce(function (offset, operation, index) {
     var isSuperStep = !!Step.superDescriptor(operation.message);
 
-    // If this is a super step, replace pick operation with the tag picker
+    // If this is a super step, replace pick operation with the super pick
     if (isSuperStep) {
-      var hash = ''
-      var deleteCount = 0;
-      var argv = [Paths.git.helpers.tagPicker];
-
-      // We don't wanna use cherry-pick on the first commit since there never
-      // gonna be any conflicts with the step instuction files
-      if (operation.method == 'pick') {
-        hash = operation.hash;
-        argv.push('--hash=' + hash);
-        deleteCount++;
-      }
-      else {
-        offset++;
-      }
-
-      operations.splice(index + offset, deleteCount, {
+      operations.splice(index + offset, 1, {
         method: 'exec',
-        command: 'node ' + argv.join(' ')
+        command: 'node ' + Paths.git.helpers.superPicker + ' ' + operation.hash
       });
     }
 
@@ -91,7 +81,12 @@ function editStep(rebaseFileContent) {
     });
 
     return offset;
-  }, 0);
+  }, 1);
+
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.git.helpers.retagger
+  });
 
   return assemblyOperations(operations);
 }

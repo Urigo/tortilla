@@ -16,8 +16,9 @@ var Path = require('path');
 var gitHelpers = {
   _: Path.resolve('./git-helpers'),
   editor: Path.resolve('./git-helpers/editor.js'),
+  retagger: Path.resolve('./git-helpers/retagger.js'),
   step: Path.resolve('./git-helpers/step.js'),
-  tagPicker: Path.resolve('./git-helpers/tag-picker.js'),
+  superPicker: Path.resolve('./git-helpers/super-picker.js'),
   utils: Path.resolve('./git-helpers/utils.js')
 };
 

@@ -3,6 +3,9 @@ var Fs = require('fs');
 var Path = require('path');
 var Paths = require('./paths');
 
+/*
+  Contains general utilities.
+ */
 
 // Tells if rebasing or not
 function isRebasing() {
@@ -31,8 +34,10 @@ function getRecentCommit(offset, args) {
     offset = offset || 0;
   }
 
-  args = ['log', 'HEAD~' + offset, '--max-count=1'].concat(args);
-  return git(args);
+  var hash = typeof offset == 'string' ? offset : ('HEAD~' + offset);
+
+  args = ['log', hash, '--max-count=1'].concat(args);
+  return git(args).trim();
 }
 
 // Launch git and print result to terminal

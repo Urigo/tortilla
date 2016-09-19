@@ -4,6 +4,9 @@ var Path = require('path');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
+/*
+  Contains step related utilities. Also the entry point for `npm step` commands.
+ */
 
 var git = Utils.git;
 
@@ -14,7 +17,7 @@ var git = Utils.git;
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['message', 'm', 'step', 's']
+    string: ['_', 'message', 'm', 'step', 's']
   });
 
   var method = argv._[0];
@@ -125,9 +128,9 @@ function retagStep(oldStep, newStep, hash) {
   // This will be the reference for the new tag.
   // By default it will target to the step's commit
   hash = hash || Utils.recentCommit([
-    '--grep=^Step ' + newStep + ':',
+    '--grep=^Step ' + oldStep,
     '--format=%h'
-  ]).trim();
+  ]);
 
   // Set a new tag and delete the old one. Note that some tags might share the same name
   // but would stil need retagging since the hash might have changed
@@ -229,7 +232,7 @@ function getStepBase(step) {
   if (!hash)
     throw Error('Step not found');
 
-  return hash.trim() + '~1';
+  return hash + '~1';
 }
 
 // Get the recent step commit
