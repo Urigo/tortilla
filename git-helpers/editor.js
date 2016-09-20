@@ -50,6 +50,7 @@ function editStep(rebaseFileContent) {
     var stepDescriptor = Step.descriptor(rebaseFileContent);
     if (!stepDescriptor) return;
 
+    // Unlike an ordinary step rewording, we need to recalculate the step number
     var nextStep = Step.next(1);
     return 'Step ' + nextStep + ': ' + stepDescriptor.message;
   }
@@ -64,12 +65,10 @@ function editStep(rebaseFileContent) {
     var isSuperStep = !!Step.superDescriptor(operation.message);
 
     // If this is a super step, replace pick operation with the super pick
-    if (isSuperStep) {
-      operations.splice(index + offset, 1, {
-        method: 'exec',
-        command: 'node ' + Paths.git.helpers.superPicker + ' ' + operation.hash
-      });
-    }
+    if (isSuperStep) operations.splice(index + offset, 1, {
+      method: 'exec',
+      command: 'node ' + Paths.git.helpers.superPicker + ' ' + operation.hash
+    });
 
     // Update commit's step number
     operations.splice(index + ++offset, 0, {

@@ -37,57 +37,61 @@ function getRecentCommit(offset, args) {
   var hash = typeof offset == 'string' ? offset : ('HEAD~' + offset);
 
   args = ['log', hash, '--max-count=1'].concat(args);
-  return git(args).trim();
+  return git(args);
 }
 
 // Launch git and print result to terminal
-function gitPrint(args, env) {
-  return execPrint('git', args, env);
+function gitPrint(args, env, input) {
+  return execPrint('git', args, env, input);
 }
 
 // Launch git
-function git(args, env) {
-  return exec('git', args, env);
+function git(args, env, input) {
+  return exec('git', args, env, input);
 }
 
 // Spawn new process and print result to the terminal
-function execPrint(file, args, env) {
+function execPrint(file, args, env, input) {
   if (!(args instanceof Array)) {
+    input = env;
     env = args;
     args = [];
   }
 
-  env = env || {};
+  if (!(env instanceof Object)) {
+    input = env;
+    env = {};
+  }
+
   env = extend({}, process.env, env);
 
-  return ChildProcess.spawnSync(file, args, { stdio: 'inherit', env: env });
+  return ChildProcess.spawnSync(file, args, {
+    env: env,
+    input: input,
+    stdio: 'inherit'
+  });
 }
 
 // Execute file
-function exec(file, args, env) {
+function exec(file, args, env, input) {
   if (!(args instanceof Array)) {
+    input = env;
     env = args;
     args = [];
   }
 
-  env = env || {};
+  if (!(env instanceof Object)) {
+    input = env;
+    env = {};
+  }
+
   env = extend({}, process.env, env);
 
-  return ChildProcess.execFileSync(file, args, { env: env }).toString();
-}
-
-// Find an element in an array by a provided test function
-function find(arr, test, defaultValue) {
-  var result;
-
-  arr.some(function (el) {
-    if (test.apply(null, arguments)) {
-      result = el;
-      return true;
-    }
-  });
-
-  return result == null ? defaultValue : result;
+  return ChildProcess.execFileSync(file, args, {
+    env: env,
+    input: input
+  }).toString()
+    .trim();
 }
 
 // Extend destination object with provided sources
@@ -130,7 +134,6 @@ module.exports = {
   recentCommit: getRecentCommit,
   git: git,
   exec: exec,
-  find: find,
   extend: extend,
   exists: exists
 };

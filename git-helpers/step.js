@@ -58,8 +58,11 @@ function popStep() {
   // If this is a super step, delete the tag of the popped commit unless in the middle of
   // rebase, since the process can be aborted. The tag will be added latedr on by the
   // git editor
-  if (isSuperStep && !Utils.rebasing()) {
+  if (isSuperStep && !Utils.rebasing()) try {
     git(['tag', '-d', 'step' + stepDescriptor.number]);
+  }
+  catch (err) {
+    console.warn('Tag was not found');
   }
 }
 
@@ -68,16 +71,7 @@ function tagStep(message) {
   if (message == null)
     throw TypeError('A message must be provided');
 
-  var recentStepMessage = getRecentSuperStepCommit('%s');
-
-  if (recentStepMessage) {
-    var recentStep = getSuperStepDescriptor(recentStepMessage).number;
-    var step = recentStep + 1;
-  }
-  else {
-    var step = 1;
-  }
-
+  var step = getNextSuperStep();
   var tag = 'step' + step;
   var stepFilePath = Path.resolve(Paths.steps, 'step' + step + '.md');
 
@@ -89,53 +83,6 @@ function tagStep(message) {
   // If in the middle of rebase, don't add a tag since the process can be aborted.
   // The tag will be added later on by the git editor
   if (!Utils.rebasing()) git.print(['tag', tag]);
-}
-
-// Update the name of the tag from the old step to the new step. The hash argument is an
-// optional argument representing a commit that should be tagged with the new step, which
-// is handy in case the old step tag does'nt exist anymore in the current commits history
-function retagStep(oldStep, newStep, hash) {
-  if (oldStep == null)
-    throw TypeError('A step must be provided');
-
-  // Step might be 0
-  newStep = newStep == null ? oldStep : newStep;
-
-  // Converting to numbers just in case
-  oldStep = Number(oldStep);
-  newStep = Number(newStep);
-
-  // Composing tags
-  var oldTag = 'step' + oldStep;
-  var newTag = 'step' + newStep;
-
-  // In case the new step is below the possible steps range, just shift it away
-  if (newStep < 1) {
-    return git(['tag', '-d', oldTag]);
-  }
-
-  // If both steps are the same and the hash remained there is no need in renaming
-  if (oldStep == newStep) return;
-
-  var diff = newStep - oldStep;
-
-  // In case the new name already exists rename it as well so the name will be available
-  if (diff && Utils.tagExists(newTag)) {
-    var increment = diff / Math.abs(diff);
-    retagStep(oldStep + increment, newStep + increment);
-  }
-
-  // This will be the reference for the new tag.
-  // By default it will target to the step's commit
-  hash = hash || Utils.recentCommit([
-    '--grep=^Step ' + oldStep,
-    '--format=%h'
-  ]);
-
-  // Set a new tag and delete the old one. Note that some tags might share the same name
-  // but would stil need retagging since the hash might have changed
-  git(['tag', newTag, hash]);
-  git(['tag', '-d', oldTag]);
 }
 
 // Edit the provided step
@@ -217,6 +164,11 @@ function getNextStep(offset) {
   if (isSuperStep) return (superStepNumber + 1) + '.' + 1;
   // Else, return the next step as expected
   return superStepNumber + '.' + (subStepNumber + 1);
+}
+
+// Get the next super step
+function getNextSuperStep(offset) {
+  return getNextStep(offset).split('.')[0];
 }
 
 // Get the hash of the step followed by ~1, mostly useful for a rebase
@@ -309,12 +261,12 @@ module.exports = {
   push: pushStep,
   pop: popStep,
   tag: tagStep,
-  retag: retagStep,
   edit: editStep,
   reword: rewordStep,
   commit: commitStep,
   current: getCurrentStep,
   next: getNextStep,
+  nextSuper: getNextSuperStep,
   base: getStepBase,
   recentCommit: getRecentStepCommit,
   recentSuperCommit: getRecentSuperStepCommit,

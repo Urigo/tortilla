@@ -21,6 +21,7 @@ var git = Utils.git;
     '--grep=^Step [0-9]\\+:',
     '--format={ "hash": "%h", "message": "%s" }'
   ]).split('\n')
+    .filter(Boolean)
     .map(JSON.parse);
 
   // Reseting all tags
