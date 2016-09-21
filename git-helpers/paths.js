@@ -16,6 +16,7 @@ var Path = require('path');
 var gitHelpers = {
   _: Path.resolve('./git-helpers'),
   editor: Path.resolve('./git-helpers/editor.js'),
+  initTutorial: Path.resolve('./git-helpers/init-tutorial.js'),
   retagger: Path.resolve('./git-helpers/retagger.js'),
   step: Path.resolve('./git-helpers/step.js'),
   superPicker: Path.resolve('./git-helpers/super-picker.js'),
@@ -31,6 +32,7 @@ var gitRefs = {
 
 var git = {
   _: Path.resolve('./.git'),
+  ignore: Path.resolve('./.gitignore'),
   rebaseMerge: Path.resolve('./.git/rebase-merge'),
   rebaseApply: Path.resolve('./.git/rebase-apply'),
   heads: gitHeads,
@@ -38,8 +40,17 @@ var git = {
   refs: gitRefs
 };
 
+var npm = {
+  ignore: Path.resolve('./.npmignore'),
+  pack: Path.resolve('./package.json'),
+  modules: Path.resolve('./node_modules')
+};
+
 module.exports = {
   _: Path.resolve('.'),
+  license: Path.resolve('./LICENSE'),
+  readme: Path.resolve('./README.md'),
   steps: Path.resolve('./steps'),
-  git: git
+  git: git,
+  npm: npm
 };

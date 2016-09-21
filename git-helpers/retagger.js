@@ -9,8 +9,12 @@ var git = Utils.git;
 
 
 (function () {
-  var stepTags = git(['tag', '-l', 'step*']);
-  stepTags = stepTags ? stepTags.split('\n') : [];
+  // Disable the automatic invokation unless this is the main module of the node process
+  if (require.main !== module) return;
+
+  var stepTags = git(['tag', '-l', 'step*'])
+    .split('\n')
+    .filter(Boolean);
 
   // Deleting all tags to prevent conflicts
   stepTags.forEach(function (stepTag) {

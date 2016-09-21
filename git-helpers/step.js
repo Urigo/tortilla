@@ -11,7 +11,6 @@ var Utils = require('./utils');
 var git = Utils.git;
 
 
-// Automatically invoke a method by the provided arguments
 (function () {
   // Disable the automatic invokation unless this is the main module of the node process
   if (require.main !== module) return;
@@ -24,6 +23,7 @@ var git = Utils.git;
   var message = argv.message || argv.m;
   var step = argv.step || argv.s;
 
+  // Automatically invoke a method by the provided arguments
   switch (method) {
     case 'push': return pushStep(message);
     case 'pop': return popStep();

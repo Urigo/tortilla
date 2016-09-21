@@ -1,6 +1,6 @@
 # Tortilla
 
-Tortilla is a project skeleton for a newly created angular-server.com tutorial. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for a tutorial deployment.
+Tortilla is a project skeleton based on git and NodeJS for newly created angular-server.com Javascript tutorials. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for a tutorial deployment.
 
 This `README.md` file will be used as the intro page once the tutorial is deployed, so make sure to edit it according to your will. If your'e not familiar with the basic rules that you should follow when working on this project, be sure to go through the following guidelines.
 

@@ -7,6 +7,16 @@ var Paths = require('./paths');
   Contains general utilities.
  */
 
+var node = exec.bind(null, 'node');
+var nodePrint = execPrint.bind(null, 'node');
+var git = exec.bind(null, 'git');
+var gitPrint = execPrint.bind(null, 'git');
+
+node.print = nodePrint;
+git.print = gitPrint;
+exec.print = execPrint;
+
+
 // Tells if rebasing or not
 function isRebasing() {
   return exists(Paths.git.rebaseMerge) || exists(Paths.git.rebaseApply);
@@ -38,16 +48,6 @@ function getRecentCommit(offset, args) {
 
   args = ['log', hash, '--max-count=1'].concat(args);
   return git(args);
-}
-
-// Launch git and print result to terminal
-function gitPrint(args, env, input) {
-  return execPrint('git', args, env, input);
-}
-
-// Launch git
-function git(args, env, input) {
-  return exec('git', args, env, input);
 }
 
 // Spawn new process and print result to the terminal
@@ -107,6 +107,37 @@ function extend(destination) {
   return destination;
 }
 
+// foo_barBaz -> foo-bar-baz
+function kebabCase(str) {
+  return splitWords(str)
+    .map(lowerFirst)
+    .join('-');
+}
+
+// foo_barBaz -> Foo Bar Baz
+function startCase(str) {
+  return splitWords(str)
+    .map(upperFirst)
+    .join(' ');
+}
+
+// foo_barBaz -> ['foo', 'bar', 'Baz']
+function splitWords(str) {
+  return str
+    .replace(/[A-Z]/, ' $&')
+    .split(/[^a-zA-Z0-9]+/);
+}
+
+// Lower -> lower
+function lowerFirst(str) {
+  return str.substr(0, 1).toLowerCase() + str.substr(1);
+}
+
+// upper -> Upper
+function upperFirst(str) {
+  return str.substr(0, 1).toUpperCase() + str.substr(1);
+}
+
 // Tells if entity exists or not by an optional document type
 function exists(path, type) {
   try {
@@ -124,16 +155,19 @@ function exists(path, type) {
 }
 
 
-git.print = gitPrint;
-exec.print = execPrint;
-
 module.exports = {
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,
   tagExists: tagExists,
   recentCommit: getRecentCommit,
+  node: node,
   git: git,
   exec: exec,
   extend: extend,
+  kebabCase: kebabCase,
+  startCase: startCase,
+  splitWords: splitWords,
+  lowerFirst: lowerFirst,
+  upperFirst: upperFirst,
   exists: exists
 };

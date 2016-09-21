@@ -11,6 +11,9 @@ var git = Utils.git;
 
 
 (function () {
+  // Disable the automatic invokation unless this is the main module of the node process
+  if (require.main !== module) return;
+
   var argv = Minimist(process.argv.slice(2), {
     string: ['_']
   });
@@ -24,7 +27,7 @@ var git = Utils.git;
 
   // Fetch patch data
   var diff = newStep - oldStep;
-  var pattern = /step(\d+)\.md/ig;
+  var pattern = /step(\d+)\.md/g;
   var patch = git(['format-patch', '-1', hash, '--stdout']);
 
   // Replace references for old instruction files with new instruction files

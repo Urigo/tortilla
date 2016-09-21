@@ -13,8 +13,10 @@ var Utils = require('./utils');
 var git = Utils.git;
 
 
-// Automatically invoke a method by the provided arguments
 (function () {
+  // Disable the automatic invokation unless this is the main module of the node process
+  if (require.main !== module) return;
+
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm']
   });
@@ -27,7 +29,7 @@ var git = Utils.git;
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   var newRebaseFileContent;
 
-  // Edit rebase content
+  // Automatically invoke a method by the provided arguments
   switch (method) {
     case 'edit': newRebaseFileContent = editStep(rebaseFileContent); break;
     case 'reword': newRebaseFileContent = rewordStep(rebaseFileContent, message); break;
