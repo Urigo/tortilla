@@ -1,6 +1,6 @@
 # Tortilla
 
-Tortilla is a project skeleton based on git and NodeJS for newly created Javascript tutorials. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for deployment. If your'e not familiar with the basic rules that you should follow when working with Tortilla, be sure to go through the following guidelines.
+Tortilla is a project skeleton based on git and NodeJS for Javascript tutorials. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for deployment. If your'e not familiar with the basic rules that you should follow when working with Tortilla, be sure to go through the following guidelines.
 
 ### Commits
 

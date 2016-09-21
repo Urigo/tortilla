@@ -1,5 +1,5 @@
-var Fs = require('fs');
 var Minimist = require('minimist');
+var Rimraf = require('rimraf');
 var Paths = require('./paths');
 var Utils = require('./utils');
 var Pack = require('../package.json');
@@ -43,13 +43,19 @@ var git = Utils.git;
 
   // If we just cloned Tortilla
   if (Pack.name == 'tortilla') {
+    Rimraf.sync(Paths.license);
+    Rimraf.sync(Paths.tests);
     Fs.writeFileSync(Paths.git.ignore, 'node_modules');
-    if (Utils.exists(Paths.license)) Fs.unlinkSync(Paths.license);
 
     git(['add',
       Paths.license,
+      Paths.tests,
       Paths.git.ignore
     ]);
+
+    Pack.devDependencies = dependencies;
+    delete Pack.dependencies;
+    delete Pack.scripts.test;
   }
 
   // The repo name would be the last part of the url

@@ -1,6 +1,6 @@
 {
   "name": "tortilla",
-  "description": "A project skeleton based on git and NodeJS for newly created Javascript tutorials",
+  "description": "A project skeleton based on git and NodeJS for Javascript tutorials",
   "version": "0.0.1",
   "repository": {
     "type": "git",
@@ -8,9 +8,15 @@
   },
   "scripts": {
     "step": "node git-helpers/step",
-    "init-tutorial": "node git-helpers/init-tutorial"
+    "init-tutorial": "node git-helpers/init-tutorial",
+    "test": "mocha test/index --timeout 5000"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "rimraf": "^2.5.4"
   },
   "devDependencies": {
-    "minimist": "^1.2.0"
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2"
   }
 }
