@@ -1,6 +1,6 @@
 {
   "name": "tortilla",
-  "description": "A project skeleton based on git and NodeJS for newly created angular-server.com Javascript tutorials",
+  "description": "A project skeleton based on git and NodeJS for newly created Javascript tutorials",
   "version": "0.0.1",
   "repository": {
     "type": "git",
