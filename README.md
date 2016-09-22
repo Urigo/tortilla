@@ -38,7 +38,7 @@ You've probably noticed that the rules for a valid tutorial project are very str
 
 $ npm run init-tutorial -- "remote name" "remote url" --message="commit message"
 
-Initialize a new tutorial project. This command will squash all commits into a single one, will tag it as 'root' and cleanup some unnecessary files. It is recommended to use it right after clonning Tortilla or after making some initial changes which should be a part of our root. The provided remote (Defaults to the current remote) will be set with the provided url (Defaults to the current url) as the current branche's remote. The provided message will be used as the squashed commit's message (Will open an editor if no message is provided).
+Initialize a new tutorial project. This command will squash all commits into a single one, will tag it as 'root' and cleanup some unnecessary files. It is recommended to use it right after clonning Tortilla or after making some initial changes which should be a part of our root. The provided remote (Defaults to the current remote) will be set with the provided url (Defaults to the current url) as the current branche's remote. The provided message will be used as the squashed commit's message (Will open an editor if no message is provided). Once you use this command a prompt will show up asking you if you would like to continue. If you would like to skip it simply provide the `--sure` option.
 
 #### Push Step
 

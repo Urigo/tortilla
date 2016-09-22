@@ -1,4 +1,5 @@
 var Minimist = require('minimist');
+var ReadlineSync = require('readline-sync');
 var Rimraf = require('rimraf');
 var Paths = require('./paths');
 var Utils = require('./utils');
@@ -8,8 +9,7 @@ var Pack = require('../package.json');
   This module is responsible for initializing a new repository, it will squash all
   all commits into one and it will edit the 'package.json' accordingly to look as
   if it is do not depend on Tortilla. Usually should only run once at the creation
-  of the repository. BE CAREFUL NOT TO RUN A SECOND TIME OTHERWISE YOUR CHANGES WILL
-  BE DISCARDED!
+  of the repository.
  */
 
 var git = Utils.git;
@@ -26,6 +26,13 @@ var git = Utils.git;
   var remote = argv._[0];
   var url = argv._[1];
   var message = argv.message || argv.m;
+  var sure = argv.sure || argv.s;
+
+  sure = sure || ReadlineSync.keyInYN(
+    'Are you sure you want to start a new tutorial project?'
+  );
+
+  if (!sure) return;
 
   // The changes will be applied to the current branch
   var branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
