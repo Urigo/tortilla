@@ -16,12 +16,16 @@ var git = Utils.git;
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm']
+    string: ['_', 'message', 'm'],
+    boolean: ['root', 'r']
   });
 
   var method = argv._[0];
   var step = argv._[1];
+  var root = argv.root || argv.r;
   var message = argv.message || argv.m;
+
+  if (!step && root) step = 'root';
 
   // Automatically invoke a method by the provided arguments
   switch (method) {
@@ -180,6 +184,12 @@ function getNextSuperStep(offset) {
 function getStepBase(step) {
   if (step == null)
     throw TypeError('A step must be provided');
+
+  if (step == 'root') {
+    var stepRootHash = git(['rev-parse', 'root']);
+    var nativeRootHash = git(['rev-list', '--max-parents=0', 'HEAD']);
+    return stepRootHash == nativeRootHash ? '--root' : 'root~1';
+  }
 
   var hash = Utils.recentCommit([
     '--grep=^Step ' + step,

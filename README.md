@@ -56,13 +56,13 @@ Pop the last step from the top of the stack. If you would like to remove a step 
 
 $ npm run step -- edit "step index"
 
-Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the up-comming commits, this helper is smart enough to adjust their content and messages based on your actions.
+Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the up-comming commits, this helper is smart enough to adjust their content and messages based on your actions. An optional `--root` option can be provided if you would like to edit the root.
 
 #### Reword Step
 
 $ npm run step -- reword "step index" --message="step message"
 
-Replace the provided step's message with the provided message (Will open an editor if no message is provided).
+Replace the provided step's message with the provided message (Will open an editor if no message is provided). An optional `--root` option can be provided if you would like to reword the root.
 
 #### Tag Step
 

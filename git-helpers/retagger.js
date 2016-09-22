@@ -16,10 +16,16 @@ var git = Utils.git;
     .split('\n')
     .filter(Boolean);
 
-  // Deleting all tags to prevent conflicts
+  // Delete all tags to prevent conflicts
+  git(['tag', '-d', 'root']);
+
   stepTags.forEach(function (stepTag) {
     git(['tag', '-d', stepTag]);
   });
+
+  // If any steps exist take the hash before the inital step, else take the recent hash
+  var stepsExist = Utils.recentCommit(['--grep=^Step 1.1']);
+  var rootHash = stepsExist ? Step.base('1.1') : Utils.recentCommit(['--format=%h']);
 
   var stepCommits = git(['log',
     '--grep=^Step [0-9]\\+:',
@@ -28,7 +34,9 @@ var git = Utils.git;
     .filter(Boolean)
     .map(JSON.parse);
 
-  // Reseting all tags
+  // Reset all tags
+  git(['tag', 'root', rootHash]);
+
   stepCommits.forEach(function (commit) {
     var hash = commit.hash;
     var message = commit.message;
