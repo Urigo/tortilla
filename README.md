@@ -62,7 +62,7 @@ Edit the provided step. This will get you into rebase mode, so once you've finis
 
 $ npm run step -- reword --step="step index" --message="step message"
 
-Replace the provided step's message with the provided step.
+Replace the provided step's message with the provided message (Will open an editor if no message is provided).
 
 #### Tag Step
 

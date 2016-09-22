@@ -23,33 +23,35 @@ var git = Utils.git;
 
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
-  var rebaseFilePath = argv._[1];
-  var message = argv.message || argv.m;
+  var todoPath = argv._[1];
+  var message = argv.message || argv.m || '';
 
-  var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
+  var todoContent = Fs.readFileSync(todoPath, 'utf8');
   var newRebaseFileContent;
 
   // Automatically invoke a method by the provided arguments
   switch (method) {
-    case 'edit': newRebaseFileContent = editStep(rebaseFileContent); break;
-    case 'reword': newRebaseFileContent = rewordStep(rebaseFileContent, message); break;
+    case 'edit':
+      newRebaseFileContent = editStep(todoContent, todoPath); break;
+    case 'reword':
+      newRebaseFileContent = rewordStep(todoContent, todoPath, message); break;
   }
 
   // If content was edited
   if (newRebaseFileContent) {
     // Rewrite the rebase file
-    Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
+    Fs.writeFileSync(todoPath, newRebaseFileContent);
   }
 })();
 
 // Edit the last step in the rebase file
-function editStep(rebaseFileContent) {
-  var operations = disassemblyOperations(rebaseFileContent);
+function editStep(todoContent, todoPath) {
+  var operations = disassemblyOperations(todoContent);
 
   // If rewording
   if (!operations) {
     // Update commit's step number
-    var stepDescriptor = Step.descriptor(rebaseFileContent);
+    var stepDescriptor = Step.descriptor(todoContent);
     if (!stepDescriptor) return;
 
     // Unlike an ordinary step rewording, we need to recalculate the step number
@@ -93,14 +95,22 @@ function editStep(rebaseFileContent) {
 }
 
 // Reword the last step in the rebase file
-function rewordStep(rebaseFileContent, message) {
-  var operations = disassemblyOperations(rebaseFileContent);
+function rewordStep(todoContent, todoPath, message) {
+  var operations = disassemblyOperations(todoContent);
 
   // If rewording
   if (!operations) {
     // Replace original message with the provided message
-    var stepDescriptor = Step.descriptor(rebaseFileContent);
+    var stepDescriptor = Step.descriptor(todoContent);
     if (!stepDescriptor) return;
+
+    if (!message) {
+      // Open the editor
+      git(['commit', '--amend', '-m', stepDescriptor.message]);
+      git(['commit', '--amend']);
+
+      message = Fs.readFileSync(todoPath, 'utf8');
+    }
 
     return 'Step ' + stepDescriptor.number + ': ' + message;
   }
@@ -118,8 +128,8 @@ function rewordStep(rebaseFileContent, message) {
 }
 
 // Convert rebase file content to operations array
-function disassemblyOperations(rebaseFileContent) {
-  var operations = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
+function disassemblyOperations(todoContent) {
+  var operations = todoContent.match(/^[a-z]+\s.{7}.*$/mg);
   if (!operations) return;
 
   return operations.map(function (line) {

@@ -101,8 +101,6 @@ function editStep(step) {
 function rewordStep(step, message) {
   if (step == null)
     throw TypeError('A step must be provided');
-  if (message == null)
-    throw TypeError('A message must be provided');
 
   var base = getStepBase(step);
 
