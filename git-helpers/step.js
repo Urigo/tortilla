@@ -16,12 +16,12 @@ var git = Utils.git;
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm', 'step', 's']
+    string: ['_', 'message', 'm']
   });
 
   var method = argv._[0];
+  var step = argv._[1];
   var message = argv.message || argv.m;
-  var step = argv.step || argv.s;
 
   // Automatically invoke a method by the provided arguments
   switch (method) {
