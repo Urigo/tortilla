@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "minimist": "^1.2.0",
-    "readline-sync": "^1.4.4",
     "rimraf": "^2.5.4"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^3.0.2"
+    "mocha": "^3.0.2",
+    "readline-sync": "^1.4.4"
   }
 }

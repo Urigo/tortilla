@@ -1,3 +1,4 @@
+var Fs = require('fs');
 var Minimist = require('minimist');
 var ReadlineSync = require('readline-sync');
 var Rimraf = require('rimraf');
@@ -9,7 +10,8 @@ var Pack = require('../package.json');
   This module is responsible for initializing a new repository, it will squash all
   all commits into one and it will edit the 'package.json' accordingly to look as
   if it is do not depend on Tortilla. Usually should only run once at the creation
-  of the repository.
+  of the repository. This script can be performed only once, afterwards it will self
+  destroy itslef.
  */
 
 var git = Utils.git;
@@ -48,23 +50,6 @@ var git = Utils.git;
   url = url || remoteExists;
   remoteExists = !!remoteExists;
 
-  // If we just cloned Tortilla
-  if (Pack.name == 'tortilla') {
-    Rimraf.sync(Paths.license);
-    Rimraf.sync(Paths.tests);
-    Fs.writeFileSync(Paths.git.ignore, 'node_modules');
-
-    git(['add',
-      Paths.license,
-      Paths.tests,
-      Paths.git.ignore
-    ]);
-
-    Pack.devDependencies = dependencies;
-    delete Pack.dependencies;
-    delete Pack.scripts.test;
-  }
-
   // The repo name would be the last part of the url
   var repoName = url
     .split('/')
@@ -76,6 +61,12 @@ var git = Utils.git;
   var packName = Utils.kebabCase(repoName);
   var title = Utils.startCase(repoName);
 
+  // Notice how we delete all the references to init-tutorial
+  Pack.devDependencies = Pack.dependencies;
+  delete Pack.dependencies;
+  delete Pack.scripts['init-tutorial'];
+  delete Pack.scripts['test'];
+
   Utils.extend(Pack, {
     name: packName,
     description: 'A newly created Tortilla project',
@@ -86,11 +77,20 @@ var git = Utils.git;
     }
   });
 
+  Rimraf.sync(Paths.license);
+  Rimraf.sync(Paths.test);
+  Rimraf.sync(Paths.git.helpers.initTutorial);
+
   Fs.writeFileSync(Paths.readme, '# ' + title);
+  Fs.writeFileSync(Paths.git.ignore, 'node_modules');
   Fs.writeFileSync(Paths.npm.pack, JSON.stringify(Pack, null, 2));
 
   git(['add',
+    Paths.license,
+    Paths.test,
+    Paths.git.helpers.initTutorial,
     Paths.readme,
+    Paths.git.ignore,
     Paths.npm.pack
   ]);
 

@@ -51,7 +51,7 @@ module.exports = {
   license: Path.resolve('./LICENSE'),
   readme: Path.resolve('./README.md'),
   steps: Path.resolve('./steps'),
-  tests: Path.resolve('./tests'),
+  test: Path.resolve('./test'),
   git: git,
   npm: npm
 };
