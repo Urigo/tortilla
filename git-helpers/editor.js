@@ -86,6 +86,7 @@ function editStep(todoContent, todoPath) {
     return offset;
   }, 1);
 
+  // Reset all tags
   operations.push({
     method: 'exec',
     command: 'node ' + Paths.git.helpers.retagger
@@ -122,6 +123,12 @@ function rewordStep(todoContent, todoPath, message) {
       'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' reword -m \'' + message + '\'"',
       'git commit --amend',
     ].join(' ')
+  });
+
+  // Reset all tags
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.git.helpers.retagger
   });
 
   return assemblyOperations(operations);
