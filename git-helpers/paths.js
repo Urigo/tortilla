@@ -18,6 +18,7 @@ var gitHelpers = {
   editor: Path.resolve('./git-helpers/editor.js'),
   initTutorial: Path.resolve('./git-helpers/init-tutorial.js'),
   retagger: Path.resolve('./git-helpers/retagger.js'),
+  reworder: Path.resolve('./git-helpers/reworder.js'),
   step: Path.resolve('./git-helpers/step.js'),
   superPicker: Path.resolve('./git-helpers/super-picker.js'),
   utils: Path.resolve('./git-helpers/utils.js')

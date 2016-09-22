@@ -24,40 +24,26 @@ var git = Utils.git;
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
   var rebaseFilePath = argv._[1];
-  var message = argv.message || argv.m || '';
+  var message = argv.message || argv.m;
 
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
-  var newRebaseFileContent;
+  // Convert to array of jsons so it would be more comfortable to word with
+  var operations = disassemblyOperations(rebaseFileContent);
 
-  // Automatically invoke a method by the provided arguments
+  // Automatically invoke a method by the provided arguments.
+  // The methods will manipulate the operations array.
   switch (method) {
-    case 'edit': newRebaseFileContent = editStep(rebaseFileContent); break;
-    case 'reword': newRebaseFileContent = rewordStep(rebaseFileContent, message); break;
+    case 'edit': editStep(operations); break;
+    case 'reword': rewordStep(operations, message); break;
   }
 
-  // If content was edited
-  if (newRebaseFileContent) {
-    // Rewrite the rebase file
-    Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
-  }
+  // Put everything back together and rewrite the rebase file
+  var newRebaseFileContent = assemblyOperations(operations);
+  Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
 })();
 
 // Edit the last step in the rebase file
-function editStep(rebaseFileContent) {
-  var operations = disassemblyOperations(rebaseFileContent);
-
-  // If rewording
-  if (!operations) {
-    // Update commit's step number
-    var stepDescriptor = Step.descriptor(rebaseFileContent);
-    if (!stepDescriptor) return;
-
-    // Unlike an ordinary step rewording, we need to recalculate the step number
-    var nextStep = Step.next(1);
-    return 'Step ' + nextStep + ': ' + stepDescriptor.message;
-  }
-
-  // If rebasing, edit the first commit
+function editStep(operations) {
   operations[0].method = 'edit';
 
   // Creating a clone of the operations array otherwise splices couldn't be applied
@@ -75,10 +61,7 @@ function editStep(rebaseFileContent) {
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: [
-        'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' edit"',
-        'git commit --amend',
-      ].join(' ')
+      command: 'GIT_EDITOR=true node ' + Paths.git.helpers.reworder
     });
 
     return offset;
@@ -89,48 +72,17 @@ function editStep(rebaseFileContent) {
     method: 'exec',
     command: 'node ' + Paths.git.helpers.retagger
   });
-
-  return assemblyOperations(operations);
 }
 
 // Reword the last step in the rebase file
-function rewordStep(rebaseFileContent, message) {
-  var operations = disassemblyOperations(rebaseFileContent);
+function rewordStep(operations, message) {
+  var args = [Paths.git.helpers.reworder];
+  if (message) args.push('"' + message + '"');
 
-  // If rewording
-  if (!operations) {
-    // Replace original message with the provided message
-    var stepDescriptor = Step.descriptor(rebaseFileContent);
-
-    // Skip editor
-    if (message) {
-      if (!stepDescriptor) return message;
-      return 'Step ' + stepDescriptor.number + ': ' + message;
-    }
-
-    // If we're editing root
-    if (!stepDescriptor) {
-      // Launch editor
-      git(['commit', '--amend']);
-      return Utils.recentCommit(['--format=%B']);
-    }
-
-    // Launch editor with the step's message
-    git(['commit', '--amend', '-m', stepDescriptor.message]);
-    git(['commit', '--amend']);
-
-    // Return the message with a step prefix
-    message = Utils.recentCommit(['--format=%B']);
-    return 'Step ' + stepDescriptor.number + ': ' + message;
-  }
-
-  // If rebasing, replace original message with the provided message
+  // Replace original message with the provided message
   operations.splice(1, 0, {
     method: 'exec',
-    command: [
-      'GIT_EDITOR="node ' + Paths.git.helpers.editor + ' reword -m \'' + message + '\'"',
-      'git commit --amend',
-    ].join(' ')
+    command: 'node ' + args.join(' ')
   });
 
   // Reset all tags
@@ -138,8 +90,6 @@ function rewordStep(rebaseFileContent, message) {
     method: 'exec',
     command: 'node ' + Paths.git.helpers.retagger
   });
-
-  return assemblyOperations(operations);
 }
 
 // Convert rebase file content to operations array

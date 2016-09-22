@@ -106,9 +106,11 @@ function rewordStep(step, message) {
     throw TypeError('A step must be provided');
 
   var base = getStepBase(step);
+  var args = [Paths.git.helpers.editor, 'reword'];
+  if (message) args.push('-m', '"' + message + '"');
 
   git.print(['rebase', '-i', base], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.git.helpers.editor + ' reword -m "' + message + '"'
+    GIT_SEQUENCE_EDITOR: 'node ' + args.join(' ')
   });
 }
 
