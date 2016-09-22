@@ -44,14 +44,19 @@ function pushStep(message) {
 
 // Pop the last step
 function popStep() {
+  var headHash = git(['rev-parse', 'HEAD']);
+  var rootHash = git(['rev-parse', 'root']);
+
+  if (headHash == rootHash)
+    throw Error('Can\'t remove root')
+
   var removedCommitMessage = Utils.recentCommit(['--format=%s']);
   git.print(['reset', '--hard', 'HEAD~1']);
 
   var stepDescriptor = getStepDescriptor(removedCommitMessage);
 
-  if (!stepDescriptor) {
+  if (!stepDescriptor)
     return console.warn('Removed commit was not a step');
-  }
 
   var isSuperStep = !!getSuperStepDescriptor(removedCommitMessage);
 
