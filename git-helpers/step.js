@@ -35,9 +35,6 @@ var git = Utils.git;
 
 // Push a new step with the provided message
 function pushStep(message) {
-  if (message == null)
-    throw TypeError('A message must be provided');
-
   var step = getNextStep();
   commitStep(step, message);
 }
@@ -73,9 +70,6 @@ function popStep() {
 
 // Finish the current with the provided message and tag it
 function tagStep(message) {
-  if (message == null)
-    throw TypeError('A message must be provided');
-
   var step = getNextSuperStep();
   var tag = 'step' + step;
   var stepFilePath = Path.resolve(Paths.steps, 'step' + step + '.md');
@@ -116,7 +110,15 @@ function rewordStep(step, message) {
 
 // Add a new commit of the provided step with the provided message
 function commitStep(step, message) {
-  return git.print(['commit', '-m', 'Step ' + step + ': ' + message]);
+  // If message was probided commit as expected
+  if (message) return git.print(['commit', '-m', 'Step ' + step + ': ' + message]);
+
+  // Open editor
+  git.print(['commit']);
+  // Take the message we just typed
+  message = Utils.recentCommit(['--format=%B']);
+  // Add a step prefix
+  return git.print(['commit', '--amend', '-m', 'Step ' + step + ': ' + message]);
 }
 
 // Get the current step

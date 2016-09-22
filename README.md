@@ -44,7 +44,7 @@ Initialize a new tutorial project. This command will squash all commits into a s
 
 $ npm run step -- push --message="step message"
 
-Push a new step to the top of the stack with the provided message. If you would like to add a new step in the middle of the stack, first use the [step editing](#edit-step) helper, and then push a new step to the top of the stack.
+Push a new step to the top of the stack with the provided message (Will open an editor if no message is provided). If you would like to add a new step in the middle of the stack, first use the [step editing](#edit-step) helper, and then push a new step to the top of the stack.
 
 #### Pop Step
 
@@ -66,6 +66,6 @@ Replace the provided step's message with the provided message (Will open an edit
 
 #### Tag Step
 
-$ npm run step -- tag --step="step index"
+$ npm run step -- tag --step="step index" --message="step message"
 
-Add a new super-step and finish the current step. This will add a new step tag to your commits list and it will initialize an empty instructions markdown file. If you would like to edit the instruction file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
+Add a new super-step and finish the current step with the provided message (Will open an editor if no message is provided). This will add a new step tag to your commits list and it will initialize an empty instructions markdown file. If you would like to edit the instruction file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
