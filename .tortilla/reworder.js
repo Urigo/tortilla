@@ -32,8 +32,10 @@ function getFixedMessage(message) {
 
   // Skip editor
   if (message) {
-    if (!stepDescriptor) message;
-    return 'Step ' + Step.next(1) + ': ' + message;
+    if (!stepDescriptor) return message;
+
+    var nextStep = Step.next(1);
+    return 'Step ' + nextStep + ': ' + message;
   }
 
   // If we're editing root
@@ -43,11 +45,14 @@ function getFixedMessage(message) {
     return Utils.recentCommit(['--format=%B']);
   }
 
+  // It's important to fetch the next step before we edit the commit since it depends
+  // on it's step number prefix, otherwise we might get an unexpected result
+  var nextStep = Step.next(1);
   // Launch editor with the step's message
   git(['commit', '--amend', '-m', stepDescriptor.message]);
   git.print(['commit', '--amend']);
 
   // Return the message with a step prefix
   message = Utils.recentCommit(['--format=%B']);
-  return 'Step ' + Step.next(1) + ': ' + message;
+  return 'Step ' + nextStep + ': ' + message;
 }
