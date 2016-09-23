@@ -1,6 +1,6 @@
 # Tortilla
 
-Tortilla is a project skeleton based on git and NodeJS for Javascript tutorials. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for deployment. If your'e not familiar with the basic rules that you should follow when working with Tortilla, be sure to go through the following guidelines.
+Tortilla is a project skeleton based on git and NodeJS for Javascript tutorials. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for deployment. If you're not familiar with the basic rules that you should follow when working with Tortilla, be sure to go through the following guidelines.
 
 ### Commits
 
@@ -14,31 +14,33 @@ The project should have a very specific form of commits list history. Let's firs
     Step 1.3: Install the necessary packages for webpack's build
     Step 1.2: Add webpack build to gulp tasks
     Step 1.1: Create a basic webpack config
-    Create initial project # root
+    Create a new tortilla project # root
 
 As you can see, each commit should present a single step in the tutorial, it means that its message should have the following template:
 
     Step (step index): (step description)
 
-Some of the commits represent a [sub-step](#sub-step) (e.g. step 1.1, 1.2 etc) and some of the represent a [super-step](#super-step) (e.g. step 1, 2 etc), together they form a whole step. Note that the only exception is the initial commit whos message can be whatever you'd like, the rest of the commits **must** follow these rules, otherwise you will encounter some unexpected behaviors.
+Some of the commits represent a [sub-step](#sub-step) (e.g. step 1.1, 1.2 etc) and some of the represent a [super-step](#super-step) (e.g. step 1, 2 etc), together they form a whole step. Note that the only exception is the initial commit whose message can be whatever you'd like, the rest of the commits **must** follow these rules, otherwise you will encounter some unexpected behaviors.
 
 #### Sub Step
 
-A sub-step is a small portion of the whole step, each sub-step should usually represent a small change which should be followed by an explenation in the tutorial. Sub-steps should be sorted by their chronological order, sub-steps which assemble the same step should have the same super index, and an consecutive sub index seperated by a period (e.g. 1.1, 1.2 etc).
+A sub-step is a small portion of the whole step, each sub-step should usually represent a small change which should be followed by an explanation in the tutorial. Sub-steps should be sorted by their chronological order, sub-steps which assemble the same step should have the same super index, and an consecutive sub index separated by a period (e.g. 1.1, 1.2 etc).
 
 #### Super Step
 
-A super-step should **always** come at the end of each step, it should contain a single index and it should be tagged by its step name (e.g. super-step 1 should be tagged "step1", super-step 2 should be tagged "step2" etc). The super-step should add an instruction file on how to create the current step. The instruction file is a somple markdown file which should be located under the `steps` directory and its name should be `step(index).md`.
+A super-step should **always** come at the end of each step, it should contain a single index and it should be tagged by its step name (e.g. super-step 1 should be tagged "step1", super-step 2 should be tagged "step2" etc). The super-step should add an instruction file on how to create the current step. The instruction file is a simple markdown file which should be located under the `steps` directory and its name should be `step(index).md`.
+
+### How Do I Start
+
+simply type the following command:
+
+$ node . "remote name" "remote url" --message="commit message"
+
+This command will initialize a new tutorial project. It will simply squash all commits into a single one, cleanup some unnecessary files and prepare a basic skeleton. It is recommended to use it right after cloning Tortilla or after making some initial changes which should be a part of our root. The provided remote (Defaults to the current remote) will be set with the provided url (Defaults to the current url) as the current branch's remote. The provided message will be used as the squashed commit's message (Will open an editor if no message is provided). Once you use this command a prompt will show up asking you if you would like to continue. If you would like to skip it simply provide the `--sure` option. Note that this script can run only once, afterwards it will self-destroy itself.
 
 ### Git Helpers
 
 You've probably noticed that the rules for a valid tutorial project are very strict. This is where the git-helpers kicks in. Instead of having a rough time managing the steps list, here are some kick-ass helpers which will make your life way easier:
-
-#### Initialize Tutorial
-
-$ npm run init-tutorial -- "remote name" "remote url" --message="commit message"
-
-Initialize a new tutorial project. This command will squash all commits into a single one, will tag it as 'root' and cleanup some unnecessary files. It is recommended to use it right after clonning Tortilla or after making some initial changes which should be a part of our root. The provided remote (Defaults to the current remote) will be set with the provided url (Defaults to the current url) as the current branche's remote. The provided message will be used as the squashed commit's message (Will open an editor if no message is provided). Once you use this command a prompt will show up asking you if you would like to continue. If you would like to skip it simply provide the `--sure` option. Note that this script can run only once, afterwards it will self-destroy itself.
 
 #### Push Step
 
@@ -56,7 +58,7 @@ Pop the last step from the top of the stack. If you would like to remove a step 
 
 $ npm run step -- edit "step index"
 
-Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the up-comming commits, this helper is smart enough to adjust their content and messages based on your actions. An optional `--root` option can be provided if you would like to edit the root.
+Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the upcoming commits, this helper is smart enough to adjust their content and messages based on your actions. An optional `--root` option can be provided if you would like to edit the root.
 
 #### Reword Step
 

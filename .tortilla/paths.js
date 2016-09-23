@@ -13,17 +13,6 @@ var Path = require('path');
   revert: Path.resolve('./.git/REVERT_HEAD')
 };
 
-var gitHelpers = {
-  _: Path.resolve('./git-helpers'),
-  editor: Path.resolve('./git-helpers/editor.js'),
-  initTutorial: Path.resolve('./git-helpers/init-tutorial.js'),
-  retagger: Path.resolve('./git-helpers/retagger.js'),
-  reworder: Path.resolve('./git-helpers/reworder.js'),
-  step: Path.resolve('./git-helpers/step.js'),
-  superPicker: Path.resolve('./git-helpers/super-picker.js'),
-  utils: Path.resolve('./git-helpers/utils.js')
-};
-
 var gitRefs = {
   _: Path.resolve('./.git/refs'),
   heads: Path.resolve('./.git/refs/heads'),
@@ -37,14 +26,24 @@ var git = {
   rebaseMerge: Path.resolve('./.git/rebase-merge'),
   rebaseApply: Path.resolve('./.git/rebase-apply'),
   heads: gitHeads,
-  helpers: gitHelpers,
   refs: gitRefs
 };
 
 var npm = {
   ignore: Path.resolve('./.npmignore'),
-  pack: Path.resolve('./package.json'),
+  main: Path.resolve('./index.js'),
+  package: Path.resolve('./package.json'),
   modules: Path.resolve('./node_modules')
+};
+
+var tortilla = {
+  _: Path.resolve('./.tortilla'),
+  editor: Path.resolve('./.tortilla/editor.js'),
+  retagger: Path.resolve('./.tortilla/retagger.js'),
+  reworder: Path.resolve('./.tortilla/reworder.js'),
+  step: Path.resolve('./.tortilla/step.js'),
+  superPicker: Path.resolve('./.tortilla/super-picker.js'),
+  utils: Path.resolve('./.tortilla/utils.js')
 };
 
 module.exports = {
@@ -54,5 +53,6 @@ module.exports = {
   steps: Path.resolve('./steps'),
   test: Path.resolve('./test'),
   git: git,
-  npm: npm
+  npm: npm,
+  tortilla: tortilla
 };

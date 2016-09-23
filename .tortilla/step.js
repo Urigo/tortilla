@@ -96,7 +96,7 @@ function editStep(step) {
   var base = getStepBase(step);
 
   git.print(['rebase', '-i', base], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.git.helpers.editor + ' edit'
+    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
   });
 }
 
@@ -106,7 +106,7 @@ function rewordStep(step, message) {
     throw TypeError('A step must be provided');
 
   var base = getStepBase(step);
-  var args = [Paths.git.helpers.editor, 'reword'];
+  var args = [Paths.tortilla.editor, 'reword'];
   if (message) args.push('-m', '"' + message + '"');
 
   git.print(['rebase', '-i', base], {

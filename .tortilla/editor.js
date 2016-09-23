@@ -55,13 +55,13 @@ function editStep(operations) {
     // If this is a super step, replace pick operation with the super pick
     if (isSuperStep) operations.splice(index + offset, 1, {
       method: 'exec',
-      command: 'node ' + Paths.git.helpers.superPicker + ' ' + operation.hash
+      command: 'node ' + Paths.tortilla.superPicker + ' ' + operation.hash
     });
 
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: 'GIT_EDITOR=true node ' + Paths.git.helpers.reworder
+      command: 'GIT_EDITOR=true node ' + Paths.tortilla.reworder
     });
 
     return offset;
@@ -70,13 +70,13 @@ function editStep(operations) {
   // Reset all tags
   operations.push({
     method: 'exec',
-    command: 'node ' + Paths.git.helpers.retagger
+    command: 'node ' + Paths.tortilla.retagger
   });
 }
 
 // Reword the last step in the rebase file
 function rewordStep(operations, message) {
-  var args = [Paths.git.helpers.reworder];
+  var args = [Paths.tortilla.reworder];
   if (message) args.push('"' + message + '"');
 
   // Replace original message with the provided message
@@ -88,7 +88,7 @@ function rewordStep(operations, message) {
   // Reset all tags
   operations.push({
     method: 'exec',
-    command: 'node ' + Paths.git.helpers.retagger
+    command: 'node ' + Paths.tortilla.retagger
   });
 }
 

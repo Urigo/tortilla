@@ -2,9 +2,9 @@ var Fs = require('fs');
 var Minimist = require('minimist');
 var ReadlineSync = require('readline-sync');
 var Rimraf = require('rimraf');
-var Paths = require('./paths');
-var Utils = require('./utils');
-var Pack = require('../package.json');
+var Pack = require('./package.json');
+var Paths = require('./.tortilla/paths');
+var Utils = require('./.tortilla/utils');
 
 /*
   This module is responsible for initializing a new repository, it will squash all
@@ -64,7 +64,6 @@ var git = Utils.git;
   // Notice how we delete all the references to init-tutorial
   Pack.devDependencies = Pack.dependencies;
   delete Pack.dependencies;
-  delete Pack.scripts['init-tutorial'];
   delete Pack.scripts['test'];
 
   Utils.extend(Pack, {
@@ -77,27 +76,27 @@ var git = Utils.git;
     }
   });
 
-  Rimraf.sync(Paths.license);
+  Fs.unlinkSync(Paths.license);
+  Fs.unlinkSync(Paths.npm.main);
   Rimraf.sync(Paths.test);
-  Rimraf.sync(Paths.git.helpers.initTutorial);
 
   Fs.writeFileSync(Paths.readme, '# ' + title);
   Fs.writeFileSync(Paths.git.ignore, 'node_modules');
-  Fs.writeFileSync(Paths.npm.pack, JSON.stringify(Pack, null, 2));
+  Fs.writeFileSync(Paths.npm.package, JSON.stringify(Pack, null, 2));
 
   git(['add',
     Paths.license,
-    Paths.test,
-    Paths.git.helpers.initTutorial,
     Paths.readme,
+    Paths.test,
     Paths.git.ignore,
-    Paths.npm.pack
+    Paths.npm.main,
+    Paths.npm.package
   ]);
 
   git(['commit', '--allow-empty-message', '-m', '']);
 
   var commitsNumber = git(['rev-list', 'HEAD', '--count']);
-  var defaultMessage = 'Create initial project';
+  var defaultMessage = 'Create a new tortilla project';
 
   // Reset all commits right before the initial one
   git(['reset', '--soft', 'HEAD~' + (commitsNumber - 1)]);

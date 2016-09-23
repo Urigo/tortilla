@@ -4,11 +4,10 @@
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "github.com/Urigo/tortilla"
+    "url": "https://github.com/Urigo/tortilla.git"
   },
   "scripts": {
-    "step": "node git-helpers/step",
-    "init-tutorial": "node git-helpers/init-tutorial",
+    "step": "node .tortilla/step",
     "test": "mocha test/index --timeout 5000"
   },
   "dependencies": {
