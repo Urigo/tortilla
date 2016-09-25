@@ -1,8 +1,8 @@
-var Fs = require('fs');
+var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var ReadlineSync = require('readline-sync');
 var Rimraf = require('rimraf');
-var Pack = require('./package.json');
+var Package = require('./package.json');
 var Paths = require('./.tortilla/paths');
 var Utils = require('./.tortilla/utils');
 
@@ -15,6 +15,7 @@ var Utils = require('./.tortilla/utils');
  */
 
 var git = Utils.git;
+var npm = Utils.npm;
 
 
 (function () {
@@ -58,31 +59,30 @@ var git = Utils.git;
 
   // If the remote references to tortilla change the initialized project name
   if (repoName == 'tortilla') repoName = 'tortilla-project';
-  var packName = Utils.kebabCase(repoName);
+  var packageName = Utils.kebabCase(repoName);
   var title = Utils.startCase(repoName);
 
-  // Notice how we delete all the references to init-tutorial
-  Pack.devDependencies = Pack.dependencies;
-  delete Pack.dependencies;
-  delete Pack.scripts['test'];
-
-  Utils.extend(Pack, {
-    name: packName,
+  var fixedPackage = {
+    name: packageName,
     description: 'A newly created Tortilla project',
     version: '0.0.1',
     repository: {
       type: 'git',
       url: url
-    }
-  });
+    },
+    scripts: {
+      step: Package.scripts.step
+    },
+    dependencies: Package.tortillaDependencies
+  };
 
   Fs.unlinkSync(Paths.license);
   Fs.unlinkSync(Paths.npm.main);
-  Rimraf.sync(Paths.test);
+  Fs.removeSync(Paths.test);
 
   Fs.writeFileSync(Paths.readme, '# ' + title);
   Fs.writeFileSync(Paths.git.ignore, 'node_modules');
-  Fs.writeFileSync(Paths.npm.package, JSON.stringify(Pack, null, 2));
+  Fs.writeJsonSync(Paths.npm.package, fixedPackage);
 
   git(['add',
     Paths.license,
@@ -123,4 +123,8 @@ var git = Utils.git;
 
   // Setting the initial commit as root
   git(['tag', 'root']);
+
+  // Reinstall only necessary modules
+  Fs.removeSync(Paths.npm.modules);
+  npm(['install']);
 })();

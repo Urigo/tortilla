@@ -7,12 +7,15 @@ var Paths = require('./paths');
   Contains general utilities.
  */
 
-var node = exec.bind(null, 'node');
-var nodePrint = execPrint.bind(null, 'node');
 var git = exec.bind(null, 'git');
 var gitPrint = execPrint.bind(null, 'git');
+var node = exec.bind(null, 'node');
+var nodePrint = execPrint.bind(null, 'node');
+var npm = exec.bind(null, 'npm');
+var npmPrint = execPrint.bind(null, 'npm');
 
 node.print = nodePrint;
+npm.print = npmPrint;
 git.print = gitPrint;
 exec.print = execPrint;
 
