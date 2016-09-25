@@ -34,9 +34,9 @@ A super-step should **always** come at the end of each step, it should contain a
 
 simply type the following command:
 
-$ node . "remote name" "remote url" --message="commit message"
+$ node . "project name" --message="commit message" --output="output path"
 
-This command will initialize a new tutorial project. It will simply squash all commits into a single one, cleanup some unnecessary files and prepare a basic skeleton. It is recommended to use it right after cloning Tortilla or after making some initial changes which should be a part of our root. The provided remote (Defaults to the current remote) will be set with the provided url (Defaults to the current url) as the current branch's remote. The provided message will be used as the squashed commit's message (Will open an editor if no message is provided). Once you use this command a prompt will show up asking you if you would like to continue. If you would like to skip it simply provide the `--sure` option. Note that this script can run only once, afterwards it will self-destroy itself.
+This command will initialize a new Tortilla project in the proided path (Defaults to the current path). The project will be initalized with the provide project name (Defaults to `tortilla-project`) and the provided message as the inital commit message (Will open an editor if no message is provided). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
 
 ### Git Helpers
 
@@ -54,6 +54,12 @@ $ npm run step -- pop
 
 Pop the last step from the top of the stack. If you would like to remove a step from the middle of the stack, first use the [step editing](#edit-step) helper, and then pop the step from the top of the stack.
 
+#### Tag Step
+
+$ npm run step -- tag --message="step message"
+
+Add a new super-step and finish the current step with the provided message (Will open an editor if no message is provided). This will add a new step tag to your commits list and it will initialize an empty instructions markdown file. If you would like to edit the instruction file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
+
 #### Edit Step
 
 $ npm run step -- edit "step index"
@@ -65,9 +71,3 @@ Edit the provided step. This will get you into rebase mode, so once you've finis
 $ npm run step -- reword "step index" --message="step message"
 
 Replace the provided step's message with the provided message (Will open an editor if no message is provided). An optional `--root` option can be provided if you would like to reword the root.
-
-#### Tag Step
-
-$ npm run step -- tag --message="step message"
-
-Add a new super-step and finish the current step with the provided message (Will open an editor if no message is provided). This will add a new step tag to your commits list and it will initialize an empty instructions markdown file. If you would like to edit the instruction file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
