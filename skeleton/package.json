@@ -1,0 +1,11 @@
+{
+  "name": "${name}",
+  "description": "A newly created tortilla project",
+  "version": "0.0.1",
+  "scripts": {
+    "step": "node .tortilla/step"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0"
+  }
+}

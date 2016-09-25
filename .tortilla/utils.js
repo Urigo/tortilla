@@ -143,6 +143,22 @@ function upperFirst(str) {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 }
 
+// Fillin file template and rewrite it
+function fillinFile(path, replacements) {
+  var template = Fs.readFileSync(path, 'utf8');
+  var content = fillin(template, replacements);
+  return Fs.writeFileSync(path, content);
+}
+
+// Fillin ${strings} with the provided replacements
+function fillin(template, replacements) {
+  return Object.keys(replacements).reduce(function (content, key) {
+    var value = replacements[key];
+    var pattern = new RegExp('\\$\\{' + key + '\\}', 'g');
+    return content.replace(pattern, value);
+  }, template);
+}
+
 // Tells if entity exists or not by an optional document type
 function exists(path, type) {
   try {
@@ -165,6 +181,7 @@ module.exports = {
   cherryPicking: isCherryPicking,
   tagExists: tagExists,
   recentCommit: getRecentCommit,
+  npm: npm,
   node: node,
   git: git,
   exec: exec,
@@ -174,5 +191,7 @@ module.exports = {
   splitWords: splitWords,
   lowerFirst: lowerFirst,
   upperFirst: upperFirst,
+  fillinFile: fillinFile,
+  fillin: fillin,
   exists: exists
 };

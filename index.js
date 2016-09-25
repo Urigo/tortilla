@@ -1,8 +1,7 @@
 var Fs = require('fs-extra');
 var Minimist = require('minimist');
+var Path = require('path')
 var ReadlineSync = require('readline-sync');
-var Rimraf = require('rimraf');
-var Package = require('./package.json');
 var Paths = require('./.tortilla/paths');
 var Utils = require('./.tortilla/utils');
 
@@ -15,7 +14,6 @@ var Utils = require('./.tortilla/utils');
  */
 
 var git = Utils.git;
-var npm = Utils.npm;
 
 
 (function () {
@@ -23,108 +21,65 @@ var npm = Utils.npm;
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm']
+    string: ['_', 'message', 'm', 'output', 'o'],
+    boolean: ['override']
   });
 
-  var remote = argv._[0];
-  var url = argv._[1];
+  var projectName = argv._[0] || 'tortilla-project';
   var message = argv.message || argv.m;
-  var sure = argv.sure || argv.s;
+  var output = argv.output || argv.o || Paths._;
+  var override = argv.override;
 
-  sure = sure || ReadlineSync.keyInYN(
-    'Are you sure you want to start a new tutorial project?'
-  );
+  // In case dir already exists verify the user's decision
+  if (Utils.exists(output)) {
+    var override = override || ReadlineSync.keyInYN([
+      'Output path already eixsts.',
+      'Would you like to override it and continue?'
+    ].join(' '));
 
-  if (!sure) return;
-
-  // The changes will be applied to the current branch
-  var branch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
-
-  // If only  arg provided set the remote to the branche's
-  if (!url) {
-    url = remote;
-    remote = git(['config', '--get', 'branch.' + branch + '.remote']);
+    if (!override) return;
   }
 
-  var remoteExists = git(['config', '--get', 'remote.' + remote + '.url']);
-  // If no args provided set the url to the remote's
-  url = url || remoteExists;
-  remoteExists = !!remoteExists;
+  var tempDir = '/tmp/tortilla';
 
-  // The repo name would be the last part of the url
-  var repoName = url
-    .split('/')
-    .slice(-1)[0]
-    .split('.')[0];
+  Fs.removeSync(tempDir);
+  Fs.copySync(Paths.skeleton, tempDir);
+  Fs.copySync(Paths.tortilla._, Path.resolve(tempDir, '.tortilla'));
 
-  // If the remote references to tortilla change the initialized project name
-  if (repoName == 'tortilla') repoName = 'tortilla-project';
-  var packageName = Utils.kebabCase(repoName);
-  var title = Utils.startCase(repoName);
+  var TempPaths = require(Path.resolve(tempDir, '.tortilla/paths'));
+  var TempUtils = require(Path.resolve(tempDir, '.tortilla/utils'));
 
-  var fixedPackage = {
+  var tempGit = TempUtils.git;
+  var tempNpm = TempUtils.npm;
+
+  var packageName = Utils.kebabCase(projectName);
+  var title = Utils.startCase(projectName);
+
+  // Fillin template files
+  Utils.fillinFile(TempPaths.npm.package, {
     name: packageName,
-    description: 'A newly created Tortilla project',
-    version: '0.0.1',
-    repository: {
-      type: 'git',
-      url: url
-    },
-    scripts: {
-      step: Package.scripts.step
-    },
-    dependencies: Package.tortillaDependencies
-  };
-
-  Fs.unlinkSync(Paths.license);
-  Fs.unlinkSync(Paths.npm.main);
-  Fs.removeSync(Paths.tests);
-
-  Fs.writeFileSync(Paths.readme, '# ' + title);
-  Fs.writeFileSync(Paths.git.ignore, 'node_modules');
-  Fs.writeJsonSync(Paths.npm.package, fixedPackage);
-
-  git(['add',
-    Paths.license,
-    Paths.readme,
-    Paths.tests,
-    Paths.git.ignore,
-    Paths.npm.main,
-    Paths.npm.package
-  ]);
-
-  git(['commit', '--allow-empty-message', '-m', '']);
-
-  var commitsNumber = git(['rev-list', 'HEAD', '--count']);
-  var defaultMessage = 'Create a new tortilla project';
-
-  // Reset all commits right before the initial one
-  git(['reset', '--soft', 'HEAD~' + (commitsNumber - 1)]);
-  // Ammend changes with the available message
-  git(['commit', '--amend', '-m', message || defaultMessage]);
-  // If no message was provided open the editor
-  if (!message) git.print(['commit', '--amend']);
-
-  var remoteMethod = remoteExists ? 'set-url' : 'add';
-
-  // Define the remote
-  git(['remote', remoteMethod, remote, url]);
-  // Set the remote to a default to the current branch
-  git(['branch', '--set-upstream-to=' + remote]);
-
-  var tags = git(['tag'])
-    .split('\n')
-    .filter(Boolean);
-
-  // Cleaning up tags
-  tags.forEach(function (tag) {
-    git(['tag', '-d', tag]);
   });
 
-  // Setting the initial commit as root
-  git(['tag', 'root']);
+  Utils.fillinFile(TempPaths.readme, {
+    title: title
+  });
 
-  // Reinstall only necessary modules
-  Fs.removeSync(Paths.npm.modules);
-  npm(['install']);
+  // Git chores
+  tempGit(['init']);
+  tempGit(['add', '.']);
+
+  if (message) {
+    tempGit(['commit', '-m', message]);
+  }
+  else {
+    tempGit(['commit', '-m', 'Create a new tortilla project']);
+    tempGit(['commit', '--amend']);
+  }
+
+  tempGit(['tag', 'root']);
+  tempNpm(['install']);
+
+  // Copy from temp to output
+  Fs.removeSync(output);
+  Fs.copySync(tempDir, output);
 })();
