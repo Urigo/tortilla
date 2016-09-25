@@ -1,7 +1,7 @@
 const Chai = require('chai');
 
 
-const expect = Chat.expect;
+const expect = Chai.expect;
 
 
 describe('Step', function () {

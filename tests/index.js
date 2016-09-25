@@ -1,28 +1,27 @@
+const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
+const Path = require('path');
 
 
 before(function () {
   // Consts
   this.tempDir = '/tmp/tortilla_test';
-  this.tortillaDir = Path.resolve('..');
+  this.libDir = Path.resolve(__dirname, '..');
 });
 
 beforeEach(function () {
-  // Resetting temp dir
-  Fs.removeSync(this.tempDir);
-  Fs.copySync(this.tortillaDir, this.tempDir);
+  // Resetting test tortilla project
+  ChildProcess.execFileSync('node', [
+    this.libDir, '-m', 'Test tortilla project', '-o', this.tempDir, '--override'
+  ]);
 
   // Deleting cached modules
   Object.keys(require.cache)
-    .filter(path => path.contains(this.tempDir));
+    .filter(path => path.match(this.tempDir))
     .forEach(path => delete require[path]);
 
   // Assigning utils for easy access
   Object.assign(this, require(`${this.tempDir}/.tortilla/utils`));
-
-  // Initializing
-  this.node(['.', '--sure']);
-  this.npm(['install']);
 });
 
 
