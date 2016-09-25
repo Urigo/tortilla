@@ -78,7 +78,7 @@ var npm = Utils.npm;
 
   Fs.unlinkSync(Paths.license);
   Fs.unlinkSync(Paths.npm.main);
-  Fs.removeSync(Paths.test);
+  Fs.removeSync(Paths.tests);
 
   Fs.writeFileSync(Paths.readme, '# ' + title);
   Fs.writeFileSync(Paths.git.ignore, 'node_modules');
@@ -87,7 +87,7 @@ var npm = Utils.npm;
   git(['add',
     Paths.license,
     Paths.readme,
-    Paths.test,
+    Paths.tests,
     Paths.git.ignore,
     Paths.npm.main,
     Paths.npm.package

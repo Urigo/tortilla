@@ -8,7 +8,7 @@
   },
   "scripts": {
     "step": "node .tortilla/step",
-    "test": "mocha test/index --timeout 5000"
+    "test": "mocha tests/index --timeout 5000"
   },
   "dependencies": {
     "fs-extra": "^0.30.0",

@@ -49,7 +49,7 @@ function getRecentCommit(offset, args) {
 
   var hash = typeof offset == 'string' ? offset : ('HEAD~' + offset);
 
-  args = ['log', hash, '--max-count=1'].concat(args);
+  args = ['log', hash, '-1'].concat(args);
   return git(args);
 }
 
@@ -69,6 +69,7 @@ function execPrint(file, args, env, input) {
   env = extend({}, process.env, env);
 
   return ChildProcess.spawnSync(file, args, {
+    cwd: Paths._,
     env: env,
     input: input,
     stdio: 'inherit'
@@ -91,6 +92,7 @@ function exec(file, args, env, input) {
   env = extend({}, process.env, env);
 
   return ChildProcess.execFileSync(file, args, {
+    cwd: Paths._,
     env: env,
     input: input
   }).toString()
