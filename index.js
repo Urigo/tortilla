@@ -2,19 +2,13 @@ var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var Path = require('path')
 var ReadlineSync = require('readline-sync');
-var Paths = require('./.tortilla/paths');
-var Utils = require('./.tortilla/utils');
+var Utils = require('./utils');
 
 /*
-  This module is responsible for initializing a new repository, it will squash all
-  all commits into one and it will edit the 'package.json' accordingly to look as
-  if it is do not depend on Tortilla. Usually should only run once at the creation
-  of the repository. This script can be performed only once, afterwards it will self
-  destroy itslef.
+  This module is responsible for initializing a new repository, it will use the skeleton
+  as the template and it will fill it up with the provided details. Usually should only
+  run once at the creation of the repository.
  */
-
-var git = Utils.git;
-
 
 (function () {
   // Disable the automatic invokation unless this is the main module of the node process
@@ -27,7 +21,7 @@ var git = Utils.git;
 
   var projectName = argv._[0] || 'tortilla-project';
   var message = argv.message || argv.m;
-  var output = argv.output || argv.o || Paths._;
+  var output = argv.output || argv.o || __dirname;
   var override = argv.override;
 
   // In case dir already exists verify the user's decision
@@ -43,14 +37,13 @@ var git = Utils.git;
   var tempDir = '/tmp/tortilla';
 
   Fs.removeSync(tempDir);
-  Fs.copySync(Paths.skeleton, tempDir);
-  Fs.copySync(Paths.tortilla._, Path.resolve(tempDir, '.tortilla'));
+  Fs.copySync(Path.resolve(__dirname, 'skeleton'), tempDir);
 
   var TempPaths = require(Path.resolve(tempDir, '.tortilla/paths'));
   var TempUtils = require(Path.resolve(tempDir, '.tortilla/utils'));
 
-  var tempGit = TempUtils.git;
-  var tempNpm = TempUtils.npm;
+  var git = TempUtils.git;
+  var npm = TempUtils.npm;
 
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);
@@ -65,19 +58,19 @@ var git = Utils.git;
   });
 
   // Git chores
-  tempGit(['init']);
-  tempGit(['add', '.']);
+  git(['init']);
+  git(['add', '.']);
 
   if (message) {
-    tempGit(['commit', '-m', message]);
+    git(['commit', '-m', message]);
   }
   else {
-    tempGit(['commit', '-m', 'Create a new tortilla project']);
-    tempGit(['commit', '--amend']);
+    git(['commit', '-m', 'Create a new tortilla project']);
+    git.print(['commit', '--amend']);
   }
 
-  tempGit(['tag', 'root']);
-  tempNpm(['install']);
+  git(['tag', 'root']);
+  npm(['install']);
 
   // Copy from temp to output
   Fs.removeSync(output);

@@ -51,7 +51,6 @@ var tortilla = {
 module.exports = {
   _: resolve(),
   readme: resolve('README.md'),
-  skeleton: resolve('skeleton'),
   steps: resolve('steps'),
   git: git,
   npm: npm,
