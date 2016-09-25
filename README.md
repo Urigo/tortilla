@@ -34,7 +34,7 @@ A super-step should **always** come at the end of each step, it should contain a
 
 simply type the following command:
 
-$ node . "project name" --message="commit message" --output="output path"
+$ node tortilla "project name" --message="commit message" --output="output path"
 
 This command will initialize a new Tortilla project in the proided path (Defaults to the current path). The project will be initalized with the provide project name (Defaults to `tortilla-project`) and the provided message as the inital commit message (Will open an editor if no message is provided). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
 
