@@ -75,4 +75,5 @@ var Utils = require('./utils');
   // Copy from temp to output
   Fs.removeSync(output);
   Fs.copySync(tempDir, output);
+  Fs.removeSync(tempDir);
 })();
