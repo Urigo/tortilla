@@ -1,11 +1,13 @@
 {
   "name": "${name}",
-  "description": "A newly created tortilla project",
+  "description": "A newly created Tortilla project",
   "version": "0.0.1",
   "scripts": {
-    "step": "node .tortilla/step"
+    "step": "node .tortilla/step",
+    "precommit": "node .tortilla/hooks/pre-commit"
   },
   "devDependencies": {
+    "husky": "^0.11.8",
     "minimist": "^1.2.0"
   }
 }

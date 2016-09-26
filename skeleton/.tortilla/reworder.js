@@ -7,7 +7,7 @@ var Utils = require('./utils');
   number if needed.
  */
 
-var git = Utils.git;
+var commit = Utils.commit;
 
 
 (function () {
@@ -21,7 +21,7 @@ var git = Utils.git;
   var message = argv._[0];
 
   var fixedMessage = getFixedMessage(message);
-  git.print(['commit', '--amend', '-m', fixedMessage, '--allow-empty']);
+  commit.print(['--amend', '-m', fixedMessage]);
 })();
 
 // Launches the editor if no message provided and adds a step prefix if necessary
@@ -41,7 +41,7 @@ function getFixedMessage(message) {
   // If we're editing root
   if (!stepDescriptor) {
     // Launch editor
-    git.print(['commit', '--amend', '--allow-empty']);
+    commit.print(['--amend']);
     return Utils.recentCommit(['--format=%B']);
   }
 
@@ -49,8 +49,8 @@ function getFixedMessage(message) {
   // on it's step number prefix, otherwise we might get an unexpected result
   var nextStep = getNextStep(stepDescriptor);
   // Launch editor with the step's message
-  git(['commit', '--amend', '-m', stepDescriptor.message, '--allow-empty']);
-  git.print(['commit', '--amend', '--allow-empty']);
+  commit(['--amend', '-m', stepDescriptor.message]);
+  commit.print(['--amend']);
 
   // Return the message with a step prefix
   message = Utils.recentCommit(['--format=%B']);

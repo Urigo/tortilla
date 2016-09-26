@@ -76,13 +76,13 @@ function editStep(operations) {
 
 // Reword the last step in the rebase file
 function rewordStep(operations, message) {
-  var args = [Paths.tortilla.reworder];
-  if (message) args.push('"' + message + '"');
+  var argv = [Paths.tortilla.reworder];
+  if (message) argv.push('"' + message + '"');
 
   // Replace original message with the provided message
   operations.splice(1, 0, {
     method: 'exec',
-    command: 'node ' + args.join(' ')
+    command: 'node ' + argv.join(' ')
   });
 
   // Reset all tags

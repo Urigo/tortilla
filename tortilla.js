@@ -70,7 +70,7 @@ var Utils = require('./utils');
   }
 
   git(['tag', 'root']);
-  npm.print(['install', '-s']);
+  npm.print(['install']);
 
   // Copy from temp to output
   Fs.removeSync(output);

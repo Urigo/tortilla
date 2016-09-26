@@ -14,7 +14,7 @@ describe('Step', function () {
   });
 
   describe('push()', function () {
-    this.slow(2000);
+    this.slow(1500);
 
     it('should push a new step to the top of the stack', function () {
       this.npm.step(['push', '-m', 'target', '--allow-empty']);
@@ -42,7 +42,7 @@ describe('Step', function () {
   });
 
   describe('pop()', function () {
-    this.slow(2000);
+    this.slow(1500);
 
     it('should push the last step from the top of the stack', function () {
       this.npm.step(['push', '-m', 'target', '--allow-empty']);
@@ -122,7 +122,7 @@ describe('Step', function () {
   });
 
   describe('reword()', function () {
-    this.slow(3000);
+    this.slow(2000);
 
     it('should reword the provided step', function () {
       this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
@@ -163,7 +163,7 @@ describe('Step', function () {
   });
 
   describe('edit()', function () {
-    this.slow(4000);
+    this.slow(3000);
 
     it('should edit the provided step', function () {
       this.npm.step(['push', '-m', 'target', '--allow-empty']);

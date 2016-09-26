@@ -8,6 +8,7 @@ var Utils = require('./utils');
   Contains step related utilities. Also the entry point for `npm step` commands.
  */
 
+var commit = Utils.commit;
 var git = Utils.git;
 
 
@@ -108,11 +109,11 @@ function rewordStep(step, message) {
     throw TypeError('A step must be provided');
 
   var base = getStepBase(step);
-  var args = [Paths.tortilla.editor, 'reword'];
-  if (message) args.push('-m', '"' + message + '"');
+  var argv = [Paths.tortilla.editor, 'reword'];
+  if (message) argv.push('-m', '"' + message + '"');
 
   git.print(['rebase', '-i', base, '--keep-empty'], {
-    GIT_SEQUENCE_EDITOR: 'node ' + args.join(' ')
+    GIT_SEQUENCE_EDITOR: 'node ' + argv.join(' ')
   });
 }
 
@@ -125,16 +126,16 @@ function commitStep(step, message, allowEmpty) {
   if (message) {
     // Add step prefix
     message = 'Step ' + step + ': ' + message;
-    return git.print(['commit', '-m', message].concat(optionalArgs));
+    return commit.print(['-m', message].concat(optionalArgs));
   }
 
   // Open editor
-  git.print(['commit']);
+  commit.print();
   // Take the message we just typed
   message = Utils.recentCommit(['--format=%B']);
   // Add step prefix
   message = 'Step ' + step + ': ' + message;
-  return git.print(['commit', '--amend', '-m', message].concat(optionalArgs));
+  return commit.print(['--amend', '-m', message].concat(optionalArgs));
 }
 
 // Get the current step
@@ -236,10 +237,10 @@ function getRecentCommit(offset, format, grep) {
     offset = 0;
   }
 
-  var args = ['--grep=' + grep];
-  if (format) args.push('--format=' + format);
+  var argv = ['--grep=' + grep];
+  if (format) argv.push('--format=' + format);
 
-  return Utils.recentCommit(offset, args);
+  return Utils.recentCommit(offset, argv);
 }
 
 // Extract step json from message
