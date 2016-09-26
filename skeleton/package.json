@@ -5,7 +5,7 @@
   "scripts": {
     "step": "node .tortilla/step"
   },
-  "dependencies": {
+  "devDependencies": {
     "minimist": "^1.2.0"
   }
 }
