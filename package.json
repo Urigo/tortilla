@@ -8,7 +8,6 @@
     "url": "https://github.com/Urigo/tortilla.git"
   },
   "scripts": {
-    "step": "node .tortilla/step",
     "test": "TORTILLA_STDIO=ignore mocha tests/index --timeout=10000"
   },
   "dependencies": {
