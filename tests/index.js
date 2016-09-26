@@ -5,27 +5,27 @@ const Path = require('path');
 
 before(function () {
   // Consts
-  this.tempDir = '/tmp/tortilla_test';
+  this.testDir = '/tmp/tortilla_test';
   this.libDir = Path.resolve(__dirname, '..');
 });
 
 beforeEach(function () {
   // Resetting test tortilla project
   ChildProcess.execFileSync('node', [
-    this.libDir, '-m', 'Test tortilla project', '-o', this.tempDir, '--override'
+    this.libDir, '-m', 'Test tortilla project', '-o', this.testDir, '--override'
   ]);
 
   // Deleting cached modules
   Object.keys(require.cache)
-    .filter(path => path.match(this.tempDir))
+    .filter(path => path.match(this.testDir))
     .forEach(path => delete require[path]);
 
   // Assigning utils for easy access
-  Object.assign(this, require(`${this.tempDir}/.tortilla/utils`));
+  Object.assign(this, require(`${this.testDir}/.tortilla/utils`));
 });
 
 after(function () {
-  Fs.removeSync(this.tempDir);
+  Fs.removeSync(this.testDir);
 });
 
 

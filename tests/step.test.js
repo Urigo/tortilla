@@ -6,7 +6,7 @@ const expect = Chai.expect;
 
 describe('Step', function () {
   beforeEach(function () {
-    this.step = require(`${this.tempDir}/.tortilla/step`);
+    this.step = require(`${this.testDir}/.tortilla/step`);
 
     this.npm.step = (argv, ...args) => this.npm([
       'run', 'step', '--'
@@ -73,7 +73,7 @@ describe('Step', function () {
       const message = this.step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
 
-      const fileExists = this.exists(`${this.tempDir}/steps/step1.md`);
+      const fileExists = this.exists(`${this.testDir}/steps/step1.md`);
       expect(fileExists).to.be.falsy;
     });
   });
@@ -116,7 +116,7 @@ describe('Step', function () {
       const message = this.step.recentCommit('%s');
       expect(message).to.equal('Step 1: target');
 
-      const fileExists = this.exists(`${this.tempDir}/steps/step1.md`);
+      const fileExists = this.exists(`${this.testDir}/steps/step1.md`);
       expect(fileExists).to.be.truthy;
     });
   });
@@ -298,10 +298,10 @@ describe('Step', function () {
       const newMessage = this.step.recentCommit(1, '%s');
       expect(newMessage).to.equal('Step 1: new');
 
-      const oldFileExists = this.exists(`${this.tempDir}/steps/step1.md`);
+      const oldFileExists = this.exists(`${this.testDir}/steps/step1.md`);
       expect(oldFileExists).to.be.truthy;
 
-      const newFileExists = this.exists(`${this.tempDir}/steps/step2.md`);
+      const newFileExists = this.exists(`${this.testDir}/steps/step2.md`);
       expect(newFileExists).to.be.truthy;
     });
 
@@ -316,7 +316,7 @@ describe('Step', function () {
       const oldMessage = this.step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 1: old');
 
-      const oldFileExists = this.exists(`${this.tempDir}/steps/step1.md`);
+      const oldFileExists = this.exists(`${this.testDir}/steps/step1.md`);
       expect(oldFileExists).to.be.truthy;
     });
   });
