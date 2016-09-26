@@ -17,19 +17,20 @@ var git = Utils.git;
 
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
-    boolean: ['root', 'r']
+    boolean: ['root', 'r', 'allow-empty']
   });
 
   var method = argv._[0];
   var step = argv._[1];
   var root = argv.root || argv.r;
   var message = argv.message || argv.m;
+  var allowEmpty = argv['allow-empty'];
 
   if (!step && root) step = 'root';
 
   // Automatically invoke a method by the provided arguments
   switch (method) {
-    case 'push': return pushStep(message);
+    case 'push': return pushStep(message, allowEmpty);
     case 'pop': return popStep();
     case 'tag': return tagStep(message);
     case 'edit': return editStep(step);
@@ -38,9 +39,9 @@ var git = Utils.git;
 })();
 
 // Push a new step with the provided message
-function pushStep(message) {
+function pushStep(message, allowEmpty) {
   var step = getNextStep();
-  commitStep(step, message);
+  commitStep(step, message, allowEmpty);
 }
 
 // Pop the last step
@@ -59,17 +60,18 @@ function popStep() {
   if (!stepDescriptor)
     return console.warn('Removed commit was not a step');
 
-  var isSuperStep = !!getSuperStepDescriptor(removedCommitMessage);
+  // Tag removal should be done by the editor after continuing rebase in case
+  // of abortion otherwise we are skrewed
+  if (Utils.rebasing()) return;
 
-  // If this is a super step, delete the tag of the popped commit unless in the middle of
-  // rebase, since the process can be aborted. The tag will be added latedr on by the
-  // git editor
-  if (isSuperStep && !Utils.rebasing()) try {
-    git(['tag', '-d', 'step' + stepDescriptor.number]);
-  }
-  catch (err) {
-    console.warn('Tag was not found');
-  }
+  var isSuperStep = !!getSuperStepDescriptor(removedCommitMessage);
+  // If this is a super step, delete the tag of the popped commit
+  if (!isSuperStep) return;
+
+  var tag = 'step' + stepDescriptor.number;
+
+  if (Utils.tagExists(tag)) return git(['tag', '-d', tag]);
+  console.warn('Tag was not found');
 }
 
 // Finish the current with the provided message and tag it
@@ -95,7 +97,7 @@ function editStep(step) {
 
   var base = getStepBase(step);
 
-  git.print(['rebase', '-i', base], {
+  git.print(['rebase', '-i', base, '--keep-empty'], {
     GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
   });
 }
@@ -109,22 +111,30 @@ function rewordStep(step, message) {
   var args = [Paths.tortilla.editor, 'reword'];
   if (message) args.push('-m', '"' + message + '"');
 
-  git.print(['rebase', '-i', base], {
+  git.print(['rebase', '-i', base, '--keep-empty'], {
     GIT_SEQUENCE_EDITOR: 'node ' + args.join(' ')
   });
 }
 
 // Add a new commit of the provided step with the provided message
-function commitStep(step, message) {
+function commitStep(step, message, allowEmpty) {
+  var optionalArgs = [];
+  if (allowEmpty) optionalArgs.push('--allow-empty');
+
   // If message was probided commit as expected
-  if (message) return git.print(['commit', '-m', 'Step ' + step + ': ' + message]);
+  if (message) {
+    // Add step prefix
+    message = 'Step ' + step + ': ' + message;
+    return git.print(['commit', '-m', message].concat(optionalArgs));
+  }
 
   // Open editor
   git.print(['commit']);
   // Take the message we just typed
   message = Utils.recentCommit(['--format=%B']);
-  // Add a step prefix
-  return git.print(['commit', '--amend', '-m', 'Step ' + step + ': ' + message]);
+  // Add step prefix
+  message = 'Step ' + step + ': ' + message;
+  return git.print(['commit', '--amend', '-m', message].concat(optionalArgs));
 }
 
 // Get the current step

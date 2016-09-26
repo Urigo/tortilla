@@ -72,7 +72,7 @@ function execPrint(file, args, env, input) {
     cwd: Paths._,
     env: env,
     input: input,
-    stdio: 'inherit'
+    stdio: env.TORTILLA_STDIO || 'inherit'
   });
 }
 
@@ -94,7 +94,8 @@ function exec(file, args, env, input) {
   return ChildProcess.execFileSync(file, args, {
     cwd: Paths._,
     env: env,
-    input: input
+    input: input,
+    stdio: 'pipe'
   }).toString()
     .trim();
 }

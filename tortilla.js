@@ -58,11 +58,11 @@ var Utils = require('./utils');
   });
 
   // Git chores
-  git(['init']);
+  git.print(['init']);
   git(['add', '.']);
 
   if (message) {
-    git(['commit', '-m', message]);
+    git.print(['commit', '-m', message]);
   }
   else {
     git(['commit', '-m', 'Create a new tortilla project']);
@@ -70,7 +70,7 @@ var Utils = require('./utils');
   }
 
   git(['tag', 'root']);
-  npm(['install', '-s']);
+  npm.print(['install', '-s']);
 
   // Copy from temp to output
   Fs.removeSync(output);

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "step": "node .tortilla/step",
-    "test": "mocha tests/index --timeout 5000"
+    "test": "TORTILLA_STDIO=ignore mocha tests/index --timeout=10000"
   },
   "dependencies": {
     "fs-extra": "^0.30.0",
