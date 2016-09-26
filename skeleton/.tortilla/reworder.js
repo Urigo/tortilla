@@ -34,7 +34,7 @@ function getFixedMessage(message) {
   if (message) {
     if (!stepDescriptor) return message;
 
-    var nextStep = Step.next(1);
+    var nextStep = getNextStep(stepDescriptor);
     return 'Step ' + nextStep + ': ' + message;
   }
 
@@ -47,7 +47,7 @@ function getFixedMessage(message) {
 
   // It's important to fetch the next step before we edit the commit since it depends
   // on it's step number prefix, otherwise we might get an unexpected result
-  var nextStep = Step.next(1);
+  var nextStep = getNextStep(stepDescriptor);
   // Launch editor with the step's message
   git(['commit', '--amend', '-m', stepDescriptor.message, '--allow-empty']);
   git.print(['commit', '--amend', '--allow-empty']);
@@ -55,4 +55,10 @@ function getFixedMessage(message) {
   // Return the message with a step prefix
   message = Utils.recentCommit(['--format=%B']);
   return 'Step ' + nextStep + ': ' + message;
+}
+
+// Calculate the next step dynamically based on its super flag
+function getNextStep(stepDescriptor) {
+  var isSubStep = !!stepDescriptor.number.split('.')[1];
+  return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }

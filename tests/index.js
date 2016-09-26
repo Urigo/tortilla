@@ -24,10 +24,6 @@ beforeEach(function () {
   Object.assign(this, require(`${this.testDir}/.tortilla/utils`));
 });
 
-after(function () {
-  Fs.removeSync(this.testDir);
-});
-
 
 // Tests
 require('./step.test');

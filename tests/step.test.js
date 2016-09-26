@@ -260,7 +260,7 @@ describe('Step', function () {
       expect(oldMessage).to.equal('Step 2.1: old');
     });
 
-    it.skip('should update super-step indices when popping a super-step', function () {
+    it('should update super-step indices when popping a super-step', function () {
       this.npm.step(['tag', '-m', 'target']);
       this.npm.step(['tag', '-m', 'old']);
       this.npm.step(['edit', '1']);
@@ -305,7 +305,7 @@ describe('Step', function () {
       expect(newFileExists).to.be.truthy;
     });
 
-    it.skip('should resolve removal conflicts when tagging a step', function () {
+    it('should resolve removal conflicts when tagging a step', function () {
       this.npm.step(['tag', '-m', 'target']);
       this.npm.step(['tag', '-m', 'old']);
       this.npm.step(['edit', '1']);
