@@ -61,7 +61,7 @@ describe('Step', function () {
       const message = this.step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
 
-      const tagExists = this.tagExists('step1');
+      const tagExists = this.git.tagExists('step1');
       expect(tagExists).to.be.falsy;
     });
 
@@ -102,7 +102,7 @@ describe('Step', function () {
       const message = this.step.recentCommit('%s');
       expect(message).to.equal('Step 1: target');
 
-      const tagExists = this.tagExists('step1');
+      const tagExists = this.git.tagExists('step1');
       expect(tagExists).to.be.truthy;
 
       const tagHash = this.git(['rev-parse', 'step1']);
@@ -170,7 +170,7 @@ describe('Step', function () {
       this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
       this.npm.step(['edit', '1.1']);
 
-      const isRebasing = this.rebasing();
+      const isRebasing = this.git.rebasing();
       expect(isRebasing).to.be.truthy;
 
       const message = this.step.recentCommit('%s');
@@ -181,10 +181,10 @@ describe('Step', function () {
       this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
       this.npm.step(['edit', '--root']);
 
-      const isRebasing = this.rebasing();
+      const isRebasing = this.git.rebasing();
       expect(isRebasing).to.be.truthy;
 
-      const commitHash = this.recentCommit(['--format=%H']);
+      const commitHash = this.git.recentCommit(['--format=%H']);
       const rootHash = this.git(['rev-list', '--max-parents=0', 'HEAD']);
       expect(commitHash).to.equal(rootHash);
     });

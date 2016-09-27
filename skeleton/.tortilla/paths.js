@@ -41,6 +41,8 @@ var npm = {
 var tortilla = {
   _: resolve('.tortilla'),
   editor: resolve('.tortilla/editor.js'),
+  git: resolve('.tortilla/git.js'),
+  paths: resolve('.tortilla/paths.js'),
   retagger: resolve('.tortilla/retagger.js'),
   reworder: resolve('.tortilla/reworder.js'),
   step: resolve('.tortilla/step.js'),

@@ -2,16 +2,12 @@ var Fs = require('fs');
 var Minimist = require('minimist');
 var Paths = require('./paths');
 var Step = require('./step');
-var Utils = require('./utils');
 
 /*
   This is the editor for interactive rebases and ammended commits. Instead of openning
   an editing software like nano or vim, this module will edit the file by specified
   methods we choose.
  */
-
-var git = Utils.git;
-
 
 (function () {
   // Disable the automatic invokation unless this is the main module of the node process

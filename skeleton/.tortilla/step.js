@@ -1,16 +1,13 @@
 var Fs = require('fs');
 var Minimist = require('minimist');
 var Path = require('path');
+var Git = require('./git');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
 /*
   Contains step related utilities. Also the entry point for `npm step` commands.
  */
-
-var commit = Utils.commit;
-var git = Utils.git;
-
 
 (function () {
   // Disable the automatic invokation unless this is the main module of the node process
@@ -47,14 +44,14 @@ function pushStep(message, allowEmpty) {
 
 // Pop the last step
 function popStep() {
-  var headHash = git(['rev-parse', 'HEAD']);
-  var rootHash = git(['rev-parse', 'root']);
+  var headHash = Git(['rev-parse', 'HEAD']);
+  var rootHash = Git(['rev-parse', 'root']);
 
   if (headHash == rootHash)
     throw Error('Can\'t remove root')
 
-  var removedCommitMessage = Utils.recentCommit(['--format=%s']);
-  git.print(['reset', '--hard', 'HEAD~1']);
+  var removedCommitMessage = Git.recentCommit(['--format=%s']);
+  Git.print(['reset', '--hard', 'HEAD~1']);
 
   var stepDescriptor = getStepDescriptor(removedCommitMessage);
 
@@ -63,7 +60,7 @@ function popStep() {
 
   // Tag removal should be done by the editor after continuing rebase in case
   // of abortion otherwise we are skrewed
-  if (Utils.rebasing()) return;
+  if (Git.rebasing()) return;
 
   var isSuperStep = !!getSuperStepDescriptor(removedCommitMessage);
   // If this is a super step, delete the tag of the popped commit
@@ -71,7 +68,7 @@ function popStep() {
 
   var tag = 'step' + stepDescriptor.number;
 
-  if (Utils.tagExists(tag)) return git(['tag', '-d', tag]);
+  if (Git.tagExists(tag)) return Git(['tag', '-d', tag]);
   console.warn('Tag was not found');
 }
 
@@ -84,11 +81,11 @@ function tagStep(message) {
   if (!Utils.exists(Paths.steps)) Fs.mkdirSync(Paths.steps);
   Fs.writeFileSync(stepFilePath, '');
 
-  git(['add', stepFilePath]);
+  Git(['add', stepFilePath]);
   commitStep(step, message);
   // If in the middle of rebase, don't add a tag since the process can be aborted.
   // The tag will be added later on by the git editor
-  if (!Utils.rebasing()) git.print(['tag', tag]);
+  if (!Git.rebasing()) Git.print(['tag', tag]);
 }
 
 // Edit the provided step
@@ -98,7 +95,7 @@ function editStep(step) {
 
   var base = getStepBase(step);
 
-  git.print(['rebase', '-i', base, '--keep-empty'], {
+  Git.print(['rebase', '-i', base, '--keep-empty'], {
     GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
   });
 }
@@ -112,7 +109,7 @@ function rewordStep(step, message) {
   var argv = [Paths.tortilla.editor, 'reword'];
   if (message) argv.push('-m', '"' + message + '"');
 
-  git.print(['rebase', '-i', base, '--keep-empty'], {
+  Git.print(['rebase', '-i', base, '--keep-empty'], {
     GIT_SEQUENCE_EDITOR: 'node ' + argv.join(' ')
   });
 }
@@ -126,16 +123,16 @@ function commitStep(step, message, allowEmpty) {
   if (message) {
     // Add step prefix
     message = 'Step ' + step + ': ' + message;
-    return commit.print(['-m', message].concat(optionalArgs));
+    return Git.commit.print(['-m', message].concat(optionalArgs));
   }
 
   // Open editor
-  commit.print();
+  Git.commit.print();
   // Take the message we just typed
-  message = Utils.recentCommit(['--format=%B']);
+  message = Git.recentCommit(['--format=%B']);
   // Add step prefix
   message = 'Step ' + step + ': ' + message;
-  return commit.print(['--amend', '-m', message].concat(optionalArgs));
+  return Git.commit.print(['--amend', '-m', message].concat(optionalArgs));
 }
 
 // Get the current step
@@ -199,12 +196,12 @@ function getStepBase(step) {
     throw TypeError('A step must be provided');
 
   if (step == 'root') {
-    var stepRootHash = git(['rev-parse', 'root']);
-    var nativeRootHash = git(['rev-list', '--max-parents=0', 'HEAD']);
+    var stepRootHash = Git(['rev-parse', 'root']);
+    var nativeRootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
     return stepRootHash == nativeRootHash ? '--root' : 'root~1';
   }
 
-  var hash = Utils.recentCommit([
+  var hash = Git.recentCommit([
     '--grep=^Step ' + step,
     '--format=%h'
   ]);
@@ -240,7 +237,7 @@ function getRecentCommit(offset, format, grep) {
   var argv = ['--grep=' + grep];
   if (format) argv.push('--format=' + format);
 
-  return Utils.recentCommit(offset, argv);
+  return Git.recentCommit(offset, argv);
 }
 
 // Extract step json from message

@@ -22,6 +22,7 @@ beforeEach(function () {
 
   // Assigning utils for easy access
   Object.assign(this, require(`${this.testDir}/.tortilla/utils`));
+  this.git = require(`${this.testDir}/.tortilla/git`);
 });
 
 
