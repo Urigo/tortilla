@@ -8,7 +8,7 @@ var Step = require('../step');
 
 (function () {
   // Prohibit regular commits
-  if (!Git.amending()) throw Error(
+  if (!Git.gonnaAmend()) throw Error(
     'New commits are prohibited! Use `$ npm step -- push` instead'
   );
 

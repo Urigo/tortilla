@@ -21,9 +21,9 @@ function isCherryPicking() {
   return Utils.exists(Paths.git.heads.cherryPick) || Utils.exists(Paths.git.heads.revert);
 }
 
-// Tells if amending or not
-function isAmending() {
-  return Utils.runBy('git', ['--amend']);
+// Tells if going to amend or not
+function gonnaAmend() {
+  return Utils.runBy('git', ['commit', '--amend']);
 }
 
 // Tells if a tag exists or not
@@ -75,7 +75,7 @@ function commit(argv) {
 module.exports = Utils.extend(git.bind(null), git, {
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,
-  amending: isAmending,
+  gonnaAmend: gonnaAmend,
   tagExists: tagExists,
   recentCommit: getRecentCommit,
   stagedFiles: getStagedFiles,

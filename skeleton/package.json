@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "step": "node .tortilla/step",
-    "precommit": "node .tortilla/hooks/pre-commit"
+    "precommit": "node .tortilla/hooks/pre-commit",
+    "prerebase": "node .tortilla/hooks/pre-rebase"
   },
   "devDependencies": {
     "husky": "^0.11.8",

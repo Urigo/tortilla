@@ -18,34 +18,55 @@ npm.print = npmPrint;
 git.print = gitPrint;
 exec.print = execPrint;
 
+
 // Checks if one of the parent processes launched by the provided file and has
 // the provided arguments
-function isRunBy(file, argv) {
-  var processFormat = '{ "ppid": "%P", "file": "%c", "argv": "%a" }';
-  var processJson = { ppid: Number(process.pid) };
-  var processString;
-  var pid;
+function isRunBy(file, argv, offset) {
+  // There might be nested processes of the same file so we wanna go through all of them,
+  // This variable represents how much skips will be done anytime the file is found.
+  var trial = offset = offset || 0;
 
-  do {
-    pid = processJson.ppid;
-    if (!pid) return false;
+  // The current process would be the node's
+  var currProcess = {
+    file: process.title,
+    pid: process.pid,
+    argv: process.argv
+  };
 
-    processString = exec('ps', ['--no-headers', '-o', processFormat, '-p', pid]);
+  // Will abort once the file is found and there are no more skips left to be done
+  while (currProcess.file != file || trial--) {
+    // Get the parent process id
+    currProcess.pid = Number(getProcessData(currProcess.pid, 'ppid'));
+    // The root process'es id is 0 which means we've reached the limit
+    if (!currProcess.pid) return false;
 
-    processJson = JSON.parse(processString, function (k, v) {
-      switch (k) {
-        case 'ppid': return Number(v);
-        case 'file': return v.trim();
-        case 'argv': return v.trim().split(' ').slice(1);
-        default: return v;
-      }
-    });
+    currProcess.argv = getProcessData(currProcess.pid, 'command')
+      .split(' ')
+      .filter(Boolean);
 
-  } while (processJson.file != file);
+    // The first word in the command would be the file name
+    currProcess.file = currProcess.argv[0];
+    // The rest would be the arguments vector
+    currProcess.argv = currProcess.argv.slice(1);
+  }
 
-  return argv.every(function (arg) {
-    return processJson.argv.indexOf(arg) != -1;
+  // Make sure it has the provided arguments
+  var result = argv.every(function (arg) {
+    return currProcess.argv.indexOf(arg) != -1;
   });
+
+  // If this is not the file we're looking for keep going up in the processes tree
+  return result || isRunBy(file, argv, ++offset);
+}
+
+// Gets process data using 'ps' formatting
+function getProcessData(pid, format) {
+  if (arguments.length == 1) {
+    format = pid;
+    pid = process.pid;
+  }
+
+  return exec('ps', ['--no-headers', '-p', pid, '-o', format]);
 }
 
 // Spawn new process and print result to the terminal
@@ -136,6 +157,7 @@ function extend(destination) {
 
 module.exports = {
   runBy: isRunBy,
+  processData: getProcessData,
   npm: npm,
   node: node,
   git: git,

@@ -114,6 +114,13 @@ function rewordStep(step, message) {
   });
 }
 
+// Tells if going to rebase (edit or reword) step
+function gonnaRebase() {
+  var editor = process.env.GIT_SEQUENCE_EDITOR;
+  if (!editor) return false;
+  return !!editor.match(Paths.tortilla.editor);
+}
+
 // Add a new commit of the provided step with the provided message
 function commitStep(step, message, allowEmpty) {
   var optionalArgs = [];
@@ -288,6 +295,7 @@ module.exports = {
   tag: tagStep,
   edit: editStep,
   reword: rewordStep,
+  gonnaRebase: gonnaRebase,
   commit: commitStep,
   current: getCurrentStep,
   next: getNextStep,
