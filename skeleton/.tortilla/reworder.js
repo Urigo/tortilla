@@ -17,45 +17,25 @@ var Step = require('./step');
 
   var message = argv._[0];
 
-  var fixedMessage = getFixedMessage(message);
-  Git.commit.print(['--amend', '-m', fixedMessage]);
-})();
-
-// Launches the editor if no message provided and adds a step prefix if necessary
-function getFixedMessage(message) {
+  // Calculate next step based on the current commit's message
   var commitMessage = Git.recentCommit(['--format=%s']);
-  // Replace original message with the provided message
   var stepDescriptor = Step.descriptor(commitMessage);
-
-  // Skip editor
-  if (message) {
-    if (!stepDescriptor) return message;
-
-    var nextStep = getNextStep(stepDescriptor);
-    return 'Step ' + nextStep + ': ' + message;
-  }
-
-  // If we're editing root
-  if (!stepDescriptor) {
-    // Launch editor
-    Git.commit.print(['--amend']);
-    return Git.recentCommit(['--format=%B']);
-  }
-
-  // It's important to fetch the next step before we edit the commit since it depends
-  // on it's step number prefix, otherwise we might get an unexpected result
   var nextStep = getNextStep(stepDescriptor);
-  // Launch editor with the step's message
-  Git.commit(['--amend', '-m', stepDescriptor.message]);
-  Git.commit.print(['--amend']);
+  // Open the editor by default
+  var argv = ['commit', '--amend', '--allow-empty'];
+  // If message provided skip editor
+  if (message) argv.push('-m', message);
 
-  // Return the message with a step prefix
-  message = Git.recentCommit(['--format=%B']);
-  return 'Step ' + nextStep + ': ' + message;
-}
+  // Let git hooks do the rest
+  Git.print(argv, {
+    TORTILLA_NEXT_STEP: nextStep
+  });
+})();
 
 // Calculate the next step dynamically based on its super flag
 function getNextStep(stepDescriptor) {
+  if (!stepDescriptor) return;
+
   var isSubStep = !!stepDescriptor.number.split('.')[1];
   return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }

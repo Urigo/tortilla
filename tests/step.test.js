@@ -1,5 +1,16 @@
 const Chai = require('chai');
 
+/*
+  VERY IMPORTANT NOTE!
+
+  Since adding git-hooks, especially commit-message hooks, the step tasks became
+  dramatically slow. Git-hooks are something necessary hence for now I'm gonna leave
+  it. It seems like native git-hooks without using 'husky' as a middle-ware are much
+  faster. The plan would be seperating tortilla into two packages: 'tortilla-cli' and
+  'tortilla-core'. The 'tortilla-core' would be an npm package, once installed, it's
+  gonna create git-hooks as well in the '.git' dir, this way we can get rid of husky,
+  but until then, we should use this temporary solution.
+ */
 
 const expect = Chai.expect;
 

@@ -114,32 +114,15 @@ function rewordStep(step, message) {
   });
 }
 
-// Tells if going to rebase (edit or reword) step
-function gonnaRebase() {
-  var editor = process.env.GIT_SEQUENCE_EDITOR;
-  if (!editor) return false;
-  return !!editor.match(Paths.tortilla.editor);
-}
-
 // Add a new commit of the provided step with the provided message
 function commitStep(step, message, allowEmpty) {
-  var optionalArgs = [];
-  if (allowEmpty) optionalArgs.push('--allow-empty');
+  var argv = ['commit'];
+  if (message) argv.push('-m', message);
+  if (allowEmpty) argv.push('--allow-empty');
 
-  // If message was probided commit as expected
-  if (message) {
-    // Add step prefix
-    message = 'Step ' + step + ': ' + message;
-    return Git.commit.print(['-m', message].concat(optionalArgs));
-  }
-
-  // Open editor
-  Git.commit.print();
-  // Take the message we just typed
-  message = Git.recentCommit(['--format=%B']);
-  // Add step prefix
-  message = 'Step ' + step + ': ' + message;
-  return Git.commit.print(['--amend', '-m', message].concat(optionalArgs));
+  Git.print(argv, {
+    TORTILLA_NEXT_STEP: step
+  });
 }
 
 // Get the current step
@@ -295,7 +278,6 @@ module.exports = {
   tag: tagStep,
   edit: editStep,
   reword: rewordStep,
-  gonnaRebase: gonnaRebase,
   commit: commitStep,
   current: getCurrentStep,
   next: getNextStep,

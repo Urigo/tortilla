@@ -5,6 +5,8 @@
   "scripts": {
     "step": "node .tortilla/step",
     "precommit": "node .tortilla/hooks/pre-commit",
+    "preparecommitmsg": "node .tortilla/hooks/prepare-commit-msg",
+    "commitmsg": "node .tortilla/hooks/commit-msg",
     "prerebase": "node .tortilla/hooks/pre-rebase"
   },
   "devDependencies": {

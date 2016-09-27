@@ -7,6 +7,8 @@ var Step = require('../step');
  */
 
 (function () {
+  if (process.env.TORTILLA_CHILD_PROCESS) return;
+
   // Prohibit regular commits
   if (!Git.gonnaAmend()) throw Error(
     'New commits are prohibited! Use `$ npm step -- push` instead'

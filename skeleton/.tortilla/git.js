@@ -8,8 +8,6 @@ var Utils = require('./utils');
 
 var git = Utils.git;
 
-commit.print = commitPrint;
-
 
 // Tells if rebasing or not
 function isRebasing() {
@@ -59,18 +57,6 @@ function getStagedFiles(pattern) {
   return Utils.filterMatches(stagedFiles, pattern);
 }
 
-// Commit changes and print to the terminal
-function commitPrint(argv) {
-  argv = argv || [];
-  return git.print(['commit'].concat(argv).concat(['--allow-empty', '--no-verify']));
-}
-
-// Commit changes
-function commit(argv) {
-  argv = argv || [];
-  return git(['commit'].concat(argv).concat(['--allow-empty', '--no-verify']));
-}
-
 
 module.exports = Utils.extend(git.bind(null), git, {
   rebasing: isRebasing,
@@ -78,6 +64,5 @@ module.exports = Utils.extend(git.bind(null), git, {
   gonnaAmend: gonnaAmend,
   tagExists: tagExists,
   recentCommit: getRecentCommit,
-  stagedFiles: getStagedFiles,
-  commit: commit
+  stagedFiles: getStagedFiles
 });

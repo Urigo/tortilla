@@ -16,6 +16,12 @@ var gitHeads = {
   revert: resolve('.git/REVERT_HEAD')
 };
 
+var gitMessages = {
+  commit: resolve('.git/COMMIT_EDITMSG'),
+  merge: resolve('.git/MERGE_MSG'),
+  squash: resolve('.git/SQUASH_MSG')
+};
+
 var gitRefs = {
   _: resolve('.git/refs'),
   heads: resolve('.git/refs/heads'),
@@ -29,6 +35,7 @@ var git = {
   rebaseMerge: resolve('.git/rebase-merge'),
   rebaseApply: resolve('.git/rebase-apply'),
   heads: gitHeads,
+  messages: gitMessages,
   refs: gitRefs
 };
 
