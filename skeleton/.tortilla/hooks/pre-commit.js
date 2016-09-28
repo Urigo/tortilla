@@ -7,7 +7,7 @@ var Step = require('../step');
  */
 
 (function () {
-  if (process.env.TORTILLA_CHILD_PROCESS) return;
+  if (JSON.parse(process.env.TORTILLA_CHILD_PROCESS)) return;
 
   // Prohibit regular commits
   if (!Git.gonnaAmend()) throw Error(

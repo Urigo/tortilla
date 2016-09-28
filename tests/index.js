@@ -28,3 +28,4 @@ beforeEach(function () {
 
 // Tests
 require('./step.test');
+require('./hooks.test');

@@ -82,9 +82,9 @@ function execPrint(file, argv, env, input) {
     env = {};
   }
 
-  env = extend({}, process.env, env, {
+  env = extend({
     TORTILLA_CHILD_PROCESS: true
-  });
+  }, process.env, env);
 
   return ChildProcess.spawnSync(file, argv, {
     cwd: Paths._,
@@ -107,9 +107,9 @@ function exec(file, argv, env, input) {
     env = {};
   }
 
-  env = extend({}, process.env, env, {
+  env = extend({
     TORTILLA_CHILD_PROCESS: true
-  });
+  }, process.env, env);
 
   return ChildProcess.execFileSync(file, argv, {
     cwd: Paths._,

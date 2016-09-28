@@ -11,7 +11,7 @@ var Step = require('../step');
 
 (function () {
   // Amend is the only thing allowed by tortilla, the rest is irrelevant
-  if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) return;
+  if (!JSON.parse(process.env.TORTILLA_CHILD_PROCESS) && !Git.gonnaAmend()) return;
 
   var commitFileContent = Fs.readFileSync(Paths.git.messages.commit, 'utf8');
 
