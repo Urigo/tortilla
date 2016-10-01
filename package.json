@@ -8,7 +8,7 @@
     "url": "https://github.com/Urigo/tortilla.git"
   },
   "scripts": {
-    "test": "TORTILLA_STDIO=ignore mocha tests/index --timeout=15000"
+    "test": "TORTILLA_STDIO=ignore mocha tests/test --timeout=15000"
   },
   "dependencies": {
     "fs-extra": "^0.30.0",
