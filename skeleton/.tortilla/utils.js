@@ -158,6 +158,14 @@ function extend(destination) {
   return destination;
 }
 
+function padLeft(str, length, char) {
+  str = str.toString();
+  char = char || ' ';
+  var pad = Array(length + 1).join(char);
+
+  return pad.substr(0, pad.length - str.length) + str;
+}
+
 // Adds all descriptors from source to destination
 function delegateDescriptors(dst, src) {
   Object.getOwnPropertyNames(src).forEach(function (prop) {
@@ -184,6 +192,7 @@ module.exports = {
   exists: exists,
   filterMatches: filterMatches,
   extend: extend,
+  padLeft: padLeft,
   delegateDescriptors: delegateDescriptors,
   delegateDescriptor: delegateDescriptor
 };
