@@ -1,17 +1,18 @@
 var DiffParse = require('diff-parse');
-var Handlebars = require('.');
+var Handlebars = require('handlebars');
 var Git = require('../git');
 var Utils = require('../utils');
 
 /*
-  Renders step diff in a pretty markdown format. For example {{diff_step 1.1}}
+  Renders step diff in a pretty markdown format. For example {{{diff_step 1.1}}}
   will render as:
 
   [{]: <helper> (diff_step 1.1)
   #### Step 1.1
 
-  ##### file /path/to/file.js changed
+  ##### Changed /path/to/file.js
   ```diff
+  @@ -1,3 +1,3 @@
   +┊ ┊1┊foo
   -┊1┊ ┊bar
    ┊2┊2┊baz🚫⮐
@@ -44,11 +45,11 @@ Handlebars.registerMDHelper('diff_step', function(step) {
     var fileTitle;
 
     if (file.from != '/dev/null' && file.to != '/dev/null')
-      fileTitle = '##### file ' + file.from + ' changed';
+      fileTitle = '##### Changed ' + file.from;
     else if (file.from != '/dev/null')
-      fileTitle = '##### file ' + file.from + ' added';
+      fileTitle = '##### Added ' + file.from;
     else if (file.to != '/dev/null')
-      fileTitle = '##### file ' + file.to + ' deleted';
+      fileTitle = '##### Deleted ' + file.to;
 
     if (!fileTitle) return;
 

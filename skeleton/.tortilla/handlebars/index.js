@@ -1,4 +1,7 @@
+var Fs = require('fs');
+var Path = require('path');
 var Handlebars = require('handlebars');
+var Paths = require('../paths');
 
 /*
   Exports Handlebars with custom extensions. In addition, all the necessary helpers and
@@ -11,7 +14,7 @@ Handlebars.registerMDHelper = function (name, helper) {
   var wrappedHelper = function() {
     // Invoke original helper
     var out = helper.apply(null, arguments);
-    // If a string was not return let hadnlebars handle the error
+    // If a string was not return let hadnlebars handle it
     if (typeof out != 'string') return out;
 
     // Building parameters string including name e.g. 'diff_step 1.1'
@@ -20,7 +23,7 @@ Handlebars.registerMDHelper = function (name, helper) {
     params = params.join(' ');
 
     return [
-      '[{}]: <helper> (' + params + ')', out, '[}]: #'
+      '[{]: <helper> (' + params + ')', out, '[}]: #'
     ].join('\n');
   }
 
@@ -31,10 +34,22 @@ Handlebars.registerMDHelper = function (name, helper) {
 // [{]: <helper> (name ...params) ... [}]: #
 Handlebars.registerMDPartial = function (name, partial) {
   var wrappedPartial = [
-    '[{}]: <partial> (' + name + ')', partial, '[}]: #'
+    '[{]: <partial> (' + name + ')', partial, '[}]: #'
   ].join('\n');
 
   return Handlebars.registerPartial(name, wrappedPartial);
+}
+
+// Renders a given template with the given model. Usually it is better to read all
+// the templates once and hold it in memory, but since the process relaunches itself
+// and we end up reading only one template, it would be unnecessary to load the rest
+// of the templates, hence this method was created
+Handlebars.render = function(templateName, model) {
+  templateName = templateName + '-template.md'
+  var templatePath = Path.resolve(Paths.tortilla.templates, templateName);
+  var template = Fs.readFileSync(templatePath, 'utf8');
+
+  return Handlebars.compile(templatePath)(model);
 }
 
 
@@ -42,3 +57,4 @@ module.exports = Handlebars;
 
 // Custom helpers and partials
 require('./diff-step-helper');
+require('./nav-step-helper');

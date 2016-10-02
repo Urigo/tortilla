@@ -36,14 +36,14 @@ function upperFirst(str) {
 }
 
 // Fillin file template and rewrite it
-function fillinFile(path, replacements) {
+function fillinTemplateFile(path, replacements) {
   var template = Fs.readFileSync(path, 'utf8');
-  var content = fillin(template, replacements);
+  var content = fillinTemplate(template, replacements);
   return Fs.writeFileSync(path, content);
 }
 
 // Fillin ${strings} with the provided replacements
-function fillin(template, replacements) {
+function fillinTemplate(template, replacements) {
   return Object.keys(replacements).reduce(function (content, key) {
     var value = replacements[key];
     var pattern = new RegExp('\\$\\{' + key + '\\}', 'g');
@@ -74,7 +74,7 @@ module.exports = {
   splitWords: splitWords,
   lowerFirst: lowerFirst,
   upperFirst: upperFirst,
-  fillinFile: fillinFile,
-  fillin: fillin,
+  templateFile: fillinTemplateFile,
+  template: fillinTemplate,
   exists: exists
 };

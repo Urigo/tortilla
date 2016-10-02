@@ -47,14 +47,20 @@ var npm = {
 
 var tortilla = {
   _: resolve('.tortilla'),
+  collection: resolve('.tortilla/collection.js'),
   editor: resolve('.tortilla/editor.js'),
   git: resolve('.tortilla/git.js'),
+  model: resolve('.tortilla/model.js'),
   paths: resolve('.tortilla/paths.js'),
   retagger: resolve('.tortilla/retagger.js'),
   reworder: resolve('.tortilla/reworder.js'),
   step: resolve('.tortilla/step.js'),
   superPicker: resolve('.tortilla/super-picker.js'),
-  utils: resolve('.tortilla/utils.js')
+  utils: resolve('.tortilla/utils.js'),
+  handlebars: resolve('.tortilla/handlebars'),
+  hooks: resolve('.tortilla/hooks'),
+  mdParser: resolve('.tortilla/md-parser'),
+  templates: resolve('.tortilla/templates')
 };
 
 module.exports = {
