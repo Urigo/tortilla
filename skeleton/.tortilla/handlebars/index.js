@@ -46,10 +46,12 @@ Handlebars.registerMDPartial = function (name, partial) {
 // of the templates, hence this method was created
 Handlebars.render = function(templateName, model) {
   templateName = templateName + '-template.md'
+  model = model || {};
+
   var templatePath = Path.resolve(Paths.tortilla.templates, templateName);
   var template = Fs.readFileSync(templatePath, 'utf8');
 
-  return Handlebars.compile(templatePath)(model);
+  return Handlebars.compile(template)(model);
 }
 
 

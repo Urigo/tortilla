@@ -16,14 +16,6 @@ const expect = Chai.expect;
 
 
 describe('Step', function () {
-  beforeEach(function () {
-    this.step = require(`${this.testDir}/.tortilla/step`);
-
-    this.npm.step = (argv, ...args) => this.npm([
-      'run', 'step', '--'
-    ].concat(argv), ...args);
-  });
-
   describe('push()', function () {
     this.slow(1500);
 

@@ -30,28 +30,34 @@ var Utils = require('../utils');
  */
 
 Handlebars.registerMDHelper('diff_step', function(step) {
-  var stepHash = Git.recentCommit(['--grep=^Step ' + step, '--format=%h']);
+  var stepData = Git.recentCommit([
+    '--grep=^Step ' + step, '--format=%h %s'
+  ]).split(' ');
+
   // In case step doesn't exist just render the error message.
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
-  if (!stepHash) return 'STEP ' + step + ' NOT FOUND!';
+  if (!stepData) return 'STEP ' + step + ' NOT FOUND!';
 
-  var stepTitle = '#### Step ' + step;
-  var diff = Git(['diff', stepHash]);
+  var stepHash = stepData[0];
+  var stepMessage = stepData.slice(1).join(' ');
+
+  var stepTitle = '#### ' + stepMessage;
+  var diff = Git(['diff', stepHash + '~1']);
   // Convert diff string to json format
   var files = DiffParse(diff);
 
   var diffs = files.map(function (file) {
+    if (!file.from || !file.to) return;
+
     var fileTitle;
 
     if (file.from != '/dev/null' && file.to != '/dev/null')
       fileTitle = '##### Changed ' + file.from;
     else if (file.from != '/dev/null')
-      fileTitle = '##### Added ' + file.from;
+      fileTitle = '##### Deleted ' + file.from;
     else if (file.to != '/dev/null')
-      fileTitle = '##### Deleted ' + file.to;
-
-    if (!fileTitle) return;
+      fileTitle = '##### Added ' + file.to;
 
     var diff = '```diff\n' + getFileDiff(file) + '\n```';
 
@@ -79,11 +85,8 @@ function getFileDiff(file) {
   if (!lastLineNumber) return;
 
   var padLength = lastLineNumber.toString().length;
-  var postFix = '';
 
-  var diff = lines.map(function (line) {
-    if (line.content == '\\ No newline at end of file') return postFix = '🚫⮐';
-
+  return lines.map(function (line) {
     var addLineNum = '';
     var delLineNum = '';
     var sign = '';
@@ -109,15 +112,20 @@ function getFileDiff(file) {
       default: return;
     }
 
+    // If line operation not detected, abort
     if (!sign) return;
+    // In some cases the following line will appear if we didn't use '\n' at the end of
+    // file, as for now we will just return a placeholder and later on we will replace
+    // it again with something aesthetic
+    if (line.content == ' No newline at end of file') return '\\EOF';
 
-    addLineNum = Utils.padLeft(addLineNum, padLength);
-    delLineNum = Utils.padLeft(delLineNum, padLength);
+    addLineNum = Utils.pad(addLineNum, padLength);
+    delLineNum = Utils.pad(delLineNum, padLength);
 
     return sign + '┊' + delLineNum + '┊' + addLineNum + '┊' + line.content;
 
   }).filter(Boolean)
-    .join('\n');
-
-  return diff + postFix;
+    .join('\n')
+    // Replace our place holder and append it to the previous line
+    .replace('\n\\EOF', '🚫⮐');
 }

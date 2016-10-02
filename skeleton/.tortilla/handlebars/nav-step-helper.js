@@ -1,9 +1,10 @@
 var Handlebars = require('handlebars');
+var Git = require('../git');
 var Step = require('../step');
 
 
 Handlebars.registerMDHelper('nav_step', function() {
-  var stepCommitMessage = Step.recentStep('%s');
+  var stepCommitMessage = Step.recentCommit('%s');
 
   // Editing root
   if (!stepCommitMessage) return Handlebars.render('next-button', {

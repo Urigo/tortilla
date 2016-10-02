@@ -158,12 +158,14 @@ function extend(destination) {
   return destination;
 }
 
-function padLeft(str, length, char) {
+// Pad the provided string with the provided pad params from the left
+// '1' -> '00001'
+function pad(str, length, char) {
   str = str.toString();
   char = char || ' ';
-  var pad = Array(length + 1).join(char);
+  var chars = Array(length + 1).join(char);
 
-  return pad.substr(0, pad.length - str.length) + str;
+  return chars.substr(0, chars.length - str.length) + str;
 }
 
 // Adds all descriptors from source to destination
@@ -192,7 +194,7 @@ module.exports = {
   exists: exists,
   filterMatches: filterMatches,
   extend: extend,
-  padLeft: padLeft,
+  pad: pad,
   delegateDescriptors: delegateDescriptors,
   delegateDescriptor: delegateDescriptor
 };

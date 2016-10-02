@@ -7,6 +7,12 @@ before(function () {
   // Consts
   this.testDir = '/tmp/tortilla_test';
   this.libDir = Path.resolve(__dirname, '..');
+
+  // Utils
+  this.readFile = (put, file) => {
+    const filePath = Path.resolve(__dirname, 'fs-data', put, file);
+    return Fs.readFileSync(filePath, 'utf8');
+  };
 });
 
 beforeEach(function () {
@@ -22,10 +28,27 @@ beforeEach(function () {
 
   // Assigning utils for easy access
   Object.assign(this, require(`${this.testDir}/.tortilla/utils`));
+
+  // Project executors
   this.git = require(`${this.testDir}/.tortilla/git`);
+  this.handlebars = require(`${this.testDir}/.tortilla/handlebars`);
+  this.step = require(`${this.testDir}/.tortilla/step`);
+
+  // Project utils
+  this.npm.step = (argv, ...args) => this.npm([
+    'run', 'step', '--'
+  ].concat(argv), ...args);
+
+  this.git.apply = (patchName) => {
+    const patchPath = Path.resolve(__dirname, 'fs-data/in', patchName + '.patch');
+    return this.git(['am', patchPath]);
+  };
 });
 
 
+// Plugins
+require('./assertions');
 // Tests
 require('./step-test');
 require('./hooks-test');
+require('./template-helpers-test');
