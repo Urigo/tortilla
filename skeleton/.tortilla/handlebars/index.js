@@ -5,7 +5,9 @@ var Paths = require('../paths');
 
 /*
   Exports Handlebars with custom extensions. In addition, all the necessary helpers and
-  partials will be loaded as well once this module is being imported.
+  partials will be loaded as well once this module is being imported. There is a great
+  probability that Handlebars will be replaced with a self-implemented view engine since
+  we don't use most of handlebar's features and it would be a waste to load it.
  */
 
 // Helpers registered using this function will be wrapped by

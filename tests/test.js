@@ -32,6 +32,7 @@ beforeEach(function () {
   // Project executors
   this.git = require(`${this.testDir}/.tortilla/git`);
   this.handlebars = require(`${this.testDir}/.tortilla/handlebars`);
+  this.mdParser = require(`${this.testDir}/.tortilla/md-parser`);
   this.step = require(`${this.testDir}/.tortilla/step`);
 
   // Project utils
@@ -52,3 +53,4 @@ require('./assertions');
 require('./step-test');
 require('./hooks-test');
 require('./template-helpers-test');
+require('./md-parser-test');

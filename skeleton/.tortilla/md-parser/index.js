@@ -1,5 +1,6 @@
 var MDBlocksCollection = require('./md-blocks-collection');
 var MDBlock = require('./md-block-model');
+var MDTextBlock = require('./md-text-block-model');
 
 /*
   Markdown parser will parse a given markdown into a collection of blocks.
@@ -12,25 +13,35 @@ function parseAllBlocks(md, recursive) {
 
   var offset = 0;
   var block = parseFirstBlock(md, recursive);
+  // If block is not defined it means we finished a recursive operation
+  if (!block) return blocks;
+
+  if (block.start != 0) {
+    var text = new MDTextBlock({
+      start: 0,
+      end: block.start - 1
+    }, md, recursive);
+
+    blocks.push(text);
+  }
 
   // As long as there is a block join them with a text block whos type and name are non
   while (block) {
     // Check the block is the first chunk in the recent markdown
-    if (block.start) {
+    if (offset) {
       // If so, update the indices with the stored offset
       block.start += offset;
       block.end += offset;
 
       // Generate a text block with the leftover
-      var text = new MDBlock({
-        type: '',
-        name: '',
-        params: [],
-        start: offset,
-        end: block.start - 1 // Remove line skip
-      }, md, recursive);
+      if (offset != block.start) {
+        var text = new MDTextBlock({
+          start: offset,
+          end: block.start - 1 // Remove line skip
+        }, md, recursive);
 
-      blocks.push(text);
+        blocks.push(text);
+      }
     }
 
     blocks.push(block);
@@ -43,10 +54,7 @@ function parseAllBlocks(md, recursive) {
 
   // Checks if there are leftovers and if so put it in a text block
   if (offset <= md.length) {
-    var text = new MDBlock({
-      type: '',
-      name: '',
-      params: [],
+    var text = new MDTextBlock({
       start: offset,
       end: md.length
     }, md, recursive);
