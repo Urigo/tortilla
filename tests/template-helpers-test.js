@@ -38,6 +38,13 @@ describe('Template Helpers', function() {
       const view = this.handlebars.compile('{{{diff_step 1.2}}}')();
       expect(view).to.be.a.markdown('rename-file');
     });
+
+    it('should render an error message if step not found', function () {
+      this.git.apply('add-file');
+
+      const view = this.handlebars.compile('{{{diff_step 1.3}}}')();
+      expect(view).to.be.a.markdown('step-not-found');
+    });
   });
 
   describe('nav_step', function () {
