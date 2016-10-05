@@ -115,6 +115,15 @@ describe('MDParser', function () {
     });
 
     describe('Result', function () {
+      describe('toTemplate()', function () {
+        it('should convert known block types into md-renderer components', function () {
+          const md = this.readFile('in', 'template-blocks.md');
+          const blocks = this.mdParser.parse(md, true);
+
+          expect(blocks.toTemplate()).to.be.a.markdown('blocks-template');
+        });
+      });
+
       describe('toString()', function () {
         it('should render the content when dealing with string operations', function () {
           const md = this.readFile('in', 'blocks-series.md');

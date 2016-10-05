@@ -14,8 +14,7 @@ var Model = require('../model');
     type: 'partial',
     name: 'print',
     params: [1, 2, 3],
-    start: 0, // substr start-index
-    end: 15, // substr end-index
+    start: 0,
     content: '  1, 2, 3'
   }
  */
@@ -40,6 +39,15 @@ function MDBlock(props, md, recursive) {
     this.start + this.open.length + margin,
     this.end - this.close.length - margin
   );
+
+  // Reset 'end' property to be dynamic to content's length in case it is changed
+  Object.defineProperty(this, 'end', {
+    configurable: true,
+    enumerable: true,
+    get: function () {
+      return this.start + this.wrapped.length;
+    }
+  });
 
   // We can specfy recursive level, if recursive is true then it will be converted
   // to Infinity, if it's false then it wil be converted to 0
