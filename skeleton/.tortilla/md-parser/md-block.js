@@ -53,24 +53,19 @@ function MDBlock(props, md, recursive) {
   // to Infinity, if it's false then it wil be converted to 0
   if (typeof recursive == 'boolean') recursive = Infinity * +recursive;
   // If this is a plain text it should have no children
-  if (this.type && recursive > 0) this.blocks = MD.parse(this.content, --recursive);
+  if (recursive > 0) this.blocks = MD.parse(this.content, --recursive);
 }
 
 MDBlock.prototype = Object.create(Model.prototype, {
   // The content wrapped with open and close e.g. [{] & [}]
   wrapped: {
     get: function () {
-      // For plain text there is no close and open
-      if (!this.type) return this.content;
       return [this.open, this.content, this.close].join('\n');
     }
   },
   // e.g. [}]: <type> (name ...params)
   open: {
     get: function () {
-      // For plain text there is no open
-      if (!this.type) return '';
-
       var params = []
         .concat(this.name)
         .concat(this.params)
@@ -82,25 +77,13 @@ MDBlock.prototype = Object.create(Model.prototype, {
   // e.g. [}]: #
   close: {
     get: function () {
-      // For plain text there is no get
-      if (!this.type) return '';
       return '[}]: #';
     }
   },
   // Convert to template string which can be handled by md-renderer
   toTemplate: {
     value: function () {
-      if (!this.type) return this.toString();
-
-      // Full params string including name
-      var params = [this.name].concat(this.params).join(' ');
-
-      switch (this.type) {
-        case 'helper': return '{{{' + params + '}}}';
-        case 'partial': return '{{>' + params + '}}';
-      }
-
-      // In any other case convert recursively. Note that if this collection
+      // Convert recursively. Note that if this collection
       // was not created in a recursive operation then the recursive conversion
       // will seem like it doesn't take any affect
       return [this.open, this.blocks.toTemplate(), this.close].join('\n');

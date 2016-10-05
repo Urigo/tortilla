@@ -73,7 +73,7 @@ function registerHelper(name, helper) {
   }
 
   // Chainable
-  return this;
+  return module.exports;
 }
 
 // Register a new partial. Registered partials will be wrapped with a
@@ -84,7 +84,7 @@ function registerPartial(name, partial) {
   ].join('\n');
 
   // Chainable
-  return this;
+  return module.exports;
 }
 
 

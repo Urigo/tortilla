@@ -1,10 +1,13 @@
 var MDBlocksCollection = require('./md-blocks-collection');
-var MDBlock = require('./md-block-model');
-var MDTextBlock = require('./md-text-block-model');
+var MDBlock = require('./md-block');
+var MDTextBlock = require('./md-text-block');
 
 /*
   Markdown parser will parse a given markdown into a collection of blocks.
  */
+
+ var Blocks = {};
+
 
 // Returns a blocks collection of the provided markdown string
 function parseAllBlocks(md, recursive) {
@@ -103,10 +106,33 @@ function parseFirstBlock(md, recursive) {
     }
   }
 
-  return new MDBlock(props, md, recursive);
+  // Search for the appropriate block model
+  var Block = Blocks[props.type] || MDBlock;
+  // Initialize a new instance of it
+  return new Block(props, md, recursive);
+}
+
+// Let's you define a custom block type which will be used in the parsing process
+function registerBlockType(type, descriptors) {
+  // Create inheriting class dynamically
+  var Block = function () {
+    return MDBlock.apply(this, arguments);
+  }
+
+  Block.prototype = Object.create(MDBlock.prototype, descriptors);
+
+  // If everything went well, stash it
+  Blocks[type] = Block;
+  // Chainable
+  return module.exports;
 }
 
 
 module.exports = {
-  parse: parseAllBlocks
+  parse: parseAllBlocks,
+  registerBlockType: registerBlockType
 };
+
+// Built-in block types
+require('./md-helper-block');
+require('./md-partial-block');
