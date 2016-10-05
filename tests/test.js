@@ -31,8 +31,8 @@ beforeEach(function () {
 
   // Project executors
   this.git = require(`${this.testDir}/.tortilla/git`);
-  this.handlebars = require(`${this.testDir}/.tortilla/handlebars`);
   this.mdParser = require(`${this.testDir}/.tortilla/md-parser`);
+  this.mdRenderer = require(`${this.testDir}/.tortilla/md-renderer`);
   this.step = require(`${this.testDir}/.tortilla/step`);
 
   // Project utils

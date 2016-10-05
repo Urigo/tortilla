@@ -49,11 +49,11 @@ var Utils = require('./utils');
   var title = Utils.startCase(projectName);
 
   // Fillin template files
-  Utils.templateFile(TempPaths.npm.package, {
+  Utils.overwriteTemplateFile(TempPaths.npm.package, {
     name: packageName,
   });
 
-  Utils.templateFile(TempPaths.readme, {
+  Utils.overwriteTemplateFile(TempPaths.readme, {
     title: title
   });
 

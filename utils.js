@@ -1,7 +1,9 @@
 var Fs = require('fs');
 
 /*
-  Contains general utilities.
+  Contains general utilities. Note that some of the utilities are the same as tortilla's
+  skeleton. That's because tortilla should be seperated into two packages (cli & core)
+  and one shall not be dependent on the other.
  */
 
 // foo_barBaz -> foo-bar-baz
@@ -35,20 +37,25 @@ function upperFirst(str) {
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 }
 
-// Fillin file template and rewrite it
-function fillinTemplateFile(path, replacements) {
-  var template = Fs.readFileSync(path, 'utf8');
-  var content = fillinTemplate(template, replacements);
-  return Fs.writeFileSync(path, content);
+// Read the provided file, render it, and overwrite it. Use with caution!
+function overwriteTemplateFile(templatePath, scope) {
+  var view = renderTemplateFile(templatePath, scope);
+  return Fs.writeFileSync(templatePath, view);
 }
 
-// Fillin ${strings} with the provided replacements
-function fillinTemplate(template, replacements) {
-  return Object.keys(replacements).reduce(function (content, key) {
-    var value = replacements[key];
-    var pattern = new RegExp('\\$\\{' + key + '\\}', 'g');
-    return content.replace(pattern, value);
-  }, template);
+// Read provided file and render its template
+function renderTemplateFile(templatePath, scope) {
+  var template = Fs.readFileSync(templatePath, 'utf8');
+  return renderTemplate(template, scope);
+}
+
+// Render provided tempalte
+function renderTemplate(template, scope) {
+  scope = scope || {};
+
+  return template.replace(/\{\{(.*)\}\}/g, function (match, modelName) {
+    return scope[modelName];
+  });
 }
 
 // Tells if entity exists or not by an optional document type
@@ -74,7 +81,8 @@ module.exports = {
   splitWords: splitWords,
   lowerFirst: lowerFirst,
   upperFirst: upperFirst,
-  templateFile: fillinTemplateFile,
-  template: fillinTemplate,
+  overwriteTemplateFile: overwriteTemplateFile,
+  renderTemplateFile: renderTemplateFile,
+  renderTemplate: renderTemplate,
   exists: exists
 };

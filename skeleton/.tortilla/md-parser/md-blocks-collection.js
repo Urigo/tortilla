@@ -19,7 +19,6 @@ MDBlocksCollection.prototype = Object.create(Collection.prototype, {
       }).join('\n');
     }
   },
-
   // Print the original markdown string
   valueOf: {
     configurable: true,

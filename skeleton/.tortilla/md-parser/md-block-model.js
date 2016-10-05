@@ -20,7 +20,7 @@ var Model = require('../model');
   }
  */
 
-// These will be loaded at the end of the module
+// These will be loaded at the first instance initialization
 var MDBlocksCollection;
 var MD;
 
@@ -57,7 +57,6 @@ MDBlock.prototype = Object.create(Model.prototype, {
       return [this.open, this.content, this.close].join('\n');
     }
   },
-
   // e.g. [}]: <type> (name ...params)
   open: {
     get: function () {
@@ -72,7 +71,6 @@ MDBlock.prototype = Object.create(Model.prototype, {
       return '[{]: <' + this.type + '> (' + params + ')';
     }
   },
-
   // e.g. [}]: #
   close: {
     get: function () {
@@ -81,7 +79,6 @@ MDBlock.prototype = Object.create(Model.prototype, {
       return '[}]: #';
     }
   },
-
   toString: {
     configurable: true,
     writable: true,
@@ -89,7 +86,6 @@ MDBlock.prototype = Object.create(Model.prototype, {
       return this.wrapped;
     }
   },
-
   valueOf: {
     configurable: true,
     writable: true,

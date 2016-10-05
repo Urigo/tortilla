@@ -1,5 +1,5 @@
 var ParseDiff = require('parse-diff');
-var Handlebars = require('handlebars');
+var MDRenderer = require('.');
 var Git = require('../git');
 var Utils = require('../utils');
 
@@ -20,7 +20,7 @@ var Utils = require('../utils');
   [}]: #
  */
 
-Handlebars.registerMDHelper('diff_step', function(step) {
+MDRenderer.registerHelper('diff_step', function(step) {
   var stepData = Git.recentCommit([
     '--grep=^Step ' + step, '--format=%h %s'
   ]).split(' ')
@@ -46,6 +46,7 @@ Handlebars.registerMDHelper('diff_step', function(step) {
   return stepTitle + '\n\n' + mdDiffs;
 });
 
+// Gets all diff chunks in a markdown format for a single file
 function getMdDiff(file) {
   var fileTitle;
 
@@ -63,6 +64,7 @@ function getMdDiff(file) {
   return fileTitle + '\n' + mdChunks;
 }
 
+// Gets diff in a markdown format for a single chunk
 function getMdChunk(chunk) {
   // Grab chunk data since it's followed by unrelevant content
   var chunkData = chunk.content.match(/@@ [\+\-]\d+,\d+ [\+\-]\d+,\d+ @@/)[0];
@@ -82,14 +84,18 @@ function getMdChunk(chunk) {
   var mdChanges = chunk.changes
     .map(getMdChange.bind(null, padLength))
     .join('\n')
-    // Replace EOF with something more asthetic and append it to the last line
+    // Replace EOF flag with a pretty format and append it to the recent line
     .replace('\n\\ No newline at end of file', '🚫↵');
 
   // Wrap changes with markdown 'diff'
   return ['```diff', chunkData, mdChanges, '```'].join('\n');
 }
 
+// Gets line in a markdown format for a single change
 function getMdChange(padLength, change) {
+  // No newline at end of file
+  if (change.content[0] == '\\') return change.content;
+
   var addLineNum = '';
   var delLineNum = '';
   var sign = '';
@@ -112,12 +118,9 @@ function getMdChange(padLength, change) {
       break;
   }
 
-  // No newline at end of file
-  if (!addLineNum && !delLineNum) return change.content;
-
   addLineNum = Utils.pad(addLineNum, padLength);
   delLineNum = Utils.pad(delLineNum, padLength);
 
   // Using content.slice(1) since we want to remove '-\+' prefixes
-  return sign + '┊' + delLineNum + '┊' + addLineNum + '┊' + change.content.slice(1);
+  return [sign, delLineNum, addLineNum, change.content.slice(1)].join('┊');
 }

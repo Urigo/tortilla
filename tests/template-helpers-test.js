@@ -11,7 +11,7 @@ describe('Template Helpers', function() {
     it('should render an added file', function () {
       this.git.apply('add-file');
 
-      const view = this.handlebars.compile('{{{diff_step 1.1}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{diff_step 1.1}}}');
       expect(view).to.be.a.markdown('add-file');
     });
 
@@ -19,7 +19,7 @@ describe('Template Helpers', function() {
       this.git.apply('add-file');
       this.git.apply('change-file');
 
-      const view = this.handlebars.compile('{{{diff_step 1.2}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{diff_step 1.2}}}');
       expect(view).to.be.a.markdown('change-file');
     });
 
@@ -27,7 +27,7 @@ describe('Template Helpers', function() {
       this.git.apply('add-file');
       this.git.apply('delete-file');
 
-      const view = this.handlebars.compile('{{{diff_step 1.2}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{diff_step 1.2}}}');
       expect(view).to.be.a.markdown('delete-file');
     });
 
@@ -35,14 +35,14 @@ describe('Template Helpers', function() {
       this.git.apply('add-file');
       this.git.apply('rename-file');
 
-      const view = this.handlebars.compile('{{{diff_step 1.2}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{diff_step 1.2}}}');
       expect(view).to.be.a.markdown('rename-file');
     });
 
     it('should render an error message if step not found', function () {
       this.git.apply('add-file');
 
-      const view = this.handlebars.compile('{{{diff_step 1.3}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{diff_step 1.3}}}');
       expect(view).to.be.a.markdown('step-not-found');
     });
   });
@@ -59,28 +59,28 @@ describe('Template Helpers', function() {
     it('should render a button referencing to the first step when editing the root commit', function () {
       this.npm.step(['edit', '--root']);
 
-      const view = this.handlebars.compile('{{{nav_step}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{nav_step}}}');
       expect(view).to.be.a.markdown('begin-tutorial');
     });
 
     it('should render a button referencing to the second step when editing the first step', function () {
       this.npm.step(['edit', '1']);
 
-      const view = this.handlebars.compile('{{{nav_step}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{nav_step}}}');
       expect(view).to.be.a.markdown('next-step');
     });
 
     it('should render a button referencing to the previous step when editing the last step', function () {
       this.npm.step(['edit', '3']);
 
-      const view = this.handlebars.compile('{{{nav_step}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{nav_step}}}');
       expect(view).to.be.a.markdown('prev-step');
     });
 
     it('should render navigation buttons when editing a step in the middle of the stack', function () {
       this.npm.step(['edit', '2']);
 
-      const view = this.handlebars.compile('{{{nav_step}}}')();
+      const view = this.mdRenderer.renderTemplate('{{{nav_step}}}');
       expect(view).to.be.a.markdown('nav-steps');
     });
   });

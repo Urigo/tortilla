@@ -57,9 +57,9 @@ var tortilla = {
   step: resolve('.tortilla/step.js'),
   superPicker: resolve('.tortilla/super-picker.js'),
   utils: resolve('.tortilla/utils.js'),
-  handlebars: resolve('.tortilla/handlebars'),
   hooks: resolve('.tortilla/hooks'),
   mdParser: resolve('.tortilla/md-parser'),
+  mdRenderer: resolve('.tortilla/md-renderer'),
   templates: resolve('.tortilla/templates')
 };
 
