@@ -16,15 +16,16 @@ function parseAllBlocks(md, recursive) {
 
   var offset = 0;
   var block = parseFirstBlock(md, recursive);
-  // If block is not defined it means we finished a recursive operation
-  if (!block) return blocks;
 
-  if (block.start != 0) {
-    var text = new MDTextBlock({
-      start: 0,
-      end: block.start - 1
-    }, md, recursive);
+  // If block not found it means we finished a recursive operation
+  if (!block) {
+    var text = new MDTextBlock(md);
+    blocks.push(text);
+    return blocks;
+  }
 
+  if (block._start != 0) {
+    var text = new MDTextBlock(md.slice(0, block._start - 1));
     blocks.push(text);
   }
 
@@ -33,16 +34,12 @@ function parseAllBlocks(md, recursive) {
     // Check the block is the first chunk in the recent markdown
     if (offset) {
       // If so, update the indices with the stored offset
-      block.start += offset;
-      block.end += offset;
+      block._start += offset;
+      block._end += offset;
 
       // Generate a text block with the leftover
-      if (offset != block.start) {
-        var text = new MDTextBlock({
-          start: offset,
-          end: block.start - 1 // Remove line skip
-        }, md, recursive);
-
+      if (offset != block._start) {
+        var text = new MDTextBlock(md.slice(offset, block._start - 1));
         blocks.push(text);
       }
     }
@@ -50,66 +47,42 @@ function parseAllBlocks(md, recursive) {
     blocks.push(block);
 
     // Add line skip
-    offset = block.end + 1;
+    offset = block._end + 1;
     // Generate next blocks from the current block's end index
     block = parseFirstBlock(md.substr(offset), recursive);
   }
 
   // Checks if there are leftovers and if so put it in a text block
   if (offset <= md.length) {
-    var text = new MDTextBlock({
-      start: offset,
-      end: md.length
-    }, md, recursive);
-
+    var text = new MDTextBlock(md.slice(offset, md.length));
     blocks.push(text);
   }
 
   return blocks;
 }
 
-// Parses the first block detected in a given markdown string
 function parseFirstBlock(md, recursive) {
-  // e.g. [}]: <match1> (match2)
-  var match = md.match(/\[\{\]: <([^>]*)> \(([^\)]*)\)/);
+  var match = md.match(/\[\{\]: <([^>]*)> \([^\)]*\)/);
   if (!match) return;
 
-  // e.g. [name, param1, param2]
-  var split = match[2].split(' ');
+  var type = match[1];
+  var Block = Blocks[type] || MDBlock;
+  return new Block(md, recursive);
+}
 
-  var props = {
-    type: match[1],
-    name: split[0],
-    params: split.slice(1),
-    start: match.index,
-    end: match.index + match[0].length
-  };
-
-  // e.g. [{] or [}]
-  var pattern = /\[(\{|\})\]: .+/;
-  var nested = 1;
-
-  // Handle opening and closing and try to find the matching closing
-  while (nested) {
-    match = md.substr(props.end).match(pattern);
-    // If no match found and we kept going on in this loop it means that there is
-    // no closing to the detected block start
-    if (!match) throw Error(props.type + ' ' + props.name + ' close not found');
-
-    // Calculate with offset
-    props.end += match.index + match[0].length;
-
-    // Update the number of blocks open we had so far
-    switch (match[1]) {
-      case '{': ++nested; break;
-      case '}': --nested; break;
-    }
+// Returns content wrapped by block open and close
+function wrapBlockContent(type, name, params, content) {
+  if (!content) {
+    content = params;
+    params = [];
   }
 
-  // Search for the appropriate block model
-  var Block = Blocks[props.type] || MDBlock;
-  // Initialize a new instance of it
-  return new Block(props, md, recursive);
+  // Building parameters string including name e.g. 'diff_step 1.1'
+  params = [name].concat(params).join(' ');
+
+  return [
+    '[{]: <' + type + '> (' + params + ')', content, '[}]: #'
+  ].join('\n');
 }
 
 // Let's you define a custom block type which will be used in the parsing process
@@ -130,6 +103,7 @@ function registerBlockType(type, descriptors) {
 
 module.exports = {
   parse: parseAllBlocks,
+  wrap: wrapBlockContent,
   registerBlockType: registerBlockType
 };
 

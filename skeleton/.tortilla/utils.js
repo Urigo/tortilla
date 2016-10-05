@@ -168,21 +168,6 @@ function pad(str, length, char) {
   return chars.substr(0, chars.length - str.length) + str;
 }
 
-// Adds all descriptors from source to destination
-function delegateDescriptors(dst, src) {
-  Object.getOwnPropertyNames(src).forEach(function (prop) {
-    delegateDescriptor(dst, src, prop);
-  });
-
-  return dst;
-}
-
-// Adds descriptor from source to destination
-function delegateDescriptor(dst, src, prop) {
-  var descriptor = Object.getOwnPropertyDescriptor(src, prop);
-  return Object.defineProperty(dst, prop, descriptor);
-}
-
 
 module.exports = {
   runBy: isRunBy,
@@ -194,7 +179,5 @@ module.exports = {
   exists: exists,
   filterMatches: filterMatches,
   extend: extend,
-  pad: pad,
-  delegateDescriptors: delegateDescriptors,
-  delegateDescriptor: delegateDescriptor
+  pad: pad
 };

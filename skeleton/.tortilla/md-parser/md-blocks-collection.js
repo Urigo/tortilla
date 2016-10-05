@@ -1,14 +1,13 @@
-var Collection = require('../collection');
-
 /*
   A collection of block models.
  */
 
 function MDBlocksCollection() {
-  Collection.apply(this, arguments);
+  Array.apply(this, arguments);
 }
 
-MDBlocksCollection.prototype = Object.create(Collection.prototype, {
+// There shouldn't be any major issues when inheriting from an array on NodeJS platform
+MDBlocksCollection.prototype = Object.create(Array.prototype, {
   // Convert blocks to template string which can be handled by md-renderer
   toTemplate: {
     value: function() {
@@ -17,7 +16,7 @@ MDBlocksCollection.prototype = Object.create(Collection.prototype, {
       }).join('\n');
     }
   },
-  // Print the original markdown string
+  // Join all md-block strings
   toString: {
     configurable: true,
     writable: true,
@@ -27,7 +26,7 @@ MDBlocksCollection.prototype = Object.create(Collection.prototype, {
       }).join('\n');
     }
   },
-  // Print the original markdown string
+  // Join all md-block values
   valueOf: {
     configurable: true,
     writable: true,

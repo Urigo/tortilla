@@ -5,40 +5,28 @@ var Utils = require('../utils');
   Represents a text block in a markdown file aka a plain block with no open and start.
  */
 
-function MDTextBlock(props, md) {
-  props = Utils.extend({}, {
-    type: '',
-    name: '',
-    params: []
-  }, props);
-
+function MDTextBlock(md) {
   // A text block can't be recursive
-  MDBlock.call(this, props, md);
+  MDBlock.call(this, md);
 }
 
 MDTextBlock.prototype = Object.create(MDBlock.prototype, {
-  // A text block is exceptional and can't be wrapped
-  wrapped: {
+  // A text block doesn't contain any blocks at all
+  toTemplate: {
+    value: function () {
+      return this.content;
+    }
+  },
+  // Text blocks are not wrapped
+  toString: {
     get: function () {
       return this.content;
     }
   },
-  // Since it isn't wrapped it doesn't have an openning
-  open: {
+  // Text blocks are not wrapped
+  valueOf: {
     get: function () {
-      return '';
-    }
-  },
-  // Since it isn't wrapped it doesn't have a closing
-  close: {
-    get: function () {
-      return '';
-    }
-  },
-  // A text block doesn't contain any blocks at all
-  toTemplate: {
-    value: function () {
-      return this.toString();
+      return this.content;
     }
   }
 });

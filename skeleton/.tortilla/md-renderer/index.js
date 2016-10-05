@@ -1,5 +1,6 @@
 var Fs = require('fs');
 var Path = require('path');
+var MDParser = require('../md-parser');
 var Paths = require('../paths');
 
 /*
@@ -62,14 +63,8 @@ function registerHelper(name, helper) {
       'Instead it returned', out
     ].join(' '));
 
-    // Building parameters string including name e.g. 'diff_step 1.1'
     var params = [].slice.call(arguments);
-    params.unshift(name);
-    params = params.join(' ');
-
-    return [
-      '[{]: <helper> (' + params + ')', out, '[}]: #'
-    ].join('\n');
+    return MDParser.parse('helper', name, params, out);
   }
 
   // Chainable
@@ -79,10 +74,7 @@ function registerHelper(name, helper) {
 // Register a new partial. Registered partials will be wrapped with a
 // [{]: <partial> (name) [}]: #
 function registerPartial(name, partial) {
-  partials[name] = [
-    '[{]: <partial> (' + name + ')', partial, '[}]: #'
-  ].join('\n');
-
+  partials[name] = MDParser.wrap('partial', name, partial);
   // Chainable
   return module.exports;
 }

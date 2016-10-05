@@ -1,11 +1,9 @@
-var Model = require('../model');
-
 /*
   The block model represents a single 'block' in a markdown file generated automatically
   by tortilla right after using Handlebars helpers. Example:
 
   [{]: <partial> (print 1 2 3)
-    1, 2, 3
+  1, 2, 3
   [}]: #
 
   Would be presented like the following in a block:
@@ -14,93 +12,98 @@ var Model = require('../model');
     type: 'partial',
     name: 'print',
     params: [1, 2, 3],
-    start: 0,
-    content: '  1, 2, 3'
+    content: '1, 2, 3'
   }
  */
 
 // These will be loaded at the first instance initialization
 var MDBlocksCollection;
-var MD;
+var MDParser;
 
 
-function MDBlock(props, md, recursive) {
+function MDBlock(md, recursive) {
   // Note that if they were'nt loaded here then we would have had a circular dependency
   MDBlocksCollection = MDBlocksCollection || require('./md-blocks-collection');
-  MD = MD || require('.');
+  MDParser = MDParser || require('.');
 
-  Model.call(this, props);
-  this.blocks = new MDBlocksCollection();
+  // e.g. [{]: <match1> (match2)
+  var match = md.match(/\[\{\]: <([^>]*)> \(([^\)]*)\)/);
 
-  // The margin represents a line skip, for plain text there is no line skip
-  var margin = +!!this.type;
+  if (!match) {
+    this.type = '';
+    this.name = '';
+    this.params = [];
+    this.content = md;
+    this.blocks = new MDBlocksCollection();
 
-  this.content = md.slice(
-    this.start + this.open.length + margin,
-    this.end - this.close.length - margin
-  );
+    return this;
+  };
 
-  // Reset 'end' property to be dynamic to content's length in case it is changed
-  Object.defineProperty(this, 'end', {
-    configurable: true,
-    enumerable: true,
-    get: function () {
-      return this.start + this.wrapped.length;
+  this.type = match[1];
+  this.params = match[2].split(' ');
+  this.name = this.params.shift();
+  this._start = match.index;
+  this._end = match.index + match[0].length;
+
+  // e.g. [{] or [}]
+  var pattern = /\[(\{|\})\]: .+/;
+  var nested = 1;
+
+  // Handle opening and closing and try to find the matching closing
+  while (nested) {
+    match = md.substr(this._end).match(pattern);
+    // If no match found and we kept going on in this loop it means that there is
+    // no closing to the detected block start
+    if (!match) throw Error(this.type + ' \'' + this.name + '\' close not found');
+
+    // Calculate with offset
+    this._end += match.index + match[0].length;
+
+    // Update the number of blocks open we had so far
+    switch (match[1]) {
+      case '{': ++nested; break;
+      case '}': --nested; break;
     }
-  });
+  }
 
-  // We can specfy recursive level, if recursive is true then it will be converted
-  // to Infinity, if it's false then it wil be converted to 0
-  if (typeof recursive == 'boolean') recursive = Infinity * +recursive;
-  // If this is a plain text it should have no children
-  if (recursive > 0) this.blocks = MD.parse(this.content, --recursive);
+  this.content = md
+    .slice(this._start, this._end)
+    .split('\n')
+    .slice(1)
+    .slice(0, -1)
+    .join('\n');
+
+  if (recursive === true) recursive = Infinity;
+
+  this.blocks = recursive > 0
+    ? MDParser.parse(this.content, --recursive)
+    : new MDBlocksCollection();
 }
 
-MDBlock.prototype = Object.create(Model.prototype, {
-  // The content wrapped with open and close e.g. [{] & [}]
-  wrapped: {
-    get: function () {
-      return [this.open, this.content, this.close].join('\n');
-    }
-  },
-  // e.g. [}]: <type> (name ...params)
-  open: {
-    get: function () {
-      var params = []
-        .concat(this.name)
-        .concat(this.params)
-        .join(' ');
-
-      return '[{]: <' + this.type + '> (' + params + ')';
-    }
-  },
-  // e.g. [}]: #
-  close: {
-    get: function () {
-      return '[}]: #';
-    }
-  },
+MDBlock.prototype = Object.create(Object.prototype, {
   // Convert to template string which can be handled by md-renderer
   toTemplate: {
     value: function () {
       // Convert recursively. Note that if this collection
       // was not created in a recursive operation then the recursive conversion
       // will seem like it doesn't take any affect
-      return [this.open, this.blocks.toTemplate(), this.close].join('\n');
+      return MDParser.wrap(this.type, this.name, this.params, this.blocks.toTemplate());
     }
   },
+  // Wrap content with open and close notations
   toString: {
     configurable: true,
     writable: true,
     value: function () {
-      return this.wrapped;
+      return MDParser.wrap(this.type, this.name, this.params, this.content);
     }
   },
+  // Wrap content with open and close notations
   valueOf: {
     configurable: true,
     writable: true,
     value: function () {
-      return this.wrapped;
+      return MDParser.wrap(this.type, this.name, this.params, this.content);
     }
   }
 });
