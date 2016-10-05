@@ -6,6 +6,8 @@ const expect = Chai.expect;
 
 describe('MDParser', function () {
   describe('parse()', function () {
+    this.slow(10);
+
     it('should parse markdown blocks in series', function () {
       const md = this.readFile('in', 'blocks-series.md');
       const blocks = this.mdParser.parse(md);
@@ -111,23 +113,25 @@ describe('MDParser', function () {
 
       expect(blocks).to.have.lengthOf(0);
     });
-  });
 
-  describe('toString()', function () {
-    it('should render the content when dealing with string operations', function () {
-      const md = this.readFile('in', 'blocks-series.md');
-      const blocks = this.mdParser.parse(md);
+    describe('Result', function () {
+      describe('toString()', function () {
+        it('should render the content when dealing with string operations', function () {
+          const md = this.readFile('in', 'blocks-series.md');
+          const blocks = this.mdParser.parse(md);
 
-      expect(blocks.toString()).to.equal(md);
+          expect(blocks.toString()).to.equal(md);
+        });
+      });
+
+      describe('toValue()', function () {
+        it('should render the content when dealing with arithmetic operations', function () {
+          const md = this.readFile('in', 'blocks-series.md');
+          const blocks = this.mdParser.parse(md);
+
+          expect(blocks.valueOf()).to.equal(md);
+        })
+      });
     });
-  });
-
-  describe('toValue()', function () {
-    it('should render the content when dealing with arithmetic operations', function () {
-      const md = this.readFile('in', 'blocks-series.md');
-      const blocks = this.mdParser.parse(md);
-
-      expect(blocks.valueOf()).to.equal(md);
-    })
   });
 });

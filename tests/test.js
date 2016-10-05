@@ -52,5 +52,6 @@ require('./assertions');
 // Tests
 require('./step-test');
 require('./hooks-test');
-require('./template-helpers-test');
+require('./md-renderer-test');
 require('./md-parser-test');
+require('./template-helpers-test');

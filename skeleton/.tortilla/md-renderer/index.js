@@ -55,7 +55,7 @@ function renderTemplate(template, scope) {
 // [{]: <helper> (name ...params) [}]: #
 function registerHelper(name, helper) {
   helpers[name] = function() {
-    var out = helper.apply(null, arguments);
+    var out = helper.apply(this, arguments);
 
     if (typeof out != 'string') throw Error([
       'Template helper', name, 'must return a string!',
