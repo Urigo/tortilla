@@ -87,6 +87,25 @@ MDBlock.prototype = Object.create(Model.prototype, {
       return '[}]: #';
     }
   },
+  // Convert to template string which can be handled by md-renderer
+  toTemplate: {
+    value: function () {
+      if (!this.type) return this.toString();
+
+      // Full params string including name
+      var params = [this.name].concat(this.params).join(' ');
+
+      switch (this.type) {
+        case 'helper': return '{{{' + params + '}}}';
+        case 'partial': return '{{>' + params + '}}';
+      }
+
+      // In any other case convert recursively. Note that if this collection
+      // was not created in a recursive operation then the recursive conversion
+      // will seem like it doesn't take any affect
+      return [this.open, this.blocks.toTemplate(), this.close].join('\n');
+    }
+  },
   toString: {
     configurable: true,
     writable: true,
