@@ -10,7 +10,7 @@
     "prerebase": "node .tortilla/hooks/pre-rebase"
   },
   "devDependencies": {
-    "parse-diff": "0.3.2",
+    "parse-diff": "0.4.0",
     "husky": "^0.11.8",
     "minimist": "^1.2.0"
   }
