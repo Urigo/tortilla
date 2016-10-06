@@ -70,21 +70,6 @@ function parseMDComponent(md, recursive) {
   return new Component(md, recursive);
 }
 
-// Returns content wrapped by component open and close
-function wrapChunkContent(type, name, params, content) {
-  if (!content) {
-    content = params;
-    params = [];
-  }
-
-  // Building parameters string including name e.g. 'diff_step 1.1'
-  params = [name].concat(params).join(' ');
-
-  return [
-    '[{]: <' + type + '> (' + params + ')', content, '[}]: #'
-  ].join('\n');
-}
-
 // Let's you define a custom component type which will be used in the parsing process
 function registerComponent(type, descriptors) {
   // Create inheriting class dynamically
@@ -103,7 +88,6 @@ function registerComponent(type, descriptors) {
 
 module.exports = {
   parse: parseMD,
-  wrap: wrapChunkContent,
   registerComponent: registerComponent
 };
 

@@ -67,6 +67,21 @@ function MDComponent(md, recursive) {
   if (recursive > 0) this.chunks = MDParser.parse(this.content, --recursive);
 }
 
+// Returns content wrapped by component notations
+MDComponent.wrap = function (type, name, params, content) {
+  if (!content) {
+    content = params;
+    params = [];
+  }
+
+  // Building parameters string including name e.g. 'diff_step 1.1'
+  params = [name].concat(params).join(' ');
+
+  return [
+    '[{]: <' + type + '> (' + params + ')', content, '[}]: #'
+  ].join('\n');
+}
+
 MDComponent.prototype = Object.create(MDChunk.prototype, {
   // Convert to template string which can be handled by md-renderer
   toTemplate: {
@@ -74,7 +89,7 @@ MDComponent.prototype = Object.create(MDChunk.prototype, {
       // Convert recursively. Note that if this collection was not created in a recursive
       // operation then the recursive conversion will seem like it doesn't take any
       // affect
-      return MDParser.wrap(this.type, this.name, this.params, this.chunks.toTemplate());
+      return MDComponent.wrap(this.type, this.name, this.params, this.chunks.toTemplate());
     }
   },
   // Wrap content with component notations
@@ -82,7 +97,7 @@ MDComponent.prototype = Object.create(MDChunk.prototype, {
     configurable: true,
     writable: true,
     value: function () {
-      return MDParser.wrap(this.type, this.name, this.params, this.content);
+      return MDComponent.wrap(this.type, this.name, this.params, this.content);
     }
   },
   // Wrap content with component notations
@@ -90,7 +105,7 @@ MDComponent.prototype = Object.create(MDChunk.prototype, {
     configurable: true,
     writable: true,
     value: function () {
-      return MDParser.wrap(this.type, this.name, this.params, this.content);
+      return MDComponent.wrap(this.type, this.name, this.params, this.content);
     }
   }
 });

@@ -1,7 +1,7 @@
 var Fs = require('fs');
 var Path = require('path');
-var MDParser = require('../md-parser');
 var Paths = require('../paths');
+var MDComponent = require('../md-parser/md-component');
 
 /*
   A very simple renderer which shares the same syntax as handlebar's when it comes to
@@ -64,7 +64,7 @@ function registerHelper(name, helper) {
     ].join(' '));
 
     var params = [].slice.call(arguments);
-    return MDParser.wrap('helper', name, params, out);
+    return MDComponent.wrap('helper', name, params, out);
   }
 
   // Chainable
@@ -74,7 +74,7 @@ function registerHelper(name, helper) {
 // Register a new partial. Registered partials will be wrapped with a
 // [{]: <partial> (name) [}]: #
 function registerPartial(name, partial) {
-  partials[name] = MDParser.wrap('partial', name, partial);
+  partials[name] = MDComponent.wrap('partial', name, partial);
   // Chainable
   return module.exports;
 }
