@@ -1,77 +1,77 @@
-var MDBlocksCollection = require('./md-blocks-collection');
-var MDBlock = require('./md-block');
-var MDTextBlock = require('./md-text-block');
+var MDChunksCollection = require('./md-chunks-collection');
+var MDComponent = require('./md-component');
+var MDChunk = require('./md-chunk');
 
 /*
-  Markdown parser will parse a given markdown into a collection of blocks.
+  Markdown parser will parse a given markdown into a collection of chunks.
  */
 
- var Blocks = {};
+ var Components = {};
 
 
-// Returns a blocks collection of the provided markdown string
-function parseAllBlocks(md, recursive) {
-  var blocks = new MDBlocksCollection();
-  if (!md) return blocks;
+// Returns a chunks collection of the provided markdown string
+function parseMD(md, recursive) {
+  var chunks = new MDChunksCollection();
+  if (!md) return chunks;
 
   var offset = 0;
-  var block = parseFirstBlock(md, recursive);
+  var component = parseMDComponent(md, recursive);
 
-  // If block not found it means we finished a recursive operation
-  if (!block) {
-    var text = new MDTextBlock(md);
-    blocks.push(text);
-    return blocks;
+  // If component not found it means we finished a recursive operation
+  if (!component) {
+    var text = new MDChunk(md);
+    chunks.push(text);
+    return chunks;
   }
 
-  if (block._start != 0) {
-    var text = new MDTextBlock(md.slice(0, block._start - 1));
-    blocks.push(text);
+  if (component._start != 0) {
+    var text = new MDChunk(md.slice(0, component._start - 1));
+    chunks.push(text);
   }
 
-  // As long as there is a block join them with a text block whos type and name are non
-  while (block) {
-    // Check the block is the first chunk in the recent markdown
+  // As long as there is a component join them with a text component whos type and name are non
+  while (component) {
+    // Check the component is the first component in the recent markdown
     if (offset) {
       // If so, update the indices with the stored offset
-      block._start += offset;
-      block._end += offset;
+      component._start += offset;
+      component._end += offset;
 
-      // Generate a text block with the leftover
-      if (offset != block._start) {
-        var text = new MDTextBlock(md.slice(offset, block._start - 1));
-        blocks.push(text);
+      // Generate a text component with the leftover
+      if (offset != component._start) {
+        var text = new MDChunk(md.slice(offset, component._start - 1));
+        chunks.push(text);
       }
     }
 
-    blocks.push(block);
+    chunks.push(component);
 
     // Add line skip
-    offset = block._end + 1;
-    // Generate next blocks from the current block's end index
-    block = parseFirstBlock(md.substr(offset), recursive);
+    offset = component._end + 1;
+    // Generate next components from the current component's end index
+    component = parseMDComponent(md.substr(offset), recursive);
   }
 
-  // Checks if there are leftovers and if so put it in a text block
+  // Checks if there are leftovers and if so put it in a text component
   if (offset <= md.length) {
-    var text = new MDTextBlock(md.slice(offset, md.length));
-    blocks.push(text);
+    var text = new MDChunk(md.slice(offset, md.length));
+    chunks.push(text);
   }
 
-  return blocks;
+  return chunks;
 }
 
-function parseFirstBlock(md, recursive) {
+function parseMDComponent(md, recursive) {
   var match = md.match(/\[\{\]: <([^>]*)> \([^\)]*\)/);
   if (!match) return;
 
   var type = match[1];
-  var Block = Blocks[type] || MDBlock;
-  return new Block(md, recursive);
+  var Component = Components[type] || MDComponent;
+  return new Component(md, recursive);
 }
 
-// Returns content wrapped by block open and close
-function wrapBlockContent(type, name, params, content) {
+// Returns content wrapped by component open and close
+function wrapChunkContent(type, name, params, content) {
   if (!content) {
     content = params;
     params = [];
@@ -85,28 +85,28 @@ function wrapBlockContent(type, name, params, content) {
   ].join('\n');
 }
 
-// Let's you define a custom block type which will be used in the parsing process
-function registerBlockType(type, descriptors) {
+// Let's you define a custom component type which will be used in the parsing process
+function registerComponent(type, descriptors) {
   // Create inheriting class dynamically
-  var Block = function () {
-    return MDBlock.apply(this, arguments);
+  var Component = function () {
+    return MDComponent.apply(this, arguments);
   }
 
-  Block.prototype = Object.create(MDBlock.prototype, descriptors);
+  Component.prototype = Object.create(MDComponent.prototype, descriptors);
 
   // If everything went well, stash it
-  Blocks[type] = Block;
+  Components[type] = Component;
   // Chainable
   return module.exports;
 }
 
 
 module.exports = {
-  parse: parseAllBlocks,
-  wrap: wrapBlockContent,
-  registerBlockType: registerBlockType
+  parse: parseMD,
+  wrap: wrapChunkContent,
+  registerComponent: registerComponent
 };
 
-// Built-in block types
-require('./md-helper-block');
-require('./md-partial-block');
+// Built-in component types
+require('./md-helper-component');
+require('./md-partial-component');

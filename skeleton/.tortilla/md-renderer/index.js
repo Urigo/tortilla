@@ -64,7 +64,7 @@ function registerHelper(name, helper) {
     ].join(' '));
 
     var params = [].slice.call(arguments);
-    return MDParser.parse('helper', name, params, out);
+    return MDParser.wrap('helper', name, params, out);
   }
 
   // Chainable

@@ -1,10 +1,10 @@
 var MDParser = require('.');
 
 /*
-  Represents a helper block in a markdown file.
+  Represents a helper component in a markdown file.
  */
 
-MDParser.registerBlockType('helper', {
+MDParser.registerComponent('helper', {
   // {{{helper ...params}}}
   toTemplate: {
     value: function () {

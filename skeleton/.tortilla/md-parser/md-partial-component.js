@@ -1,10 +1,10 @@
 var MDParser = require('.');
 
 /*
-  Represents a partial block in a markdown file.
+  Represents a partial component in a markdown file.
  */
 
-MDParser.registerBlockType('partial', {
+MDParser.registerComponent('partial', {
   // {{>partial}}
   toTemplate: {
     value: function () {
