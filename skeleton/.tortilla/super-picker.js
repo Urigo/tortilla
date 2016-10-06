@@ -4,7 +4,7 @@ var Step = require('./step');
 
 /*
   The super-picker is responsible for cherry-picking super steps and
-  rename their instruction files.
+  rename their manual files.
  */
 
 (function () {
@@ -27,7 +27,7 @@ var Step = require('./step');
   var pattern = /step(\d+)\.md/g;
   var patch = Git(['format-patch', '-1', hash, '--stdout']);
 
-  // Replace references for old instruction files with new instruction files
+  // Replace references for old manual files with new manual files
   // so there would be no conflicts
   var fixedPatch = patch.replace(pattern, function (file, step) {
     step = Number(step) + diff;

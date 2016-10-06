@@ -49,6 +49,7 @@ var tortilla = {
   _: resolve('.tortilla'),
   editor: resolve('.tortilla/editor.js'),
   git: resolve('.tortilla/git.js'),
+  manual: resolve('.tortilla/manual.js'),
   paths: resolve('.tortilla/paths.js'),
   retagger: resolve('.tortilla/retagger.js'),
   reworder: resolve('.tortilla/reworder.js'),

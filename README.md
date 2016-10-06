@@ -28,7 +28,7 @@ A sub-step is a small portion of the whole step, each sub-step should usually re
 
 #### Super Step
 
-A super-step should **always** come at the end of each step, it should contain a single index and it should be tagged by its step name (e.g. super-step 1 should be tagged "step1", super-step 2 should be tagged "step2" etc). The super-step should add an instruction file on how to create the current step. The instruction file is a simple markdown file which should be located under the `steps` directory and its name should be `step(index).md`.
+A super-step should **always** come at the end of each step, it should contain a single index and it should be tagged by its step name (e.g. super-step 1 should be tagged "step1", super-step 2 should be tagged "step2" etc). The super-step should add a manual file on how to create the current step. The manual file is a simple markdown file which should be located under the `steps` directory and its name should be `step(index).md`.
 
 ### How Do I Start
 
@@ -58,7 +58,7 @@ Pop the last step from the top of the stack. If you would like to remove a step 
 
 $ npm run step -- tag --message="step message"
 
-Add a new super-step and finish the current step with the provided message (Will open an editor if no message is provided). This will add a new step tag to your commits list and it will initialize an empty instructions markdown file. If you would like to edit the instruction file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
+Add a new super-step and finish the current step with the provided message (Will open an editor if no message is provided). This will add a new step tag to your commits list and it will initialize an empty manual markdown file. If you would like to edit the manual file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
 
 #### Edit Step
 

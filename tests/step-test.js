@@ -68,7 +68,7 @@ describe('Step', function () {
       expect(tagExists).to.be.falsy;
     });
 
-    it('should remove instruction files', function () {
+    it('should remove manual files', function () {
       this.npm.step(['push', '-m', 'target', '--allow-empty']);
       this.npm.step(['tag', '-m', 'dummy']);
       this.npm.step(['pop']);
@@ -113,7 +113,7 @@ describe('Step', function () {
       expect(tagHash).to.equal(commitHash);
     });
 
-    it('should create an instruction file', function () {
+    it('should create a manual file', function () {
       this.npm.step(['tag', '-m', 'target']);
 
       const message = this.step.recentCommit('%s');

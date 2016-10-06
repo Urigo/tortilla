@@ -51,9 +51,8 @@ function popStep() {
     throw Error('Can\'t remove root')
 
   var removedCommitMessage = Git.recentCommit(['--format=%s']);
-  Git.print(['reset', '--hard', 'HEAD~1']);
-
   var stepDescriptor = getStepDescriptor(removedCommitMessage);
+  Git.print(['reset', '--hard', 'HEAD~1']);
 
   if (!stepDescriptor)
     return console.warn('Removed commit was not a step');
@@ -67,8 +66,8 @@ function popStep() {
   if (!isSuperStep) return;
 
   var tag = 'step' + stepDescriptor.number;
-
   if (Git.tagExists(tag)) return Git(['tag', '-d', tag]);
+
   console.warn('Tag was not found');
 }
 
@@ -76,16 +75,20 @@ function popStep() {
 function tagStep(message) {
   var step = getNextSuperStep();
   var tag = 'step' + step;
-  var stepFilePath = Path.resolve(Paths.steps, 'step' + step + '.md');
+  var manualFile = tag + '.md';
+  var manualPath = Path.resolve(Paths.steps, manualFile);
 
   if (!Utils.exists(Paths.steps)) Fs.mkdirSync(Paths.steps);
-  Fs.writeFileSync(stepFilePath, '');
+  Fs.writeFileSync(manualPath, '');
 
-  Git(['add', stepFilePath]);
+  Git(['add', manualPath]);
   commitStep(step, message);
+
   // If in the middle of rebase, don't add a tag since the process can be aborted.
   // The tag will be added later on by the git editor
-  if (!Git.rebasing()) Git.print(['tag', tag]);
+  if (!Git.rebasing()) {
+    Git.print(['tag', tag]);
+  }
 }
 
 // Edit the provided step

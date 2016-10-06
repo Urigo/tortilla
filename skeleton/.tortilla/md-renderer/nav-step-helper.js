@@ -26,7 +26,7 @@ MDRenderer.registerHelper('nav_step', function() {
     .filter(Boolean);
 
   // If this is the only step or there are no steps at all
-  if ((stepTags.length - 2) < 0) return;
+  if ((stepTags.length - 2) < 0) return '';
 
   var currentTag = 'step' + stepDescriptor.number;
 

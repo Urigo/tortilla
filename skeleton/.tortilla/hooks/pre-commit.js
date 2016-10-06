@@ -23,7 +23,7 @@ var Step = require('../step');
   var stepDescriptor = Step.descriptor(stepMessage);
   var isSuperStep = stepDescriptor && !stepDescriptor.number.split('.')[1];
 
-  // If this is a super step only the appropriate instruction file can be modified
+  // If this is a super step only the appropriate manual file can be modified
   if (isSuperStep) {
     var tag = 'step' + stepDescriptor.number;
     // e.g. steps/step1.md
@@ -31,7 +31,7 @@ var Step = require('../step');
     var stagedFiles = Git.stagedFiles(pattern);
 
     if (stagedFiles.length) throw Error(
-      '\'' + tag + '.md\' is the only instruction file that can be modified'
+      '\'' + tag + '.md\' is the only manual file that can be modified'
     );
   }
   // Else 'steps' dir can't be changed
@@ -39,7 +39,7 @@ var Step = require('../step');
     var stagedFiles = Git.stagedFiles(/^steps\//);
 
     if (stagedFiles.length) throw Error(
-      'Step instruction files can\'t be modified'
+      'Step manual files can\'t be modified'
     );
   }
 })();

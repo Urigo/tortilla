@@ -1,4 +1,5 @@
 var Fs = require('fs');
+var Path = require('path');
 var Minimist = require('minimist');
 var Paths = require('./paths');
 var Step = require('./step');
@@ -14,13 +15,14 @@ var Step = require('./step');
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm']
+    string: ['_', 'message', 'mode', 'm']
   });
 
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
   var rebaseFilePath = argv._[1];
   var message = argv.message || argv.m;
+  var mode = argv.mode || argv.m;
 
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
@@ -31,6 +33,7 @@ var Step = require('./step');
   switch (method) {
     case 'edit': editStep(operations); break;
     case 'reword': rewordStep(operations, message); break;
+    case 'format-manuals': formatManuals(operations, mode); break;
   }
 
   // Put everything back together and rewrite the rebase file
@@ -86,6 +89,39 @@ function rewordStep(operations, message) {
     method: 'exec',
     command: 'node ' + Paths.tortilla.retagger
   });
+}
+
+// Formats all manuals into the specified mode
+function formatManuals(mode) {
+  var path = Paths.readme;
+
+  operations.splice(1, 0, {
+    method: 'exec',
+    command: [
+      'node ' + Paths.tortilla.manual + ' format -p ' + path + ' -m ' + mode,
+      'git add ' + path,
+      'git commit --amend'
+    ].join(' && ')
+  });
+
+  operations.slice(2).reduce(function (offset, operation, index) {
+    var stepDescriptor = Step.superDescriptor(operation.message);
+    if (!stepDescriptor) return offset;
+
+    var file = 'step' + stepDescriptor.number + '.md';
+    var path = Path.resolve(Paths.steps, file);
+
+    operations.splice(index + ++offset, 1, {
+      method: 'exec',
+      command: [
+        'node ' + Paths.tortilla.manual + ' format -p ' + path + ' -m ' + mode,
+        'git add ' + path,
+        'git commit --amend'
+      ].join(' && ')
+    });
+
+    return offset;
+  }, 2);
 }
 
 // Convert rebase file content to operations array

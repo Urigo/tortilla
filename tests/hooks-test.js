@@ -47,7 +47,7 @@ describe('Hooks', function () {
     expect(commit).to.throw(Error);
   });
 
-  it('should disallow changes made in the inappropriate step instruction file', function () {
+  it('should disallow changes made in the inappropriate step manual file', function () {
     const commit = this.git.bind(this, ['commit', '--amend'], {
       TORTILLA_CHILD_PROCESS: false,
       GIT_EDITOR: true
@@ -72,7 +72,7 @@ describe('Hooks', function () {
     expect(commit).to.not.throw(Error);
   });
 
-  it('should allow changes made in the appropriate step instruction file', function () {
+  it('should allow changes made in the appropriate step manual file', function () {
     const commit = this.git.bind(this, ['commit', '--amend'], {
       TORTILLA_CHILD_PROCESS: false,
       GIT_EDITOR: true

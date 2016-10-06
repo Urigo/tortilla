@@ -3,15 +3,18 @@
   "description": "A newly created Tortilla project",
   "version": "0.0.1",
   "scripts": {
+    "install": "npm run postreceive",
     "step": "node .tortilla/step",
     "precommit": "node .tortilla/hooks/pre-commit",
     "preparecommitmsg": "node .tortilla/hooks/prepare-commit-msg",
     "commitmsg": "node .tortilla/hooks/commit-msg",
-    "prerebase": "node .tortilla/hooks/pre-rebase"
+    "prerebase": "node .tortilla/hooks/pre-rebase",
+    "prepush": "node .tortilla/hooks/pre-push",
+    "postreceive": "node .tortilla/hooks/post-receive"
   },
   "devDependencies": {
-    "parse-diff": "0.4.0",
     "husky": "^0.11.8",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "parse-diff": "0.4.0"
   }
 }
