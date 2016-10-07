@@ -36,6 +36,12 @@ var Step = require('./step');
     case 'format-manuals': formatManuals(operations, mode); break;
   }
 
+  // Reset all tags
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.tortilla.retagger
+  });
+
   // Put everything back together and rewrite the rebase file
   var newRebaseFileContent = assemblyOperations(operations);
   Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
@@ -65,12 +71,6 @@ function editStep(operations) {
 
     return offset;
   }, 1);
-
-  // Reset all tags
-  operations.push({
-    method: 'exec',
-    command: 'node ' + Paths.tortilla.retagger
-  });
 }
 
 // Reword the last step in the rebase file
@@ -83,18 +83,13 @@ function rewordStep(operations, message) {
     method: 'exec',
     command: 'node ' + argv.join(' ')
   });
-
-  // Reset all tags
-  operations.push({
-    method: 'exec',
-    command: 'node ' + Paths.tortilla.retagger
-  });
 }
 
 // Formats all manuals into the specified mode
 function formatManuals(operations, mode) {
   var path = Paths.readme;
 
+  // Reformat README.md
   operations.splice(1, 0, {
     method: 'exec',
     command: [
@@ -111,6 +106,7 @@ function formatManuals(operations, mode) {
     var file = 'step' + stepDescriptor.number + '.md';
     var path = Path.resolve(Paths.steps, file);
 
+    // Reformat step manual files
     operations.splice(index + ++offset, 1, {
       method: 'exec',
       command: [
