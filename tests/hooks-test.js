@@ -47,6 +47,18 @@ describe('Hooks', function () {
     expect(commit).to.throw(Error);
   });
 
+  it('should disallow changes made in README.md', function () {
+    const commit = this.git.bind(this, ['commit'], {
+      TORTILLA_CHILD_PROCESS: false,
+      GIT_SEQUENCE_EDITOR: true
+    });
+
+    this.exec('rm', ['README.md']);
+    this.git(['add', 'README.md']);
+
+    expect(commit).to.throw(Error);
+  });
+
   it('should disallow changes made in the inappropriate step manual file', function () {
     const commit = this.git.bind(this, ['commit', '--amend'], {
       TORTILLA_CHILD_PROCESS: false,

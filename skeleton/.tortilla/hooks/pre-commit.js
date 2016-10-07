@@ -26,20 +26,30 @@ var Step = require('../step');
   // If this is a super step only the appropriate manual file can be modified
   if (isSuperStep) {
     var tag = 'step' + stepDescriptor.number;
-    // e.g. steps/step1.md
-    var pattern = new RegExp('^steps/(?!' + tag + '\\.md)');
-    var stagedFiles = Git.stagedFiles(pattern);
+    var manualFile = tag + '.md';
+    var errorMessage = '\'' + manualFile + '\' is the only file that can be modified';
 
-    if (stagedFiles.length) throw Error(
-      '\'' + tag + '.md\' is the only manual file that can be modified'
-    );
+    // Files that don't start with 'steps/'
+    var stagedFiles = Git.stagedFiles(/^(?!steps\/)/);
+    if (stagedFiles.length) throw Error(errorMessage);
+
+    // '.md' files that start with 'steps/' e.g. steps/step1.md
+    var pattern = new RegExp('^steps/(?!' + tag + '\\.md)');
+    stagedFiles = Git.stagedFiles(pattern);
+    if (stagedFiles.length) throw Error(errorMessage);
   }
-  // Else 'steps' dir can't be changed
+  // Else manual files can't be modifed
   else {
     var stagedFiles = Git.stagedFiles(/^steps\//);
 
     if (stagedFiles.length) throw Error(
       'Step manual files can\'t be modified'
+    );
+
+    stagedFiles = Git.stagedFiles(/^README.md/);
+
+    if (stagedFiles.length) throw Error(
+      'README.md can\'t be modified'
     );
   }
 })();
