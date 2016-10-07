@@ -92,7 +92,7 @@ function rewordStep(operations, message) {
 }
 
 // Formats all manuals into the specified mode
-function formatManuals(mode) {
+function formatManuals(operations, mode) {
   var path = Paths.readme;
 
   operations.splice(1, 0, {
@@ -100,7 +100,7 @@ function formatManuals(mode) {
     command: [
       'node ' + Paths.tortilla.manual + ' format -p ' + path + ' -m ' + mode,
       'git add ' + path,
-      'git commit --amend'
+      'GIT_EDITOR=true git commit --amend'
     ].join(' && ')
   });
 
@@ -116,7 +116,7 @@ function formatManuals(mode) {
       command: [
         'node ' + Paths.tortilla.manual + ' format -p ' + path + ' -m ' + mode,
         'git add ' + path,
-        'git commit --amend'
+        'GIT_EDITOR=true git commit --amend'
       ].join(' && ')
     });
 
