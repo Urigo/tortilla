@@ -11,11 +11,16 @@ MDRenderer.registerHelper('nav_step', function() {
   var stepCommitMessage = Step.recentCommit('%s');
 
   // Editing root
-  if (!stepCommitMessage)
+  if (!stepCommitMessage) {
+    var anySteps = !!Git(['tag', '-l', 'step1']);
+    // If there are no any steps yet, don't show nav bar
+    if (!anySteps) return '';
+
     return MDRenderer.renderTemplateFile('next-button-template.md', {
       text: 'Begin Tutorial',
       ref: 'steps/step1.md'
     });
+  }
 
   var stepDescriptor = Step.superDescriptor(stepCommitMessage);
   // Only super steps are relevant
