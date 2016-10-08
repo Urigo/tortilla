@@ -5,10 +5,7 @@ var Step = require('./step');
   The retagger is responsible for resetting all step tags.
  */
 
-(function () {
-  // Disable the automatic invokation unless this is the main module of the node process
-  if (require.main !== module) return;
-
+function main() {
   var stepTags = Git(['tag', '-l', 'step*'])
     .split('\n')
     .filter(Boolean);
@@ -42,4 +39,6 @@ var Step = require('./step');
 
     Git(['tag', tag, hash]);
   });
-})();
+}
+
+if (require.main === module) main();

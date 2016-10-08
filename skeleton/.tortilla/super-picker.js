@@ -7,7 +7,7 @@ var Step = require('./step');
   rename their manual files.
  */
 
-(function () {
+function main() {
   // Disable the automatic invokation unless this is the main module of the node process
   if (require.main !== module) return;
 
@@ -36,4 +36,7 @@ var Step = require('./step');
 
   // Apply patch
   Git(['am'], fixedPatch);
-})();
+}
+
+
+if (require.main === module) main();

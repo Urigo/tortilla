@@ -1,6 +1,7 @@
 var Fs = require('fs');
 var Minimist = require('minimist');
 var Path = require('path');
+var Paths = require('./paths');
 var Utils = require('./utils');
 var MDParser = require('./md-parser');
 var MDComponent = require('./md-parser/md-component');
@@ -10,10 +11,7 @@ var MDRenderer = require('./md-renderer');
   Contains manual related utilities.
  */
 
-(function () {
-  // Disable the automatic invokation unless this is the main module of the node process
-  if (require.main !== module) return;
-
+function main() {
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'path', 'p', 'mode', 'm']
   });
@@ -22,11 +20,11 @@ var MDRenderer = require('./md-renderer');
   var path = argv.path || argv.p;
   var mode = argv.mode || argv.m;
 
-  // Auto invokation
-  if (method == 'format') {
-    formatManual(path, mode)
+  // Automatically invoke a method by the provided arguments
+  switch (method) {
+    case 'format': return formatManual(path, mode);
   }
-})();
+}
 
 function formatManual(manualPath, mode) {
   if (mode == null)
@@ -70,3 +68,5 @@ function formatDevelopmentManual(manual) {
 module.exports = {
   format: formatManual
 };
+
+if (require.main === module) main();

@@ -10,10 +10,7 @@ var Step = require('./step');
   methods we choose.
  */
 
-(function () {
-  // Disable the automatic invokation unless this is the main module of the node process
-  if (require.main !== module) return;
-
+function main() {
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'mode', 'm']
   });
@@ -45,7 +42,7 @@ var Step = require('./step');
   // Put everything back together and rewrite the rebase file
   var newRebaseFileContent = assemblyOperations(operations);
   Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
-})();
+}
 
 // Edit the last step in the rebase file
 function editStep(operations) {
@@ -146,3 +143,6 @@ function assemblyOperations(operations) {
     })
     .join('\n') + '\n';
 }
+
+
+if (require.main === module) main();

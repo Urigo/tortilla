@@ -9,10 +9,7 @@ var Utils = require('./utils');
   Contains step related utilities. Also the entry point for `npm step` commands.
  */
 
-(function () {
-  // Disable the automatic invokation unless this is the main module of the node process
-  if (require.main !== module) return;
-
+function main() {
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
     boolean: ['root', 'r', 'allow-empty']
@@ -34,7 +31,7 @@ var Utils = require('./utils');
     case 'edit': return editStep(step);
     case 'reword': return rewordStep(step, message);
   }
-})();
+}
 
 // Push a new step with the provided message
 function pushStep(message, allowEmpty) {
@@ -293,3 +290,5 @@ module.exports = {
   superDescriptor: getSuperStepDescriptor,
   subDescriptor: getSubStepDescriptor
 };
+
+if (require.main === module) main();

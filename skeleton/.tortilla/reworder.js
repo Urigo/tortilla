@@ -7,10 +7,7 @@ var Step = require('./step');
   number if needed.
  */
 
-(function () {
-  // Disable the automatic invokation unless this is the main module of the node process
-  if (require.main !== module) return;
-
+function main() {
   var argv = Minimist(process.argv.slice(2), {
     string: ['_']
   });
@@ -30,7 +27,7 @@ var Step = require('./step');
   Git.print(argv, {
     TORTILLA_NEXT_STEP: nextStep
   });
-})();
+}
 
 // Calculate the next step dynamically based on its super flag
 function getNextStep(stepDescriptor) {
@@ -39,3 +36,6 @@ function getNextStep(stepDescriptor) {
   var isSubStep = !!stepDescriptor.number.split('.')[1];
   return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }
+
+
+if (require.main === module) main();
