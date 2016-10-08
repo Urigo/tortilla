@@ -12,14 +12,14 @@ var Step = require('./step');
 
 function main() {
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'mode', 'm']
+    string: ['_', 'message', 'm', 'format', 'f']
   });
 
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
   var rebaseFilePath = argv._[1];
   var message = argv.message || argv.m;
-  var mode = argv.mode || argv.m;
+  var format = argv.format || argv.f;
 
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
@@ -30,7 +30,7 @@ function main() {
   switch (method) {
     case 'edit': editStep(operations); break;
     case 'reword': rewordStep(operations, message); break;
-    case 'format-manuals': formatManuals(operations, mode); break;
+    case 'format-manuals': formatManuals(operations, format); break;
   }
 
   // Reset all tags
@@ -82,15 +82,15 @@ function rewordStep(operations, message) {
   });
 }
 
-// Formats all manuals into the specified mode
-function formatManuals(operations, mode) {
+// Formats all manuals into the specified format
+function formatManuals(operations, format) {
   var path = Paths.readme;
 
   // Reformat README.md
   operations.splice(1, 0, {
     method: 'exec',
     command: [
-      'node ' + Paths.tortilla.manual + ' format -p ' + path + ' -m ' + mode,
+      'node ' + Paths.tortilla.manual + ' ' + mode + ' format -p ' + path,
       'git add ' + path,
       'GIT_EDITOR=true git commit --amend'
     ].join(' && ')
@@ -107,7 +107,7 @@ function formatManuals(operations, mode) {
     operations.splice(index + ++offset, 1, {
       method: 'exec',
       command: [
-        'node ' + Paths.tortilla.manual + ' format -p ' + path + ' -m ' + mode,
+        'node ' + Paths.tortilla.manual + ' ' + mode + ' format -p ' + path,
         'git add ' + path,
         'GIT_EDITOR=true git commit --amend'
       ].join(' && ')

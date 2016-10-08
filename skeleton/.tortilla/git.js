@@ -8,25 +8,6 @@ var Utils = require('./utils');
 
 var git = Utils.git;
 
-
-function main() {
-  // Turn all manual files into prod format
-  git(['rebase', '-i', '--root', '--keep-empty'], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' format-manuals -m prod'
-  });
-
-  try {
-    // Safely perform git operation
-    git.print(process.argv.slice(2));
-  }
-  finally {
-    // No matter what happens turn all manual files back to dev format
-    git(['rebase', '-i', '--root', '--keep-empty'], {
-      GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' format-manuals -m dev'
-    });
-  }
-}
-
 // Tells if rebasing or not
 function isRebasing() {
   return Utils.exists(Paths.git.rebaseMerge) || Utils.exists(Paths.git.rebaseApply);
@@ -84,5 +65,3 @@ module.exports = Utils.extend(git.bind(null), git, {
   recentCommit: getRecentCommit,
   stagedFiles: getStagedFiles
 });
-
-if (require.main === module) main();
