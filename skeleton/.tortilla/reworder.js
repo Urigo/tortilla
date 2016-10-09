@@ -1,5 +1,6 @@
 var Minimist = require('minimist')
 var Git = require('./git');
+var LocalStorage = require('./local-storage');
 var Step = require('./step');
 
 /*
@@ -23,15 +24,15 @@ function main() {
   // If message provided skip editor
   if (message) argv.push('-m', message);
 
-  // Let git hooks do the rest
-  Git.print(argv, {
-    TORTILLA_NEXT_STEP: nextStep
-  });
+  // Specified step is gonna be used for when forming the commit message
+  LocalStorage.setItem('STEP', nextStep);
+  // commit, let git hooks do the rest
+  Git.print(argv);
 }
 
 // Calculate the next step dynamically based on its super flag
 function getNextStep(stepDescriptor) {
-  if (!stepDescriptor) return;
+  if (!stepDescriptor) return '';
 
   var isSubStep = !!stepDescriptor.number.split('.')[1];
   return isSubStep ? Step.next(1) : Step.nextSuper(1);

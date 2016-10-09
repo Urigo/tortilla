@@ -30,7 +30,7 @@ function main() {
   switch (method) {
     case 'edit': editStep(operations); break;
     case 'reword': rewordStep(operations, message); break;
-    case 'format-manuals': formatManuals(operations, format); break;
+    case 'convert': convertManuals(operations, format); break;
   }
 
   // Reset all tags
@@ -48,10 +48,12 @@ function main() {
 function editStep(operations) {
   operations[0].method = 'edit';
 
+  var offset = 1;
+
   // Creating a clone of the operations array otherwise splices couldn't be applied
   // without aborting the itration. In addition we hold an offset variable to handle
   // the changes that are made in the array's length
-  operations.slice(1).reduce(function (offset, operation, index) {
+  operations.slice(offset).forEach(function (operation, index) {
     var isSuperStep = !!Step.superDescriptor(operation.message);
 
     // If this is a super step, replace pick operation with the super pick
@@ -65,9 +67,7 @@ function editStep(operations) {
       method: 'exec',
       command: 'GIT_EDITOR=true node ' + Paths.tortilla.reworder
     });
-
-    return offset;
-  }, 1);
+  });
 }
 
 // Reword the last step in the rebase file
@@ -82,39 +82,40 @@ function rewordStep(operations, message) {
   });
 }
 
-// Formats all manuals into the specified format
-function formatManuals(operations, format) {
+// Convert all manuals since the beginning of history to the specified format
+function convertManuals(operations, format) {
   var path = Paths.readme;
+  var offset = 2;
 
-  // Reformat README.md
+  // Convert README.md
   operations.splice(1, 0, {
     method: 'exec',
     command: [
-      'node ' + Paths.tortilla.manual + ' ' + mode + ' format -p ' + path,
+      'node ' + Paths.tortilla.manual + ' convert ' + path + ' -f ' + format,
       'git add ' + path,
       'GIT_EDITOR=true git commit --amend'
     ].join(' && ')
   });
 
-  operations.slice(2).reduce(function (offset, operation, index) {
+  operations.slice(offset).forEach(function (operation, index) {
     var stepDescriptor = Step.superDescriptor(operation.message);
-    if (!stepDescriptor) return offset;
+    if (!stepDescriptor) return;
 
     var file = 'step' + stepDescriptor.number + '.md';
     var path = Path.resolve(Paths.steps, file);
 
-    // Reformat step manual files
-    operations.splice(index + ++offset, 1, {
+    // Convert step manual file
+    operations.splice(index + ++offset, 0, {
       method: 'exec',
       command: [
-        'node ' + Paths.tortilla.manual + ' ' + mode + ' format -p ' + path,
+        'node ' + Paths.tortilla.manual + ' convert ' + path + ' -f ' + format,
         'git add ' + path,
         'GIT_EDITOR=true git commit --amend'
       ].join(' && ')
     });
 
     return offset;
-  }, 2);
+  });
 }
 
 // Convert rebase file content to operations array

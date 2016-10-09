@@ -9,7 +9,7 @@ describe('Hooks', function () {
 
   it('should disallow new commits to be added', function () {
     const commit = this.git.bind(this, ['commit', '--allow-empty'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_SEQUENCE_EDITOR: true
     });
 
@@ -18,7 +18,7 @@ describe('Hooks', function () {
 
   it('should disallow amending', function () {
     const commit = this.git.bind(this, ['commit', '--amend', '--allow-empty'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_SEQUENCE_EDITOR: true
     });
 
@@ -27,7 +27,7 @@ describe('Hooks', function () {
 
   it('should disallow rebasing', function () {
     const rebase = this.git.bind(this, ['rebase', '-i', '--root'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_SEQUENCE_EDITOR: true
     });
 
@@ -36,7 +36,7 @@ describe('Hooks', function () {
 
   it('should disallow changes made in the steps dir', function () {
     const commit = this.git.bind(this, ['commit'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_SEQUENCE_EDITOR: true
     });
 
@@ -49,7 +49,7 @@ describe('Hooks', function () {
 
   it('should disallow changes made in README.md', function () {
     const commit = this.git.bind(this, ['commit'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_SEQUENCE_EDITOR: true
     });
 
@@ -61,7 +61,7 @@ describe('Hooks', function () {
 
   it('should disallow changes made in the inappropriate step manual file', function () {
     const commit = this.git.bind(this, ['commit', '--amend'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_EDITOR: true
     });
 
@@ -75,7 +75,7 @@ describe('Hooks', function () {
 
   it('should allow amending during step editing', function () {
     const commit = this.git.bind(this, ['commit', '--amend', '--allow-empty'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_EDITOR: true
     });
 
@@ -86,7 +86,7 @@ describe('Hooks', function () {
 
   it('should allow changes made in the appropriate step manual file', function () {
     const commit = this.git.bind(this, ['commit', '--amend'], {
-      TORTILLA_CHILD_PROCESS: false,
+      TORTILLA_CHILD_PROCESS: '',
       GIT_EDITOR: true
     });
 

@@ -40,6 +40,10 @@ beforeEach(function () {
     'run', 'step', '--'
   ].concat(argv), ...args);
 
+  this.npm.manual = (argv, ...args) => this.npm([
+    'run', 'manual', '--'
+  ].concat(argv), ...args);
+
   this.git.apply = (patchName) => {
     const patchPath = Path.resolve(__dirname, 'fs-data/in', patchName + '.patch');
     return this.git(['am', patchPath]);
@@ -55,3 +59,4 @@ require('./hooks-test');
 require('./md-renderer-test');
 require('./md-parser-test');
 require('./template-helpers-test');
+require('./manual-test');

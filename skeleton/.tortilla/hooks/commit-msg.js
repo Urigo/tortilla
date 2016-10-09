@@ -1,5 +1,6 @@
 var Fs = require('fs');
 var Git = require('../git');
+var LocalStorage = require('../local-storage');
 var Paths = require('../paths');
 var Step = require('../step');
 
@@ -11,23 +12,18 @@ var Step = require('../step');
 
 (function () {
   // Amend is the only thing allowed by tortilla, the rest is irrelevant
-  if (!JSON.parse(process.env.TORTILLA_CHILD_PROCESS) && !Git.gonnaAmend()) return;
+  if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) return;
 
-  var commitFileContent = Fs.readFileSync(Paths.git.messages.commit, 'utf8');
+  // If we're amending to the root commit then a step prefix is not needed
+  if (Git.gonnaAmend() && !LocalStorage.getItem('STEP')) return;
 
-  // If it's not tortilla trying to add a new commit
-  if (Git.gonnaAmend()) {
-    var commitHash = Git.recentCommit(['--format=%H']);
-    var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
-    // If current commit is the initial commit we're probably editing the root in which
-    // case a step prefix is unnecessary
-    if (commitHash == rootHash) return;
-  }
-
+  var commitMessage = Fs.readFileSync(Paths.git.messages.commit, 'utf8');
   // Prepend a step prefix to the commit message
-  var nextStep = process.env.TORTILLA_NEXT_STEP || Step.next(1);
-  var fixedCommitFileContent = 'Step ' + nextStep + ': ' + commitFileContent
+  var step = LocalStorage.getItem('STEP') || Step.next(1);
+  var fixedcommitMessage = 'Step ' + step + ': ' + commitMessage
+  // Clearing storage to prevent conflicts with upcomming commits
+  LocalStorage.removeItem('STEP');
 
-  // Rewrite the commit message with a step prefix
-  Fs.writeFileSync(Paths.git.messages.commit, fixedCommitFileContent);
+  // Rewrite the commit with a step prefix
+  Fs.writeFileSync(Paths.git.messages.commit, fixedcommitMessage);
 })();

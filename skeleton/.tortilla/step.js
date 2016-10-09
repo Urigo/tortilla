@@ -2,6 +2,7 @@ var Fs = require('fs');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');
+var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
@@ -120,9 +121,10 @@ function commitStep(step, message, allowEmpty) {
   if (message) argv.push('-m', message);
   if (allowEmpty) argv.push('--allow-empty');
 
-  Git.print(argv, {
-    TORTILLA_NEXT_STEP: step
-  });
+  // Specified step is gonna be used for when forming the commit message
+  LocalStorage.setItem('STEP', step);
+  // commit
+  Git.print(argv);
 }
 
 // Get the current step

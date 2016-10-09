@@ -13,50 +13,50 @@ var MDRenderer = require('./md-renderer');
 
 function main() {
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'path', 'p'],
+    string: ['_', 'format', 'f'],
   });
 
   var method = argv._[0];
-  var format = argv._[1];
-  var path = argv.path || argv.p;
+  var manualPath = argv._[1];
+  var format = argv.format || argv.f;
 
   // Automatically invoke a method by the provided arguments
   switch (method) {
-    case 'format': return formatManual(format, path);
+    case 'convert': return convertManual(format, manualPath);
   }
 }
 
-// Rewrites manual into the specified format. If manual path is not provided then all
-// available manuals will be rewritten into the specified format
-function formatManual(format, path) {
+// Converts manual into the specified format. If manual path is not provided then all
+// manuals since the beginning of history will be converted
+function convertManual(format, manualPath) {
   if (format == null)
     throw Error('A format must be provided');
 
-  // If no path specified then all the manual files created so far are gonna be
-  // reformatted into the specified format
-  if (!path) return Git(['rebase', '-i', '--root', '--keep-empty'], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' format-manuals -m ' + mode
+  // Convert all manuals since the beginning of history
+  if (!manualPath) return Git(['rebase', '-i', '--root', '--keep-empty'], {
+    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' convert -f ' + format
   });
 
   // Fetch the current manual
-  var manual = Fs.readFileSync(path, 'utf8');
+  manualPath = Path.resolve(Paths._, manualPath);
+  var manual = Fs.readFileSync(manualPath, 'utf8');
   var newManual;
 
   // Get new manual
-  switch (mode) {
-    case 'prod': newManual = formatProductionManual(manual); break;
-    case 'dev': newManual = formatDevelopmentManual(manual); break;
+  switch (format) {
+    case 'prod': newManual = convertProductionManual(manual); break;
+    case 'dev': newManual = convertDevelopmentManual(manual); break;
   }
 
   // If no changes made, abort
   if (newManual == null) return;
 
   // Rewrite manual
-  Fs.writeFileSync(path, newManual);
+  Fs.writeFileSync(manualPath, newManual);
 }
 
 // Converts manual content to production format
-function formatProductionManual(manual) {
+function convertProductionManual(manual) {
   var header = MDRenderer.renderTemplateFile('header.md')
   var body = MDRenderer.renderTemplate(manual);
   var footer = MDRenderer.renderTemplateFile('footer.md');
@@ -69,7 +69,7 @@ function formatProductionManual(manual) {
 }
 
 // Converts manual content to development format
-function formatDevelopmentManual(manual) {
+function convertDevelopmentManual(manual) {
   var chunks = MDParser.parse(manual, 1);
   var body = chunks[1].chunks;
 
@@ -78,7 +78,7 @@ function formatDevelopmentManual(manual) {
 
 
 module.exports = {
-  format: formatManual
+  convert: convertManual
 };
 
 if (require.main === module) main();

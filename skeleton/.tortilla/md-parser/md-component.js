@@ -86,10 +86,11 @@ MDComponent.prototype = Object.create(MDChunk.prototype, {
   // Convert to template string which can be handled by md-renderer
   toTemplate: {
     value: function () {
+      var template = this.chunks ? this.chunks.toTemplate() : this.content;
       // Convert recursively. Note that if this collection was not created in a recursive
       // operation then the recursive conversion will seem like it doesn't take any
       // affect
-      return MDComponent.wrap(this.type, this.name, this.params, this.chunks.toTemplate());
+      return MDComponent.wrap(this.type, this.name, this.params, template);
     }
   },
   // Wrap content with component notations

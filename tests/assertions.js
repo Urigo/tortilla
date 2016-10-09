@@ -7,7 +7,10 @@ const Assertion = Chai.Assertion;
 
 
 Assertion.addMethod('file', function (expectedFileName, extension) {
-  expectedFile = expectedFileName + '.' + extension;
+  let expectedFile = expectedFileName;
+
+  if (extension) expectedFile += '.' + extension;
+
   const actualContent = this._obj;
 
   new Assertion(actualContent).to.be.a('string');

@@ -4,7 +4,7 @@
  */
 
 (function () {
-  if (!JSON.parse(process.env.TORTILLA_CHILD_PROCESS)) throw Error(
+  if (!process.env.TORTILLA_CHILD_PROCESS) throw Error(
     'Rebase mode is prohibited! Use `$ npm step -- edit` instead'
   )
 })();
