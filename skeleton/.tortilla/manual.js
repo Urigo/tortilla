@@ -11,42 +11,52 @@ var MDRenderer = require('./md-renderer');
   Contains manual related utilities.
  */
 
+var prodFlag = '[__prod__]: #'
+
+
 function main() {
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'format', 'f'],
+    string: ['_'],
+    boolean: ['root', 'r']
   });
 
   var method = argv._[0];
-  var manualPath = argv._[1];
-  var format = argv.format || argv.f;
+  var step = argv._[1];
+  var root = argv.root || argv.r;
+
+  if (!step && root) step = 'root';
 
   // Automatically invoke a method by the provided arguments
   switch (method) {
-    case 'convert': return convertManual(format, manualPath);
+    case 'convert': return convertManual(step);
   }
 }
 
-// Converts manual into the specified format. If manual path is not provided then all
+// Converts manual into the opposite format. If step is not provided then all
 // manuals since the beginning of history will be converted
-function convertManual(format, manualPath) {
-  if (format == null)
-    throw Error('A format must be provided');
-
+function convertManual(step) {
   // Convert all manuals since the beginning of history
-  if (!manualPath) return Git(['rebase', '-i', '--root', '--keep-empty'], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' convert -f ' + format
+  if (!step) return Git(['rebase', '-i', '--root', '--keep-empty'], {
+    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' convert'
   });
 
   // Fetch the current manual
-  manualPath = Path.resolve(Paths._, manualPath);
+  var manualPath = getStepManualPath(step);
   var manual = Fs.readFileSync(manualPath, 'utf8');
   var newManual;
 
+  var scope = {
+    step: step,
+    manualPath: manualPath
+  };
+
+  var newManual;
+
   // Get new manual
-  switch (format) {
-    case 'prod': newManual = convertProductionManual(manual); break;
-    case 'dev': newManual = convertDevelopmentManual(manual); break;
-  }
+  if (isManualProd(manual))
+    newManual = convertDevelopmentManual(manual, scope);
+  else
+    newManual = convertProductionManual(manual, scope);
 
   // If no changes made, abort
   if (newManual == null) return;
@@ -56,24 +66,35 @@ function convertManual(format, manualPath) {
 }
 
 // Converts manual content to production format
-function convertProductionManual(manual) {
-  var header = MDRenderer.renderTemplateFile('header.md')
-  var body = MDRenderer.renderTemplate(manual);
-  var footer = MDRenderer.renderTemplateFile('footer.md');
+function convertProductionManual(manual, scope) {
+  var header = MDRenderer.renderTemplateFile('header.md', scope)
+  var body = MDRenderer.renderTemplate(manual, scope);
+  var footer = MDRenderer.renderTemplateFile('footer.md', scope);
 
   header = MDComponent.wrap('region', 'header', header);
   body = MDComponent.wrap('region', 'body', body);
   footer = MDComponent.wrap('region', 'footer', footer);
 
-  return [header, body, footer].join('\n');
+  return [prodFlag, header, body, footer].join('\n');
 }
 
 // Converts manual content to development format
 function convertDevelopmentManual(manual) {
   var chunks = MDParser.parse(manual, 1);
-  var body = chunks[1].chunks;
+  var body = chunks[2].chunks;
 
   return body.toTemplate();
+}
+
+// Gets the manual belonging to the given step
+function getStepManualPath(step) {
+  if (step == 'root') return Path.resolve(Paths.readme)
+  return Path.resolve(Paths.steps, 'step' + step + '.md');
+}
+
+// Returns if manual is in production format or not
+function isManualProd(manual) {
+  return manual.split('\n')[0] == prodFlag;
 }
 
 

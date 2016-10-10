@@ -12,14 +12,13 @@ var Step = require('./step');
 
 function main() {
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm', 'format', 'f']
+    string: ['_', 'message', 'm']
   });
 
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
   var rebaseFilePath = argv._[1];
   var message = argv.message || argv.m;
-  var format = argv.format || argv.f;
 
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
@@ -30,7 +29,7 @@ function main() {
   switch (method) {
     case 'edit': editStep(operations); break;
     case 'reword': rewordStep(operations, message); break;
-    case 'convert': convertManuals(operations, format); break;
+    case 'convert': convertManuals(operations); break;
   }
 
   // Reset all tags
@@ -82,8 +81,8 @@ function rewordStep(operations, message) {
   });
 }
 
-// Convert all manuals since the beginning of history to the specified format
-function convertManuals(operations, format) {
+// Convert all manuals since the beginning of history to the opposite format
+function convertManuals(operations) {
   var path = Paths.readme;
   var offset = 2;
 
@@ -91,7 +90,7 @@ function convertManuals(operations, format) {
   operations.splice(1, 0, {
     method: 'exec',
     command: [
-      'node ' + Paths.tortilla.manual + ' convert ' + path + ' -f ' + format,
+      'node ' + Paths.tortilla.manual + ' convert --root',
       'git add ' + path,
       'GIT_EDITOR=true git commit --amend'
     ].join(' && ')
@@ -108,7 +107,7 @@ function convertManuals(operations, format) {
     operations.splice(index + ++offset, 0, {
       method: 'exec',
       command: [
-        'node ' + Paths.tortilla.manual + ' convert ' + path + ' -f ' + format,
+        'node ' + Paths.tortilla.manual + ' convert ' + stepDescriptor.number,
         'git add ' + path,
         'GIT_EDITOR=true git commit --amend'
       ].join(' && ')

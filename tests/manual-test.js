@@ -6,6 +6,8 @@ var expect = Chai.expect;
 
 describe('Manual', function () {
   describe('convert()', function () {
+    this.slow(5000);
+
     beforeEach(function () {
       for (let step = 1; step <= 3; step++) {
         const manualPath = 'steps/step' + step + '.md';
@@ -28,7 +30,7 @@ describe('Manual', function () {
         'steps/step3.md'
       ];
 
-      this.npm.manual(['convert', '-f', 'prod']);
+      this.npm.manual(['convert']);
 
       manualsPaths.forEach(function (manualPath) {
         const manual = this.exec('cat', [manualPath]);
@@ -44,8 +46,8 @@ describe('Manual', function () {
         'steps/step3.md'
       ];
 
-      this.npm.manual(['convert', '-f', 'prod']);
-      this.npm.manual(['convert', '-f', 'dev']);
+      this.npm.manual(['convert']);
+      this.npm.manual(['convert']);
 
       manualsPaths.forEach(function (manualPath) {
         const manual = this.exec('cat', [manualPath]);
