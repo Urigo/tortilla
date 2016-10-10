@@ -6,7 +6,13 @@ const Path = require('path');
 before(function () {
   // Consts
   this.testDir = '/tmp/tortilla_test';
+  this.repoDir = '/tmp/tortilla.git';
   this.libDir = Path.resolve(__dirname, '..');
+
+  // Removing dir just in case
+  Fs.removeSync(this.repoDir);
+  // Initializing a new repository
+  ChildProcess.execFileSync('git', ['init', this.repoDir, '--bare']);
 
   // Utils
   this.readFile = (put, file) => {
@@ -34,6 +40,9 @@ beforeEach(function () {
   this.mdParser = require(`${this.testDir}/.tortilla/md-parser`);
   this.mdRenderer = require(`${this.testDir}/.tortilla/md-renderer`);
   this.step = require(`${this.testDir}/.tortilla/step`);
+
+  // Adding a remote to the test-repo
+  this.git(['remote', 'add', 'origin', this.repoDir]);
 
   // Project utils
   this.npm.step = (argv, ...args) => this.npm([

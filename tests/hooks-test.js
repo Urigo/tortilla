@@ -65,12 +65,21 @@ describe('Hooks', function () {
       GIT_EDITOR: true
     });
 
-    this.npm(['run', 'step', '--', 'tag', '-m', 'dummy']);
-    this.npm(['run', 'step', '--', 'edit', '1']);
+    this.npm.step(['tag', '-m', 'dummy']);
+    this.npm.step(['edit', '1']);
     this.exec('touch', ['steps/step2.md']);
     this.git(['add', 'steps/step2.md']);
 
     expect(commit).to.throw(Error);
+  });
+
+  it('should disallow manaul files in development format to be pushed', function () {
+    const push = this.git.bind(this, ['push', 'origin', 'master']);
+
+    this.npm.manual(['convert', '--all']);
+    this.npm.step(['tag', '-m', 'dummy']);
+
+    expect(push).to.throw(Error);
   });
 
   it('should allow amending during step editing', function () {
@@ -79,7 +88,7 @@ describe('Hooks', function () {
       GIT_EDITOR: true
     });
 
-    this.npm(['run', 'step', '--', 'edit', '--root']);
+    this.npm.step(['edit', '--root']);
 
     expect(commit).to.not.throw(Error);
   });
@@ -90,8 +99,8 @@ describe('Hooks', function () {
       GIT_EDITOR: true
     });
 
-    this.npm(['run', 'step', '--', 'tag', '-m', 'dummy']);
-    this.npm(['run', 'step', '--', 'edit', '1']);
+    this.npm.step(['tag', '-m', 'dummy']);
+    this.npm.step(['edit', '1']);
     this.exec('sh', ['-c', 'echo test > steps/step1.md']);
     this.git(['add', 'steps/step1.md']);
 

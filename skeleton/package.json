@@ -6,6 +6,7 @@
     "precommit": "node .tortilla/hooks/pre-commit",
     "preparecommitmsg": "node .tortilla/hooks/prepare-commit-msg",
     "commitmsg": "node .tortilla/hooks/commit-msg",
+    "prepush": "node .tortilla/hooks/pre-push",
     "prerebase": "node .tortilla/hooks/pre-rebase",
     "manual": "node .tortilla/manual",
     "step": "node .tortilla/step"

@@ -46,7 +46,7 @@ function convertManual(step) {
   });
 
   // Fetch the current manual
-  var manualPath = getStepManualPath(step);
+  var manualPath = getManualPath(step);
   var manual = Fs.readFileSync(manualPath, 'utf8');
   var newManual;
 
@@ -99,7 +99,7 @@ function convertDevelopmentManual(manual) {
 }
 
 // Gets the manual belonging to the given step
-function getStepManualPath(step) {
+function getManualPath(step) {
   if (step == 'root') return Path.resolve(Paths.readme)
   return Path.resolve(Paths.steps, 'step' + step + '.md');
 }
@@ -112,6 +112,7 @@ function isManualProd(manual) {
 
 module.exports = {
   convert: convertManual,
+  path: getManualPath,
   isProd: isManualProd
 };
 
