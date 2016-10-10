@@ -7,7 +7,7 @@
     "preparecommitmsg": "node .tortilla/hooks/prepare-commit-msg",
     "commitmsg": "node .tortilla/hooks/commit-msg",
     "prerebase": "node .tortilla/hooks/pre-rebase",
-    "manual": "node .tortilla/manual",
+    "manuals": "node .tortilla/manual",
     "step": "node .tortilla/step"
   },
   "devDependencies": {
