@@ -46,6 +46,9 @@ var Step = require('../step');
       'Step manual files can\'t be modified'
     );
 
+    // It means we're editing root
+    if (!stepDescriptor) return;
+
     stagedFiles = Git.stagedFiles(/^README.md/);
 
     if (stagedFiles.length) throw Error(
