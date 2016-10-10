@@ -67,7 +67,7 @@ function getMdDiff(file) {
 // Gets diff in a markdown format for a single chunk
 function getMdChunk(chunk) {
   // Grab chunk data since it's followed by unrelevant content
-  var chunkData = chunk.content.match(/@@ [\+\-]\d+,\d+ [\+\-]\d+,\d+ @@/)[0];
+  var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
 
   var changes = chunk.changes;
   var lastChange = changes[changes.length - 1];
