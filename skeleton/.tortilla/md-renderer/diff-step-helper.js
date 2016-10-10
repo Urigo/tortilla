@@ -35,7 +35,7 @@ MDRenderer.registerHelper('diff_step', function(step) {
   var stepMessage = stepData.slice(1).join(' ');
 
   var stepTitle = '#### ' + stepMessage;
-  var diff = Git(['diff', stepHash + '~1']);
+  var diff = Git(['diff', stepHash + '^', stepHash]);
   // Convert diff string to json format
   var files = ParseDiff(diff);
 
