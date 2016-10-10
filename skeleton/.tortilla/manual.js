@@ -17,13 +17,15 @@ var prodFlag = '[__prod__]: #'
 function main() {
   var argv = Minimist(process.argv.slice(2), {
     string: ['_'],
-    boolean: ['root', 'r']
+    boolean: ['all', 'a', 'root', 'r']
   });
 
   var method = argv._[0];
   var step = argv._[1];
+  var all = argv.all || argv.a;
   var root = argv.root || argv.r;
 
+  if (!step && all) step = 'all';
   if (!step && root) step = 'root';
 
   // Automatically invoke a method by the provided arguments
@@ -35,8 +37,11 @@ function main() {
 // Converts manual into the opposite format. If step is not provided then all
 // manuals since the beginning of history will be converted
 function convertManual(step) {
+  if (!step)
+    throw TypeError('A step must be provided');
+
   // Convert all manuals since the beginning of history
-  if (!step) return Git(['rebase', '-i', '--root', '--keep-empty'], {
+  if (step == 'all') return Git(['rebase', '-i', '--root', '--keep-empty'], {
     GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' convert'
   });
 
@@ -63,6 +68,13 @@ function convertManual(step) {
 
   // Rewrite manual
   Fs.writeFileSync(manualPath, newManual);
+
+  // Amend changes
+  Git(['add', manualPath]);
+
+  Git(['commit', '--amend'], {
+    GIT_EDITOR: true
+  });
 }
 
 // Converts manual content to production format
@@ -99,7 +111,8 @@ function isManualProd(manual) {
 
 
 module.exports = {
-  convert: convertManual
+  convert: convertManual,
+  isProd: isManualProd
 };
 
 if (require.main === module) main();

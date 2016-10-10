@@ -41,7 +41,7 @@ beforeEach(function () {
   ].concat(argv), ...args);
 
   this.npm.manual = (argv, ...args) => this.npm([
-    'run', 'manuals', '--'
+    'run', 'manual', '--'
   ].concat(argv), ...args);
 
   this.git.apply = (patchName) => {

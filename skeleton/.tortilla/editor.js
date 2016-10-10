@@ -89,11 +89,7 @@ function convertManuals(operations) {
   // Convert README.md
   operations.splice(1, 0, {
     method: 'exec',
-    command: [
-      'node ' + Paths.tortilla.manual + ' convert --root',
-      'git add ' + path,
-      'GIT_EDITOR=true git commit --amend'
-    ].join(' && ')
+    command: 'node ' + Paths.tortilla.manual + ' convert --root'
   });
 
   operations.slice(offset).forEach(function (operation, index) {
@@ -106,11 +102,7 @@ function convertManuals(operations) {
     // Convert step manual file
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: [
-        'node ' + Paths.tortilla.manual + ' convert ' + stepDescriptor.number,
-        'git add ' + path,
-        'GIT_EDITOR=true git commit --amend'
-      ].join(' && ')
+      command: 'node ' + Paths.tortilla.manual + ' convert ' + stepDescriptor.number
     });
 
     return offset;

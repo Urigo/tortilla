@@ -22,6 +22,25 @@ describe('Manual', function () {
       }
     });
 
+    it('should convert a specified manual file to production format', function () {
+      this.npm.step(['edit', '2']);
+      this.npm.manual(['convert', '2']);
+      this.git(['rebase', '--continue']);
+
+      const manual = this.exec('cat', ['steps/step2.md']);
+      expect(manual).to.be.a.markdown('prod-manuals/steps/step2');
+    });
+
+    it('should convert a specified manual file to development format', function () {
+      this.npm.step(['edit', '2']);
+      this.npm.manual(['convert', '2']);
+      this.npm.manual(['convert', '2']);
+      this.git(['rebase', '--continue']);
+
+      const manual = this.exec('cat', ['steps/step2.md']);
+      expect(manual).to.be.a.markdown('dev-manuals/steps/step2');
+    });
+
     it('should convert all manual files through out history to production format', function () {
       const manualsPaths = [
         'README.md',
@@ -30,7 +49,7 @@ describe('Manual', function () {
         'steps/step3.md'
       ];
 
-      this.npm.manual(['convert']);
+      this.npm.manual(['convert', '--all']);
 
       manualsPaths.forEach(function (manualPath) {
         const manual = this.exec('cat', [manualPath]);
@@ -46,8 +65,8 @@ describe('Manual', function () {
         'steps/step3.md'
       ];
 
-      this.npm.manual(['convert']);
-      this.npm.manual(['convert']);
+      this.npm.manual(['convert', '--all']);
+      this.npm.manual(['convert', '--all']);
 
       manualsPaths.forEach(function (manualPath) {
         const manual = this.exec('cat', [manualPath]);
