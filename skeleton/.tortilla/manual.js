@@ -41,7 +41,7 @@ function convertManual(step) {
     throw TypeError('A step must be provided');
 
   // Convert all manuals since the beginning of history
-  if (step == 'all') return Git(['rebase', '-i', '--root', '--keep-empty'], {
+  if (step == 'all') return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
     GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' convert'
   });
 
@@ -72,7 +72,7 @@ function convertManual(step) {
   // Amend changes
   Git(['add', manualPath]);
 
-  Git(['commit', '--amend'], {
+  Git.print(['commit', '--amend'], {
     GIT_EDITOR: true
   });
 }
