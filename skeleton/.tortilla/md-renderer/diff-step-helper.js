@@ -85,7 +85,7 @@ function getMdChunk(chunk) {
     .map(getMdChange.bind(null, padLength))
     .join('\n')
     // Replace EOF flag with a pretty format and append it to the recent line
-    .replace('\n\\ No newline at end of file', '🚫↵');
+    .replace(/\n\\ No newline at end of file/g, '🚫↵');
 
   // Wrap changes with markdown 'diff'
   return ['```diff', chunkData, mdChanges, '```'].join('\n');
