@@ -68,18 +68,7 @@ function getMdDiff(file) {
 function getMdChunk(chunk) {
   // Grab chunk data since it's followed by unrelevant content
   var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
-
-  var changes = chunk.changes;
-  var lastChange = changes[changes.length - 1];
-
-  // The padding of the line numbers would be determined by the line number
-  var lastLineNumber = Math.max(
-    lastChange.ln || 0,
-    lastChange.ln1 || 0,
-    lastChange.ln2 || 0
-  );
-
-  var padLength = lastLineNumber.toString().length;
+  var padLength = getPadLength(chunk.changes);
 
   var mdChanges = chunk.changes
     .map(getMdChange.bind(null, padLength))
@@ -123,4 +112,17 @@ function getMdChange(padLength, change) {
 
   // Using content.slice(1) since we want to remove '-\+' prefixes
   return [sign, delLineNum, addLineNum, change.content.slice(1)].join('┊');
+}
+
+// Gets the pad length by the length of the max line number in changes
+function getPadLength(changes) {
+  var maxLineNumber = changes.reduce(function (maxLineNumber, change) {
+    return Math.max(maxLineNumber,
+      change.ln || 0,
+      change.ln1 || 0,
+      change.ln2 || 0
+    );
+  }, 1);
+
+  return maxLineNumber.toString().length;
 }
