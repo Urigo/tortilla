@@ -36,9 +36,11 @@ MDRenderer.registerHelper('nav_step', function() {
 
   // If this is the first step
   if (step == 1)
-    return MDRenderer.renderTemplateFile('next-button-template.md', {
-      text: 'Next Step',
-      ref: 'steps/step2.md'
+    return MDRenderer.renderTemplateFile('nav-buttons-template.md', {
+      next_text: 'Next Step',
+      next_ref: 'step2.md',
+      prev_text: 'Intro',
+      prev_ref: '../README.md'
     });
 
   var currentTag = 'step' + step;
@@ -48,15 +50,15 @@ MDRenderer.registerHelper('nav_step', function() {
   if (currentTag == recentTag)
     return MDRenderer.renderTemplateFile('prev-button-template.md', {
       text: 'Previous Step',
-      ref: 'steps/step' + (step - 1) + '.md'
+      ref: 'step' + (step - 1) + '.md'
     });
 
   // Any other case
   return MDRenderer.renderTemplateFile('nav-buttons-template.md', {
     next_text: 'Next Step',
-    next_ref: 'steps/step' + (step + 1) + '.md',
+    next_ref: 'step' + (step + 1) + '.md',
     prev_text: 'Previous Step',
-    prev_ref: 'steps/step' + (step - 1) + '.md'
+    prev_ref: 'step' + (step - 1) + '.md'
   });
 });
 
