@@ -27,9 +27,12 @@ MDRenderer.registerHelper('nav_step', function() {
   // Convert to number just in case, so we can run arbitrary operations
   var step = Number(step);
 
+  // Note that the tags will not necessarily be in the right order so it's
+  // important to sort them if we count on it
   var stepTags = Git(['tag', '-l', 'step*'])
     .split('\n')
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort(compareTags);
 
   // If this is the only step or there are no steps at all
   if ((stepTags.length - 2) < 0) return '';
@@ -72,4 +75,12 @@ function getStep() {
   if (!stepDescriptor) return;
 
   return stepDescriptor.number;
+}
+
+// Compares which tag has a bigger step
+function compareTags(tag1, tag2) {
+  var step1 = Number(tag1.split('step')[1]);
+  var step2 = Number(tag2.split('step')[1]);
+
+  return step1 > step2;
 }
