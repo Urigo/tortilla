@@ -1,0 +1,58 @@
+#!/usr/local/bin/node
+var Program = require('commander');
+var LocalStorage = require('../local-storage');
+var Step = require('../step');
+
+/*
+  Step CLI.
+ */
+
+Program
+  .command('push')
+  .description('Push a new step')
+  .option('-m, --message [message]', 'The step\'s message')
+  .option('--allow-empty', 'Allow an empty step to be pushed')
+  .action(function (options) {
+    LocalStorage.assertTortilla(true);
+    Step.push(options.message, options);
+  });
+
+Program
+  .command('pop')
+  .description('Pop recent step and delete its tag')
+  .action(function () {
+    LocalStorage.assertTortilla(true);
+    Step.pop();
+  });
+
+Program
+  .command('tag')
+  .description('Create a super step, tag it and start a new set')
+  .option('-m, --message [message]', 'The step\'s message')
+  .action(function (options) {
+    LocalStorage.assertTortilla(true);
+    Step.tag(options.message);
+  });
+
+Program
+  .command('edit [step]')
+  .description('Edit [step] and adjust upcoming steps\' indices')
+  .option('--root [root]', 'Edit the root commit')
+  .action(function (step, options) {
+    LocalStorage.assertTortilla(true);
+    step = step || (options.root && 'root');
+    Step.edit(step);
+  });
+
+Program
+  .command('reword [step]')
+  .description('Reword [step] message without affecting its index')
+  .option('--root', 'Reword the root commit')
+  .option('-m, --message [message]', 'The step\'s message')
+  .action(function (step, options) {
+    LocalStorage.assertTortilla(true);
+    step = step || (options.root && 'root');
+    Step.reword(step, options.message);
+  });
+
+Program.parse(process.argv);

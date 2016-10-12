@@ -30,6 +30,6 @@ var Utils = require('../utils');
       '\'' + manualPath + '\' must be in production mode before pushing changes!',
       'To fix this, run `$ npm run manual -- convert ' + stepOption + '` and then',
       'try to push again.'
-    ].join(' '));
+    ].join('\n'));
   });
 })();

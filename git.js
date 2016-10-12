@@ -20,7 +20,7 @@ function isCherryPicking() {
 
 // Tells if going to amend or not
 function gonnaAmend() {
-  return Utils.runBy('git', ['commit', '--amend']);
+  return Utils.childProcessOf('git', ['commit', '--amend']);
 }
 
 // Tells if a tag exists or not

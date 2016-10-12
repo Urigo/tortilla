@@ -1,62 +1,48 @@
 const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
+const Paths = require('../paths');
+const Utils = require('../utils');
 
 
 before(function () {
   // Consts
+  // TODO: Add a random post-fix
   this.testDir = '/tmp/tortilla_test';
   this.repoDir = '/tmp/tortilla.git';
-  this.libDir = Path.resolve(__dirname, '..');
-
-  // Removing dir just in case
-  Fs.removeSync(this.repoDir);
-  // Initializing a new repository
-  ChildProcess.execFileSync('git', ['init', this.repoDir, '--bare']);
 
   // Utils
-  this.readFile = (put, file) => {
+  Object.assign(this, Utils);
+
+  // Executes tortilla
+  this.tortilla = (...args) => {
+    const tortillaCLI = Path.resolve(Paths.tortilla.cli, 'tortilla');
+    return this.exec(tortillaCLI, ...args);
+  };
+
+  // Read the provided test data located in 'fs-data'
+  this.readTestData = (put, file) => {
     const filePath = Path.resolve(__dirname, 'fs-data', put, file);
     return Fs.readFileSync(filePath, 'utf8');
+  };
+
+  // Git-am patch located in 'fs-data/in'
+  this.applyTestPatch = (patchName) => {
+    const patchPath = Path.resolve(__dirname, 'fs-data/in', patchName + '.patch');
+    return this.git(['am', patchPath]);
   };
 });
 
 beforeEach(function () {
-  // Resetting test tortilla project
-  ChildProcess.execFileSync('node', [
-    this.libDir, '-m', 'Test tortilla project', '-o', this.testDir, '--override'
+  // Initializing test tortilla project
+  ChildProcess.execFileSync(Path.resolve(Paths.tortilla.cli, 'tortilla'), [
+    'create', '-m', 'Test tortilla project', '-o', this.testDir, '--override'
   ]);
 
-  // Deleting cached modules
-  Object.keys(require.cache)
-    .filter(path => path.match(this.testDir))
-    .forEach(path => delete require[path]);
-
-  // Assigning utils for easy access
-  Object.assign(this, require(`${this.testDir}/.tortilla/utils`));
-
-  // Project executors
-  this.git = require(`${this.testDir}/.tortilla/git`);
-  this.mdParser = require(`${this.testDir}/.tortilla/md-parser`);
-  this.mdRenderer = require(`${this.testDir}/.tortilla/md-renderer`);
-  this.step = require(`${this.testDir}/.tortilla/step`);
-
-  // Adding a remote to the test-repo
+  // Initializing repo
+  Fs.removeSync(this.repoDir);
+  this.git(['init', this.repoDir, '--bare']);
   this.git(['remote', 'add', 'origin', this.repoDir]);
-
-  // Project utils
-  this.npm.step = (argv, ...args) => this.npm([
-    'run', 'step', '--'
-  ].concat(argv), ...args);
-
-  this.npm.manual = (argv, ...args) => this.npm([
-    'run', 'manual', '--'
-  ].concat(argv), ...args);
-
-  this.git.apply = (patchName) => {
-    const patchPath = Path.resolve(__dirname, 'fs-data/in', patchName + '.patch');
-    return this.git(['am', patchPath]);
-  };
 });
 
 

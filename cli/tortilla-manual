@@ -1,0 +1,22 @@
+#!/usr/local/bin/node
+var Program = require('commander');
+var LocalStorage = require('../local-storage');
+var Manual = require('../manual');
+
+/*
+  Manual CLI.
+ */
+
+Program
+  .command('convert [step]')
+  .description('Convert [step] manual to its opposite format')
+  .option('--root', 'Convert \'README.md\'')
+  .option('--all', 'Convert all manuals through out history')
+  .action(function (step, options) {
+    LocalStorage.assertTortilla(true);
+    step = step || (options.root && 'root');
+    step = step || (options.all && 'all');
+    Manual.convert(step);
+  });
+
+Program.parse(process.argv);

@@ -1,4 +1,5 @@
 const Chai = require('chai');
+const MDParser = require('../md-parser');
 
 
 const expect = Chai.expect;
@@ -9,8 +10,8 @@ describe('MDParser', function () {
     this.slow(10);
 
     it('should parse markdown chunks in series', function () {
-      const md = this.readFile('in', 'chunks-series.md');
-      const chunks = this.mdParser.parse(md);
+      const md = this.readTestData('in', 'chunks-series.md');
+      const chunks = MDParser.parse(md);
 
       expect(chunks[0].type).to.equal('footype');
       expect(chunks[0].name).to.equal('fooname');
@@ -29,8 +30,8 @@ describe('MDParser', function () {
     });
 
     it('should parse text chunks between markdown chunks', function () {
-      const md = this.readFile('in', 'text-chunks.md');
-      const chunks = this.mdParser.parse(md);
+      const md = this.readTestData('in', 'text-chunks.md');
+      const chunks = MDParser.parse(md);
 
       expect(chunks[0].content).to.equal('text1');
 
@@ -43,8 +44,8 @@ describe('MDParser', function () {
     });
 
     it('should parse markdown chunks recursively', function () {
-      const md = this.readFile('in', 'recursive-chunks.md');
-      let chunks = this.mdParser.parse(md, true);
+      const md = this.readTestData('in', 'recursive-chunks.md');
+      let chunks = MDParser.parse(md, true);
 
       expect(chunks[0].type).to.equal('footype');
       expect(chunks[0].name).to.equal('fooname');
@@ -72,8 +73,8 @@ describe('MDParser', function () {
     });
 
     it('should parse recursively until limit', function () {
-      const md = this.readFile('in', 'recursive-chunks.md');
-      let chunks = this.mdParser.parse(md, 1);
+      const md = this.readTestData('in', 'recursive-chunks.md');
+      let chunks = MDParser.parse(md, 1);
 
       expect(chunks[0].type).to.equal('footype');
       expect(chunks[0].name).to.equal('fooname');
@@ -93,8 +94,8 @@ describe('MDParser', function () {
     describe('Result', function () {
       describe('toTemplate()', function () {
         it('should convert known chunk types into md-renderer components', function () {
-          const md = this.readFile('in', 'template-chunks.md');
-          const chunks = this.mdParser.parse(md, true);
+          const md = this.readTestData('in', 'template-chunks.md');
+          const chunks = MDParser.parse(md, true);
 
           expect(chunks.toTemplate()).to.be.a.markdown('chunks-template');
         });
@@ -102,8 +103,8 @@ describe('MDParser', function () {
 
       describe('toString()', function () {
         it('should render the content when dealing with string operations', function () {
-          const md = this.readFile('in', 'chunks-series.md');
-          const chunks = this.mdParser.parse(md);
+          const md = this.readTestData('in', 'chunks-series.md');
+          const chunks = MDParser.parse(md);
 
           expect(chunks.toString()).to.equal(md);
         });
@@ -111,8 +112,8 @@ describe('MDParser', function () {
 
       describe('toValue()', function () {
         it('should render the content when dealing with arithmetic operations', function () {
-          const md = this.readFile('in', 'chunks-series.md');
-          const chunks = this.mdParser.parse(md);
+          const md = this.readTestData('in', 'chunks-series.md');
+          const chunks = MDParser.parse(md);
 
           expect(chunks.valueOf()).to.equal(md);
         })

@@ -1,16 +1,7 @@
 const Chai = require('chai');
+const Git = require('../git');
+const Step = require('../step');
 
-/*
-  VERY IMPORTANT NOTE!
-
-  Since adding git-hooks, especially commit-message hooks, the step tasks became
-  dramatically slow. Git-hooks are something necessary hence for now I'm gonna leave
-  it. It seems like native git-hooks without using 'husky' as a middle-ware are much
-  faster. The plan would be seperating tortilla into two packages: 'tortilla-cli' and
-  'tortilla-core'. The 'tortilla-core' would be an npm package, once installed, it's
-  gonna create git-hooks as well in the '.git' dir, this way we can get rid of husky,
-  but until then, we should use this temporary solution.
- */
 
 const expect = Chai.expect;
 
@@ -20,26 +11,26 @@ describe('Step', function () {
     this.slow(1500);
 
     it('should push a new step to the top of the stack', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
     });
 
     it('should add a new step with an updated sub-index', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.2: target');
     });
 
     it('should add a new step with an updated super-index', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'dummy']);
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 2.1: target');
     });
   });
@@ -48,32 +39,32 @@ describe('Step', function () {
     this.slow(1500);
 
     it('should push the last step from the top of the stack', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'pop']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
     });
 
     it('should remove tags', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'dummy']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'pop']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
 
-      const tagExists = this.git.tagExists('step1');
+      const tagExists = Git.tagExists('step1');
       expect(tagExists).to.be.falsy;
     });
 
     it('should remove manual files', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'dummy']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'pop']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
 
       const fileExists = this.exists(`${this.testDir}/steps/step1.md`);
@@ -85,38 +76,38 @@ describe('Step', function () {
     this.slow(1500);
 
     it('should push a new step to the top of the stack', function () {
-      this.npm.step(['tag', '-m', 'target']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1: target');
     });
 
     it('should push a new step with an updated super-index', function () {
-      this.npm.step(['tag', '-m', 'dummy']);
-      this.npm.step(['tag', '-m', 'target']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 2: target');
     });
 
     it('should add a new tag', function () {
-      this.npm.step(['tag', '-m', 'target']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1: target');
 
-      const tagExists = this.git.tagExists('step1');
+      const tagExists = Git.tagExists('step1');
       expect(tagExists).to.be.truthy;
 
-      const tagHash = this.git(['rev-parse', 'step1']);
-      const commitHash = this.git(['rev-parse', 'HEAD']);
+      const tagHash = Git(['rev-parse', 'step1']);
+      const commitHash = Git(['rev-parse', 'HEAD']);
       expect(tagHash).to.equal(commitHash);
     });
 
     it('should create a manual file', function () {
-      this.npm.step(['tag', '-m', 'target']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1: target');
 
       const fileExists = this.exists(`${this.testDir}/steps/step1.md`);
@@ -128,19 +119,19 @@ describe('Step', function () {
     this.slow(2000);
 
     it('should reword the provided step', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['reword', '1.1', '-m', 'target']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'reword', '1.1', '-m', 'target']);
 
-      const message = this.step.recentCommit(1, '%s');
+      const message = Step.recentCommit(1, '%s');
       expect(message).to.equal('Step 1.1: target');
     });
 
     it('should be able to reword root', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['reword', '--root', '-m', 'target']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'reword', '--root', '-m', 'target']);
 
-      const message = this.git([
+      const message = Git([
         'rev-list', '--max-parents=0', 'HEAD', '--format=%s'
       ]).split('\n')[1];
 
@@ -148,19 +139,19 @@ describe('Step', function () {
     });
 
     it('should update hash references', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'dummy']);
-      this.npm.step(['reword', '1.1', '-m', 'target']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'reword', '1.1', '-m', 'target']);
 
-      const message = this.step.recentCommit(1, '%s');
+      const message = Step.recentCommit(1, '%s');
       expect(message).to.equal('Step 1.1: target');
 
-      const rootTagHash = this.git(['rev-parse', 'root']);
-      const rootCommitHash = this.git(['rev-list', '--max-parents=0', 'HEAD']);
+      const rootTagHash = Git(['rev-parse', 'root']);
+      const rootCommitHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
       expect(rootTagHash).to.equal(rootCommitHash);
 
-      const stepTagHash = this.git(['rev-parse', 'step1']);
-      const stepCommitHash = this.step.recentCommit('%H');
+      const stepTagHash = Git(['rev-parse', 'step1']);
+      const stepCommitHash = Step.recentCommit('%H');
       expect(stepTagHash).to.equal(stepCommitHash);
     });
   });
@@ -169,141 +160,141 @@ describe('Step', function () {
     this.slow(3000);
 
     it('should edit the provided step', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+
       let size = 10;
       while (size--) {
-        this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
+        this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       }
 
-      this.npm.step(['edit', '1.1']);
+      this.tortilla(['step', 'edit', '1.1']);
 
-      const isRebasing = this.git.rebasing();
+      const isRebasing = Git.rebasing();
       expect(isRebasing).to.be.truthy;
 
-      const message = this.step.recentCommit('%s');
+      const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
     });
 
     it('should be able to edit root', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['edit', '--root']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'edit', '--root']);
 
-      const isRebasing = this.git.rebasing();
+      const isRebasing = Git.rebasing();
       expect(isRebasing).to.be.truthy;
 
-      const commitHash = this.git.recentCommit(['--format=%H']);
-      const rootHash = this.git(['rev-list', '--max-parents=0', 'HEAD']);
+      const commitHash = Git.recentCommit(['--format=%H']);
+      const rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
       expect(commitHash).to.equal(rootHash);
     });
 
     it('should update hash references', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'dummy']);
-      this.npm.step(['edit', '1.1']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'edit', '1.1']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const rootTagHash = this.git(['rev-parse', 'root']);
-      const rootCommitHash = this.git(['rev-list', '--max-parents=0', 'HEAD']);
+      const rootTagHash = Git(['rev-parse', 'root']);
+      const rootCommitHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
       expect(rootTagHash).to.equal(rootCommitHash);
 
-      const stepTagHash = this.git(['rev-parse', 'step1']);
-      const stepCommitHash = this.step.recentCommit('%H');
+      const stepTagHash = Git(['rev-parse', 'step1']);
+      const stepCommitHash = Step.recentCommit('%H');
       expect(stepTagHash).to.equal(stepCommitHash);
     });
 
     it('should update step indices when pushing a step', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['push', '-m', 'old', '--allow-empty']);
-      this.npm.step(['edit', '1.1']);
-      this.npm.step(['push', '-m', 'new', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
+      this.tortilla(['step', 'edit', '1.1']);
+      this.tortilla(['step', 'push', '-m', 'new', '--allow-empty']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const newMessage = this.step.recentCommit('%s');
+      const newMessage = Step.recentCommit('%s');
       expect(newMessage).to.equal('Step 1.3: old');
 
-      const oldMessage = this.step.recentCommit(1, '%s');
+      const oldMessage = Step.recentCommit(1, '%s');
       expect(oldMessage).to.equal('Step 1.2: new');
     });
 
     it('should update step indices when popping a step', function () {
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['push', '-m', 'old', '--allow-empty']);
-      this.npm.step(['edit', '1.2']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
+      this.tortilla(['step', 'edit', '1.2']);
+      this.tortilla(['step', 'pop']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const oldMessage = this.step.recentCommit('%s');
+      const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 1.2: old');
     });
 
     it('should update super-step indices when tagging a step', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'old']);
-      this.npm.step(['edit', '1.1']);
-      this.npm.step(['tag', '-m', 'new']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'old']);
+      this.tortilla(['step', 'edit', '1.1']);
+      this.tortilla(['step', 'tag', '-m', 'new']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const newMessage = this.step.recentCommit('%s');
+      const newMessage = Step.recentCommit('%s');
       expect(newMessage).to.equal('Step 2: old');
 
-      const oldMessage = this.step.recentCommit(1, '%s');
+      const oldMessage = Step.recentCommit(1, '%s');
       expect(oldMessage).to.equal('Step 1: new');
     });
 
     it('should update sub-step indices when tagging a step', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['push', '-m', 'old', '--allow-empty']);
-      this.npm.step(['edit', '1.1']);
-      this.npm.step(['tag', '-m', 'new']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
+      this.tortilla(['step', 'edit', '1.1']);
+      this.tortilla(['step', 'tag', '-m', 'new']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const oldMessage = this.step.recentCommit('%s');
+      const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 2.1: old');
     });
 
     it('should update super-step indices when popping a super-step', function () {
-      this.npm.step(['tag', '-m', 'target']);
-      this.npm.step(['tag', '-m', 'old']);
-      this.npm.step(['edit', '1']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
+      this.tortilla(['step', 'tag', '-m', 'old']);
+      this.tortilla(['step', 'edit', '1']);
+      this.tortilla(['step', 'pop']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const oldMessage = this.step.recentCommit('%s');
+      const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 1: old');
     });
 
     it('should update sub-step indices when popping a super-step', function () {
-      this.npm.step(['tag', '-m', 'target']);
-      this.npm.step(['push', '-m', 'old', '--allow-empty']);
-      this.npm.step(['edit', '1']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
+      this.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
+      this.tortilla(['step', 'edit', '1']);
+      this.tortilla(['step', 'pop']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const oldMessage = this.step.recentCommit('%s');
+      const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 1.1: old');
     });
 
     it('should resolve addition conflicts when tagging a step', function () {
-      this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['tag', '-m', 'old']);
-      this.npm.step(['edit', '1.1']);
-      this.npm.step(['tag', '-m', 'new']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'old']);
+      this.tortilla(['step', 'edit', '1.1']);
+      this.tortilla(['step', 'tag', '-m', 'new']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const oldMessage = this.step.recentCommit('%s');
+      const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 2: old');
 
-      const newMessage = this.step.recentCommit(1, '%s');
+      const newMessage = Step.recentCommit(1, '%s');
       expect(newMessage).to.equal('Step 1: new');
 
       const oldFileExists = this.exists(`${this.testDir}/steps/step1.md`);
@@ -314,14 +305,14 @@ describe('Step', function () {
     });
 
     it('should resolve removal conflicts when tagging a step', function () {
-      this.npm.step(['tag', '-m', 'target']);
-      this.npm.step(['tag', '-m', 'old']);
-      this.npm.step(['edit', '1']);
-      this.npm.step(['pop']);
+      this.tortilla(['step', 'tag', '-m', 'target']);
+      this.tortilla(['step', 'tag', '-m', 'old']);
+      this.tortilla(['step', 'edit', '1']);
+      this.tortilla(['step', 'pop']);
 
-      this.git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
 
-      const oldMessage = this.step.recentCommit('%s');
+      const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 1: old');
 
       const oldFileExists = this.exists(`${this.testDir}/steps/step1.md`);
