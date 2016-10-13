@@ -36,19 +36,20 @@ function renderTemplate(template, scope) {
 
   // Replace notations with values. ORDER IS CRITIC!
   return template
+    // Models
+    .replace(/\{\{([^\}]+)\}\}/g, function (match, modelName) {
+      var isModel = ['{', '>'].indexOf(modelName[0]) == -1;
+      return isModel ? scope[modelName] : match;
+    })
     // Helpers
-    .replace(/\{\{\{([^\}]*)\}\}\}/g, function (match, params) {
+    .replace(/\{\{\{([^\}]+)\}\}\}/g, function (match, params) {
       params = params.split(' ');
       var helperName = params.shift();
       return helpers[helperName].apply(scope, params);
     })
     // Partials
-    .replace(/\{\{>([^\}]*)\}\}/g, function (match, partialName) {
+    .replace(/\{\{>([^\}]+)\}\}/g, function (match, partialName) {
       return renderTemplate(partials[partialName], scope);
-    })
-    // Models
-    .replace(/\{\{([^\}]*)\}\}/g, function (match, modelName) {
-      return scope[modelName];
     });
 }
 

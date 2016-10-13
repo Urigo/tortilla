@@ -28,7 +28,7 @@ describe('MDRenderer', function () {
       ].join('\n'));
     });
 
-    it('should render a template with helper notations', function () {
+    it('should render helpers', function () {
       this.mdRenderer.registerHelper('test_helper', function (param1, param2, param3) {
         return [
           this.fooModel + ' ' + param1,
@@ -50,6 +50,32 @@ describe('MDRenderer', function () {
         'foo fooParam',
         'bar barParam',
         'baz bazParam',
+        '[}]: #'
+      ].join('\n'));
+    });
+
+    it('should not render templates returned by helpers', function () {
+      this.mdRenderer.registerHelper('test_helper', function (param1, param2, param3) {
+        return [
+          '{{fooModel}} ' + param1,
+          '{{barModel}} ' + param2,
+          '{{bazModel}} ' + param3
+        ].join('\n');
+      });
+
+      const template = '{{{test_helper fooParam barParam bazParam}}}'
+
+      const view = this.mdRenderer.renderTemplate(template, {
+        fooModel: 'foo',
+        barModel: 'bar',
+        bazModel: 'baz'
+      });
+
+      expect(view).to.equal([
+        '[{]: <helper> (test_helper fooParam barParam bazParam)',
+        '{{fooModel}} fooParam',
+        '{{barModel}} barParam',
+        '{{bazModel}} bazParam',
         '[}]: #'
       ].join('\n'));
     });
