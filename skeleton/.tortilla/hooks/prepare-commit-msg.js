@@ -11,7 +11,6 @@ var Step = require('../step');
  */
 
 (function () {
-  LocalStorage.removeItem('DEBUG');
   // Amend is the only thing allowed by tortilla, the rest is irrelevant
   if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) return;
   // We don't wanna affect cherry-picks done by step editing
