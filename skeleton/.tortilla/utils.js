@@ -66,7 +66,7 @@ function getProcessData(pid, format) {
     pid = process.pid;
   }
 
-  return exec('ps', ['--no-headers', '-p', pid, '-o', format]);
+  return exec('ps', ['-p', pid, '-o', format]).split("\n").shift().join("\n");
 }
 
 // Spawn new process and print result to the terminal
