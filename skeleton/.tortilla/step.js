@@ -194,7 +194,7 @@ function getStepBase(step) {
   }
 
   var hash = Git.recentCommit([
-    '--grep=^Step ' + step,
+    '--grep=^Step ' + step + ':',
     '--format=%h'
   ]);
 
