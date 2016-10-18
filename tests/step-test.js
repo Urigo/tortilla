@@ -170,7 +170,12 @@ describe('Step', function () {
 
     it('should edit the provided step', function () {
       this.npm.step(['push', '-m', 'target', '--allow-empty']);
-      this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
+      
+      let size = 10;
+      while (size--) {
+        this.npm.step(['push', '-m', 'dummy', '--allow-empty']);
+      }
+
       this.npm.step(['edit', '1.1']);
 
       const isRebasing = this.git.rebasing();
