@@ -1,22 +1,32 @@
 {
   "name": "tortilla",
-  "version": "0.0.1-alpha.2",
-  "description": "A project skeleton based on git and NodeJS for Javascript tutorials",
-  "main": "tortilla.js",
+  "version": "0.0.1-alpha.3",
+  "description": "A tutorials framework based on git and NodeJS",
+  "author": "Eytan Manor",
   "repository": {
     "type": "git",
     "url": "https://github.com/Urigo/tortilla.git"
   },
+  "main": "essentials",
+  "bin": {
+    "tortilla": "cli/tortilla"
+  },
   "scripts": {
-    "test": "TORTILLA_STDIO=ignore mocha tests/test --timeout=60000"
+    "test": "TORTILLA_STDIO=ignore TORTILLA_CWD=/tmp/tortilla_test mocha tests/test --timeout=30000"
   },
   "dependencies": {
+    "commander": "^2.9.0",
     "fs-extra": "^0.30.0",
     "minimist": "^1.2.0",
+    "node-localstorage": "^1.3.0",
+    "parse-diff": "0.4.0",
     "readline-sync": "^1.4.4"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=0.10"
   }
 }

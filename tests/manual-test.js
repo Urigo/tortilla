@@ -13,18 +13,18 @@ describe('Manual', function () {
         const manualPath = 'steps/step' + step + '.md';
         const manual = '# Step ' + step;
 
-        this.npm.step(['tag', '-m', 'dummy']);
-        this.npm.step(['edit', step]);
+        this.tortilla(['step', 'tag', '-m', 'dummy']);
+        this.tortilla(['step', 'edit', step]);
         this.exec('bash', ['-c', 'echo "' + manual + '" > ' + manualPath]);
         this.git(['add', manualPath]);
-        this.git(['commit', '--amend'], { GIT_EDITOR: true });
+        this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
         this.git(['rebase', '--continue']);
       }
     });
 
     it('should convert a specified manual file to production format', function () {
-      this.npm.step(['edit', '2']);
-      this.npm.manual(['convert', '2']);
+      this.tortilla(['step', 'edit', '2']);
+      this.tortilla(['manual', 'convert', '2']);
       this.git(['rebase', '--continue']);
 
       const manual = this.exec('cat', ['steps/step2.md']);
@@ -32,9 +32,9 @@ describe('Manual', function () {
     });
 
     it('should convert a specified manual file to development format', function () {
-      this.npm.step(['edit', '2']);
-      this.npm.manual(['convert', '2']);
-      this.npm.manual(['convert', '2']);
+      this.tortilla(['step', 'edit', '2']);
+      this.tortilla(['manual', 'convert', '2']);
+      this.tortilla(['manual', 'convert', '2']);
       this.git(['rebase', '--continue']);
 
       const manual = this.exec('cat', ['steps/step2.md']);
@@ -49,7 +49,7 @@ describe('Manual', function () {
         'steps/step3.md'
       ];
 
-      this.npm.manual(['convert', '--all']);
+      this.tortilla(['manual', 'convert', '--all']);
 
       manualsPaths.forEach(function (manualPath) {
         const manual = this.exec('cat', [manualPath]);
@@ -65,8 +65,8 @@ describe('Manual', function () {
         'steps/step3.md'
       ];
 
-      this.npm.manual(['convert', '--all']);
-      this.npm.manual(['convert', '--all']);
+      this.tortilla(['manual', 'convert', '--all']);
+      this.tortilla(['manual', 'convert', '--all']);
 
       manualsPaths.forEach(function (manualPath) {
         const manual = this.exec('cat', [manualPath]);

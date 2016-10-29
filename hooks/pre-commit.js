@@ -17,7 +17,7 @@ var Step = require('../step');
   if (!Git.rebasing()) throw Error([
     'Changes are not allowed outside editing mode!',
     'Use `$ npm step -- edit` and then make your changes'
-  ].join(' '));
+  ].join('\n'));
 
   var stepMessage = Step.recentCommit('%s');
   var stepDescriptor = Step.descriptor(stepMessage);

@@ -1,20 +1,5 @@
 {
   "name": "{{name}}",
   "description": "A newly created Tortilla project",
-  "version": "0.0.1",
-  "scripts": {
-    "precommit": "node .tortilla/hooks/pre-commit",
-    "preparecommitmsg": "node .tortilla/hooks/prepare-commit-msg",
-    "commitmsg": "node .tortilla/hooks/commit-msg",
-    "prepush": "node .tortilla/hooks/pre-push",
-    "prerebase": "node .tortilla/hooks/pre-rebase",
-    "manual": "node .tortilla/manual",
-    "step": "node .tortilla/step"
-  },
-  "devDependencies": {
-    "husky": "^0.11.8",
-    "minimist": "^1.2.0",
-    "node-localstorage": "^1.3.0",
-    "parse-diff": "0.4.0"
-  }
+  "private": true
 }

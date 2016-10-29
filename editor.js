@@ -5,12 +5,14 @@ var Paths = require('./paths');
 var Step = require('./step');
 
 /*
-  This is the editor for interactive rebases and ammended commits. Instead of openning
+  This is the editor for interactive rebases and amended commits. Instead of opening
   an editing software like nano or vim, this module will edit the file by specified
   methods we choose.
  */
 
-function main() {
+(function () {
+  if (require.main !== module) return;
+
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm']
   });
@@ -35,18 +37,17 @@ function main() {
   // Reset all tags
   operations.push({
     method: 'exec',
-    command: 'node ' + Paths.tortilla.retagger
+    command: 'node ' + Paths.tortilla.history + ' retag'
   });
 
   // Put everything back together and rewrite the rebase file
   var newRebaseFileContent = assemblyOperations(operations);
   Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
-}
+})();
 
 // Edit the last step in the rebase file
 function editStep(operations) {
   operations[0].method = 'edit';
-
   var offset = 1;
 
   // Creating a clone of the operations array otherwise splices couldn't be applied
@@ -58,20 +59,20 @@ function editStep(operations) {
     // If this is a super step, replace pick operation with the super pick
     if (isSuperStep) operations.splice(index + offset, 1, {
       method: 'exec',
-      command: 'node ' + Paths.tortilla.superPicker + ' ' + operation.hash
+      command: 'node ' + Paths.tortilla.history + ' super-pick ' + operation.hash
     });
 
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: 'GIT_EDITOR=true node ' + Paths.tortilla.reworder
+      command: 'GIT_EDITOR=true node ' + Paths.tortilla.history + ' reword'
     });
   });
 }
 
 // Reword the last step in the rebase file
 function rewordStep(operations, message) {
-  var argv = [Paths.tortilla.reworder];
+  var argv = [Paths.tortilla.history, 'reword'];
   if (message) argv.push('"' + message + '"');
 
   // Replace original message with the provided message
@@ -135,6 +136,3 @@ function assemblyOperations(operations) {
     })
     .join('\n') + '\n';
 }
-
-
-if (require.main === module) main();

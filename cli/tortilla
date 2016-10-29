@@ -1,0 +1,37 @@
+#!/usr/local/bin/node
+var Program = require('commander');
+var Essentials = require('../essentials');
+var LocalStorage = require('../local-storage');
+var Pack = require('../package.json');
+
+/*
+  CLI entry point.
+ */
+
+Program
+  .version(Pack.version)
+  .description(Pack.description);
+
+Program
+  .command('create [name]')
+  .description('Create a new tortilla project named [name]')
+  .option('-o, --output [path]', 'The output [path] for the newly created project')
+  .option('-m, --message [message]', 'The [message] of the root commit')
+  .option('--override', 'Override dir if already exists')
+  .action(function (name, options) {
+    Essentials.create(name, options);
+  });
+
+Program
+  .command('init [dir]')
+  .description('Initialize Tortilla essentials in the provided project [dir]')
+  .action(function (dir) {
+    LocalStorage.assertTortilla();
+    Essentials.init(dir);
+  });
+
+Program
+  .command('manual <command...>', 'Manage manual files')
+  .command('step <command...>', 'Manage step commits history');
+
+Program.parse(process.argv);

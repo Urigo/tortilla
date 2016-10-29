@@ -10,34 +10,39 @@ var Utils = require('./utils');
   Contains step related utilities. Also the entry point for `npm step` commands.
  */
 
-function main() {
+(function () {
+  if (require.main !== module) return;
+
   var argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
-    boolean: ['root', 'r', 'allow-empty']
+    boolean: ['root', 'allow-empty']
   });
 
   var method = argv._[0];
   var step = argv._[1];
-  var root = argv.root || argv.r;
   var message = argv.message || argv.m;
+  var root = argv.root;
   var allowEmpty = argv['allow-empty'];
 
   if (!step && root) step = 'root';
 
-  // Automatically invoke a method by the provided arguments
+  var options = {
+    allowEmpty: allowEmpty
+  };
+
   switch (method) {
-    case 'push': return pushStep(message, allowEmpty);
+    case 'push': return pushStep(message, options);
     case 'pop': return popStep();
     case 'tag': return tagStep(message);
     case 'edit': return editStep(step);
     case 'reword': return rewordStep(step, message);
   }
-}
+})();
 
 // Push a new step with the provided message
-function pushStep(message, allowEmpty) {
+function pushStep(message, options) {
   var step = getNextStep();
-  commitStep(step, message, allowEmpty);
+  commitStep(step, message, options);
 }
 
 // Pop the last step
@@ -56,7 +61,7 @@ function popStep() {
     return console.warn('Removed commit was not a step');
 
   // Tag removal should be done by the editor after continuing rebase in case
-  // of abortion otherwise we are skrewed
+  // of abortion otherwise we are screwed
   if (Git.rebasing()) return;
 
   var isSuperStep = !!getSuperStepDescriptor(removedCommitMessage);
@@ -97,7 +102,9 @@ function editStep(step) {
   var base = getStepBase(step);
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
-    GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
+    env: {
+      GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
+    }
   });
 }
 
@@ -111,15 +118,19 @@ function rewordStep(step, message) {
   if (message) argv.push('-m', '"' + message + '"');
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
-    GIT_SEQUENCE_EDITOR: 'node ' + argv.join(' ')
+    env: {
+      GIT_SEQUENCE_EDITOR: 'node ' + argv.join(' ')
+    }
   });
 }
 
 // Add a new commit of the provided step with the provided message
-function commitStep(step, message, allowEmpty) {
+function commitStep(step, message, options) {
+  options = options || {};
+
   var argv = ['commit'];
   if (message) argv.push('-m', message);
-  if (allowEmpty) argv.push('--allow-empty');
+  if (options.allowEmpty) argv.push('--allow-empty');
 
   // Specified step is gonna be used for when forming the commit message
   LocalStorage.setItem('STEP', step);
@@ -292,5 +303,3 @@ module.exports = {
   superDescriptor: getSuperStepDescriptor,
   subDescriptor: getSubStepDescriptor
 };
-
-if (require.main === module) main();

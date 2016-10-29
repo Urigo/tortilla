@@ -1,4 +1,5 @@
 const Chai = require('chai');
+const MDRenderer = require('../md-renderer');
 
 
 const expect = Chai.expect;
@@ -15,7 +16,7 @@ describe('MDRenderer', function () {
         '{{bazModel}}'
       ].join('\n');
 
-      const view = this.mdRenderer.renderTemplate(template, {
+      const view = MDRenderer.renderTemplate(template, {
         fooModel: 'foo',
         barModel: 'bar',
         bazModel: 'baz'
@@ -29,7 +30,7 @@ describe('MDRenderer', function () {
     });
 
     it('should render helpers', function () {
-      this.mdRenderer.registerHelper('test_helper', function (param1, param2, param3) {
+      MDRenderer.registerHelper('test_helper', function (param1, param2, param3) {
         return [
           this.fooModel + ' ' + param1,
           this.barModel + ' ' + param2,
@@ -39,7 +40,7 @@ describe('MDRenderer', function () {
 
       const template = '{{{test_helper fooParam barParam bazParam}}}'
 
-      const view = this.mdRenderer.renderTemplate(template, {
+      const view = MDRenderer.renderTemplate(template, {
         fooModel: 'foo',
         barModel: 'bar',
         bazModel: 'baz'
@@ -55,7 +56,7 @@ describe('MDRenderer', function () {
     });
 
     it('should not render templates returned by helpers', function () {
-      this.mdRenderer.registerHelper('test_helper', function (param1, param2, param3) {
+      MDRenderer.registerHelper('test_helper', function (param1, param2, param3) {
         return [
           '{{fooModel}} ' + param1,
           '{{barModel}} ' + param2,
@@ -65,7 +66,7 @@ describe('MDRenderer', function () {
 
       const template = '{{{test_helper fooParam barParam bazParam}}}'
 
-      const view = this.mdRenderer.renderTemplate(template, {
+      const view = MDRenderer.renderTemplate(template, {
         fooModel: 'foo',
         barModel: 'bar',
         bazModel: 'baz'
@@ -81,13 +82,13 @@ describe('MDRenderer', function () {
     });
 
     it('should render a template with partial notations', function () {
-      this.mdRenderer.registerPartial('test_partial', [
+      MDRenderer.registerPartial('test_partial', [
         '{{fooModel}}',
         '{{barModel}}',
         '{{bazModel}}'
       ].join('\n'));
 
-      const view = this.mdRenderer.renderTemplate('{{>test_partial}}', {
+      const view = MDRenderer.renderTemplate('{{>test_partial}}', {
         fooModel: 'foo',
         barModel: 'bar',
         bazModel: 'baz'
