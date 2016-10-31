@@ -1,5 +1,5 @@
 const Chai = require('chai');
-const MDParser = require('../md-parser');
+const MDParser = require('../src/md-parser');
 
 
 const expect = Chai.expect;

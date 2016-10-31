@@ -1,8 +1,7 @@
 const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
-const Paths = require('../paths');
-const Utils = require('../utils');
+const Utils = require('../src/utils');
 
 
 before(function () {
@@ -16,7 +15,7 @@ before(function () {
 
   // Executes tortilla
   this.tortilla = (...args) => {
-    const tortillaCLI = Path.resolve(Paths.tortilla.cli, 'tortilla');
+    const tortillaCLI = Path.resolve(__dirname, '../cli/tortilla');
     return this.exec(tortillaCLI, ...args);
   };
 
@@ -35,7 +34,7 @@ before(function () {
 
 beforeEach(function () {
   // Initializing test tortilla project
-  ChildProcess.execFileSync(Path.resolve(Paths.tortilla.cli, 'tortilla'), [
+  ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [
     'create', '-m', 'Test tortilla project', '-o', this.testDir, '--override'
   ]);
 

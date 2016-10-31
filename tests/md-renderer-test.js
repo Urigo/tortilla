@@ -1,5 +1,5 @@
 const Chai = require('chai');
-const MDRenderer = require('../md-renderer');
+const MDRenderer = require('../src/md-renderer');
 
 
 const expect = Chai.expect;

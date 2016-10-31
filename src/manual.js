@@ -2,8 +2,8 @@ var Fs = require('fs');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');
-var MDComponent = require('./md-parser/md-component');
 var MDParser = require('./md-parser');
+var MDComponent = require('./md-parser/md-component');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
 

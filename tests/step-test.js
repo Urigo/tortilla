@@ -1,6 +1,6 @@
 const Chai = require('chai');
-const Git = require('../git');
-const Step = require('../step');
+const Git = require('../src/git');
+const Step = require('../src/step');
 
 
 const expect = Chai.expect;

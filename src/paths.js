@@ -12,7 +12,7 @@ var cache = new LocalCache();
 var resolve = Path.resolve.bind(Path);
 
 var tortilla = {
-  _: resolve(__dirname),
+  _: resolve(__dirname, '..'),
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
@@ -24,7 +24,6 @@ var tortilla = {
   paths: resolve(__dirname, 'paths.js'),
   step: resolve(__dirname, 'step.js'),
   utils: resolve(__dirname, 'utils.js'),
-  cli: resolve(__dirname, 'cli'),
   hooks: resolve(__dirname, 'hooks'),
   mdParser: resolve(__dirname, 'md-parser'),
   mdRenderer: resolve(__dirname, 'md-renderer'),

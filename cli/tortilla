@@ -1,8 +1,8 @@
 #!/usr/local/bin/node
 var Program = require('commander');
-var Essentials = require('../essentials');
-var LocalStorage = require('../local-storage');
 var Pack = require('../package.json');
+var Essentials = require('../src/essentials');
+var LocalStorage = require('../src/local-storage');
 
 /*
   CLI entry point.

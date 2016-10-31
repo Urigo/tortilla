@@ -1,6 +1,7 @@
 var Fs = require('fs-extra');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
+var Git = require('./git');
 var LocalStorage = require('./local-storage');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
@@ -13,7 +14,6 @@ var Utils = require('./utils');
 
 var tempPaths = Paths.resolve('/tmp/tortilla');
 var exec = Utils.exec;
-var git = Utils.git;
 
 
 (function () {
@@ -77,18 +77,18 @@ function createProject(projectName, options) {
   });
 
   // Git chores
-  tempGitPrint(['init']);
-  tempGit(['add', '.']);
+  Git.print(['init'], { cwd: tempPaths._ });
+  Git(['add', '.'], { cwd: tempPaths._ });
 
   if (options.message) {
-    tempGitPrint(['commit', '-m', options.message]);
+    Git.print(['commit', '-m', options.message], { cwd: tempPaths._ });
   }
   else {
-    tempGit(['commit', '-m', 'Create a new tortilla project']);
-    tempGitPrint(['commit', '--amend']);
+    Git(['commit', '-m', 'Create a new tortilla project'], { cwd: tempPaths._ });
+    Git.print(['commit', '--amend'], { cwd: tempPaths._ });
   }
 
-  tempGit(['tag', 'root']);
+  Git(['tag', 'root'], { cwd: tempPaths._ });
   // Initializing
   initializeProject(tempPaths);
 
@@ -122,28 +122,12 @@ function initializeProject(projectDir) {
     ].join('\n');
 
     Fs.writeFileSync(hookPath, hook);
-    exec('chmod', ['+x', hookPath]);
+    exec('chmod', ['+x', hookPath], { cwd: projectPaths._ });
   });
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
 }
-
-function tempGit(argv, options) {
-  options = Utils.extend({
-    cwd: tempPaths._
-  }, options);
-
-  return git(argv, options);
-};
-
-function tempGitPrint(argv, options) {
-  options = Utils.extend({
-    cwd: tempPaths._
-  }, options);
-
-  return git.print(argv, options);
-};
 
 
 module.exports = {
