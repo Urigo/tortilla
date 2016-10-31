@@ -36,11 +36,13 @@ var prodFlag = '[__prod__]: #';
   }
 })();
 
-// Converts manual into the opposite format. If step is not provided then all
-// manuals since the beginning of history will be converted
+// Converts manual into the opposite format
 function convertManual(step) {
-  if (!step)
-    throw TypeError('A step must be provided');
+  // Grab recent super step by default
+  if (!step) {
+    var superMessage = Step.recentSuperCommit('%s');
+    step = superMessage ? Step.descriptor(superMessage).number : 'root';
+  }
 
   // Convert all manuals since the beginning of history
   if (step == 'all') return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
@@ -49,10 +51,11 @@ function convertManual(step) {
     }
   });
 
-  // Indicates whether this script is run by the git editor
-  var isEditor = Git.rebasing();
-  // If not editor, enter edit mode
-  if (!isEditor) Step.edit(step);
+  // Indicates whether we should continue rebasing at the end of the invocation.
+  // If this script is not run by the git editor we should continue rebasing
+  var shouldContinue = !Git.rebasing();
+  // Enter rebase, after all this is what rebase-continue is all about
+  if (shouldContinue) Step.edit(step);
 
   // Fetch the current manual
   var manualPath = getManualPath(step);
@@ -87,8 +90,8 @@ function convertManual(step) {
     }
   });
 
-  // If not editor, continue
-  if (!isEditor) Git.print(['rebase', '--continue']);
+  // Continue if should
+  if (shouldContinue) Git.print(['rebase', '--continue']);
 }
 
 // Converts manual content to production format

@@ -37,6 +37,13 @@ describe('Manual', function () {
       expect(manual).to.be.a.markdown('dev-manuals/steps/step2');
     });
 
+    it('should convert last manual by default if non is provided', function () {
+      this.tortilla(['manual', 'convert']);
+
+      const manual = this.exec('cat', ['steps/step3.md']);
+      expect(manual).to.be.a.markdown('prod-manuals/steps/step3');
+    });
+
     it('should convert all manual files through out history to production format', function () {
       const manualsPaths = [
         'README.md',

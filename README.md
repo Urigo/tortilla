@@ -102,4 +102,4 @@ Replace the provided step's message with the provided message (Will open an edit
 
     $ tortilla manual convert "step index"
 
-Converts and rebases specified step's manual into its opposite format. If you would like to convert the root manual you can provide a `--root`. If you would like to convert all manuals since the beginning of history you can provide a `--all` option.
+Converts and rebases specified step's manual into its opposite format. If you would like to convert the root manual you can provide a `--root`. If you would like to convert all manuals since the beginning of history you can provide a `--all` option. If no step is specified, the last manual will be converted by default.
