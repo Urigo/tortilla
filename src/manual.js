@@ -1,4 +1,4 @@
-var Fs = require('fs');
+var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');

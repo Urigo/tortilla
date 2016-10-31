@@ -1,4 +1,4 @@
-var Fs = require('fs');
+var Fs = require('fs-extra');
 var Path = require('path');
 var Minimist = require('minimist');
 var Paths = require('./paths');

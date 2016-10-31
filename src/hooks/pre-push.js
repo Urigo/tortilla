@@ -1,4 +1,4 @@
-var Fs = require('fs');
+var Fs = require('fs-extra');
 var Manual = require('../manual');
 var Utils = require('../utils');
 

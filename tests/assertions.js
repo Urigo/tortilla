@@ -1,5 +1,5 @@
 const Chai = require('chai');
-const Fs = require('fs');
+const Fs = require('fs-extra');
 const Path = require('path');
 
 

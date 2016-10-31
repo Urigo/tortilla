@@ -1,4 +1,4 @@
-var Fs = require('fs');
+var Fs = require('fs-extra');
 var Git = require('../git');
 var LocalStorage = require('../local-storage');
 var Paths = require('../paths');
