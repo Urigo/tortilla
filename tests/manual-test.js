@@ -23,19 +23,15 @@ describe('Manual', function () {
     });
 
     it('should convert a specified manual file to production format', function () {
-      this.tortilla(['step', 'edit', '2']);
       this.tortilla(['manual', 'convert', '2']);
-      this.git(['rebase', '--continue']);
 
       const manual = this.exec('cat', ['steps/step2.md']);
       expect(manual).to.be.a.markdown('prod-manuals/steps/step2');
     });
 
     it('should convert a specified manual file to development format', function () {
-      this.tortilla(['step', 'edit', '2']);
       this.tortilla(['manual', 'convert', '2']);
       this.tortilla(['manual', 'convert', '2']);
-      this.git(['rebase', '--continue']);
 
       const manual = this.exec('cat', ['steps/step2.md']);
       expect(manual).to.be.a.markdown('dev-manuals/steps/step2');

@@ -6,6 +6,7 @@ var MDParser = require('./md-parser');
 var MDComponent = require('./md-parser/md-component');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
+var Step = require('./step');
 
 /*
   Contains manual related utilities.
@@ -48,6 +49,11 @@ function convertManual(step) {
     }
   });
 
+  // Indicates whether this script is run by the git editor
+  var isEditor = Git.rebasing();
+  // If not editor, enter edit mode
+  if (!isEditor) Step.edit(step);
+
   // Fetch the current manual
   var manualPath = getManualPath(step);
   var manual = Fs.readFileSync(manualPath, 'utf8');
@@ -80,6 +86,9 @@ function convertManual(step) {
       GIT_EDITOR: true
     }
   });
+
+  // If not editor, continue
+  if (!isEditor) Git.print(['rebase', '--continue']);
 }
 
 // Converts manual content to production format
