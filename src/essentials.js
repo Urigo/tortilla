@@ -122,7 +122,8 @@ function initializeProject(projectDir) {
     ].join('\n');
 
     Fs.writeFileSync(hookPath, hook);
-    exec('chmod', ['+x', hookPath], { cwd: projectPaths._ });
+    // Give read permissions to hooks so git can execute properly
+    Fs.chmodSync(hookPath, 0755);
   });
 
   // Mark tortilla flag as initialized
