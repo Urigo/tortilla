@@ -4,7 +4,7 @@ var Utils = require('./utils');
 
 /*
   It is important to use absolute paths and not relative paths since some helpers
-  are distriuted over several processes whos execution path is not always the same,
+  are distributed over several processes whose execution path is not always the same,
   therefore this module was created.
  */
 
@@ -80,7 +80,7 @@ function resolveAll(cwd) {
     _: resolve(cwd),
     readme: resolve(cwd, 'README.md'),
     steps: resolve(cwd, 'steps'),
-    storage: resolve(cwd, '.tortilla'),
+    storage: resolve(cwd, '.git/.tortilla'),
     tortilla: tortilla,
     resolve: resolveAll,
     git: git,
