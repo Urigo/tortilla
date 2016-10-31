@@ -44,23 +44,23 @@ A manual file in a development format is a manual which is suitable for developm
 
 ### How Do I Start
 
-First you need to install Tortilla's CLI tool:
+First you will need to install Tortilla's CLI tool:
 
     $ sudo npm install tortilla -g
 
-Once you have it installed, you can create a new Tortilla project:
+Once you have it installed you can go ahead and create a new Tortilla project:
 
     $ tortilla create "project name" --message="commit message" --output="output path"
 
-This command will initialize a new Tortilla project in the provided path (Defaults to the current path). The project will be initialized with the provide project name (Defaults to `tortilla-project`) and the provided message as the initial commit message (Will open an editor if no message is provided). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
+This command will initialize a new Tortilla project in the provided path (Defaults to the current path). The project will be initialized with the provided project name (Defaults to `tortilla-project`) and the provided message as the initial commit message (Will open an editor if no message is provided). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
 
-Anytime you clone a Tortilla project from a git-host you need to re-initialize it so Tortilla can work properly:
+Anytime you clone a Tortilla project from a git-host you will need to re-initialize it so Tortilla can work properly:
 
-    $ tortilla init "dir"
+    $ tortilla init "project path"
 
-An optional project dir can be provided when initializing Tortilla. By default, the current dir will be used as the working dir.
+An optional project path can be provided when initializing Tortilla (Defaults to current dir). As for now this command has no restrictions and can be used on any project, but is not guaranteed to work as expected, so use with caution.
 
-An instructions manual for Tortilla's CLI tool can be provided any-time by typing the following:
+A manual page for the usage of Tortilla's CLI tool can be brought any time by typing the following:
 
     $ tortilla --help
 
