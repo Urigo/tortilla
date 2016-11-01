@@ -36,12 +36,6 @@ var Step = require('./step');
     case 'convert': convertManuals(operations); break;
   }
 
-  // Reset all tags
-  operations.push({
-    method: 'exec',
-    command: 'node ' + Paths.tortilla.history + ' retag'
-  });
-
   // Put everything back together and rewrite the rebase file
   var newRebaseFileContent = assemblyOperations(operations);
   Fs.writeFileSync(rebaseFilePath, newRebaseFileContent);
@@ -59,10 +53,12 @@ function editStep(operations) {
   LocalStorage.setItem('OLD_STEP', nextStep);
   LocalStorage.setItem('NEW_STEP', nextStep);
 
+  var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' adjust"'
+
   // Once we finish editing our step, adjust the rest of the steps accordingly
   operations.splice(1, 0, {
     method: 'exec',
-    command: 'node ' + Paths.tortilla.editor + ' adjust'
+    command: editor + ' git rebase --edit-todo'
   });
 }
 
@@ -90,20 +86,16 @@ function adjustSteps(operations) {
   // which is greater
   var stepLimit = stepsAdded ? newSuperStep : oldSuperStep;
 
-  var limitPassed = false;
   var offset = 0;
 
   operations.slice().forEach(function (operation, index) {
-    // If limit have passed no need to run the following check again
-    if (!limitPassed) {
-      var currStepSplit = Step.current().split('.');
-      var currSuperStep = currStepSplit[0];
-      var currSubStep = currStepSplit[1];
+    var currStepSplit = Step.descriptor(operation.message).number;
+    var currSuperStep = currStepSplit[0];
+    var currSubStep = currStepSplit[1];
 
-      if (currSuperStep > stepLimit) return limitPassed = true;
-    }
+    if (currSuperStep > stepLimit) return;
 
-    var isSuperStep = !!currSubStep;
+    var isSuperStep = !currSubStep;
 
     // If this is a super step, replace pick operation with the super pick
     if (isSuperStep) operations.splice(index + offset, 1, {
@@ -117,6 +109,12 @@ function adjustSteps(operations) {
       command: 'GIT_EDITOR=true node ' + Paths.tortilla.history + ' reword'
     });
   });
+
+  // Reset all tags
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.tortilla.history + ' retag'
+  });
 }
 
 // Reword the last step in the rebase file
@@ -128,6 +126,12 @@ function rewordStep(operations, message) {
   operations.splice(1, 0, {
     method: 'exec',
     command: 'node ' + argv.join(' ')
+  });
+
+  // Reset all tags
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.tortilla.history + ' retag'
   });
 }
 
@@ -156,6 +160,12 @@ function convertManuals(operations) {
     });
 
     return offset;
+  });
+
+  // Reset all tags
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.tortilla.history + ' retag'
   });
 }
 

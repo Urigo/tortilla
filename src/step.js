@@ -148,16 +148,19 @@ function commitStep(step, message, options) {
     // commit
     Git.print(argv);
   }
-  finally {
+  // Can't use finally because local-storage also uses try-catch
+  catch (err) {
     // Clearing storage to prevent conflicts with upcoming commits
     LocalStorage.removeItem('HOOK_STEP');
+    throw err;
   }
 }
 
 // Get the current step
 function getCurrentStep() {
   var recentStepCommit = getRecentStepCommit('%s');
-  return getStepDescriptor(recentStepCommit).number;
+  var descriptor = getStepDescriptor(recentStepCommit);
+  return descriptor && descriptor.number;
 }
 
 // Get the next step

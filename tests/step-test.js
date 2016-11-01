@@ -8,7 +8,7 @@ const expect = Chai.expect;
 
 describe('Step', function () {
   describe('push()', function () {
-    this.slow(1500);
+    this.slow(2000);
 
     it('should push a new step to the top of the stack', function () {
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
@@ -36,7 +36,7 @@ describe('Step', function () {
   });
 
   describe('pop()', function () {
-    this.slow(1500);
+    this.slow(2000);
 
     it('should push the last step from the top of the stack', function () {
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
@@ -73,7 +73,7 @@ describe('Step', function () {
   });
 
   describe('tag()', function () {
-    this.slow(1500);
+    this.slow(2000);
 
     it('should push a new step to the top of the stack', function () {
       this.tortilla(['step', 'tag', '-m', 'target']);
@@ -116,7 +116,7 @@ describe('Step', function () {
   });
 
   describe('reword()', function () {
-    this.slow(2000);
+    this.slow(2500);
 
     it('should reword the provided step', function () {
       this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
@@ -157,9 +157,24 @@ describe('Step', function () {
   });
 
   describe('edit()', function () {
-    this.slow(3000);
+    this.slow(5000);
 
     it('should edit the provided step', function () {
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'edit', '1.1']);
+
+      const isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      const message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.1: target');
+    });
+
+    it('should be able to edit steps with multiple digits', function () {
+      this.slow(10000);
+      this.timeout(20000);
+
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
       let size = 10;

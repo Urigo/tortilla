@@ -75,7 +75,7 @@ function rewordRecentStep(message) {
   if (message) argv.push('-m', message);
 
   // Specified step is gonna be used for when forming the commit message
-  LocalStorage.setItem('STEP', nextStep);
+  LocalStorage.setItem('HOOK_STEP', nextStep);
   // commit, let git hooks do the rest
   Git.print(argv);
 }
