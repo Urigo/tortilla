@@ -49,9 +49,12 @@ function editStep(operations) {
   if (operations.length <= 1) return;
 
   // Prepare meta-data for upcoming adjustments
-  var nextStep = Step.next();
-  LocalStorage.setItem('OLD_STEP', nextStep);
-  LocalStorage.setItem('NEW_STEP', nextStep);
+  var descriptor = Step.descriptor(operations[0].message);
+  // Probably root commit
+  if (!descriptor) return;
+
+  LocalStorage.setItem('OLD_STEP', descriptor.number);
+  LocalStorage.setItem('NEW_STEP', descriptor.number);
 
   var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' adjust"'
 
