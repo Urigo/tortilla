@@ -38,8 +38,12 @@ var prodFlag = '[__prod__]: #';
 
 // Converts manual into the opposite format
 function convertManual(step) {
+  if (step) {
+    var isSuperStep = !step.split('.')[1];
+    if (!isSuperStep) throw TypeError('Provided step must be a super step');
+  }
   // Grab recent super step by default
-  if (!step) {
+  else {
     var superMessage = Step.recentSuperCommit('%s');
     step = superMessage ? Step.descriptor(superMessage).number : 'root';
   }
