@@ -30,26 +30,46 @@ function renderTemplateFile(templatePath, scope) {
   return renderTemplate(template, scope);
 }
 
-// Render provided tempalte
+// Render provided template
 function renderTemplate(template, scope) {
   scope = scope || {};
 
   // Replace notations with values. ORDER IS CRITIC!
   return template
     // Models
-    .replace(/\{\{([^\}]+)\}\}/g, function (match, modelName) {
+    .replace(/([^\{]?)\{\{([^\}]+)\}\}/g, function (match, first, modelName) {
+      if (first == '\\') return match;
+
+      var model = scope[modelName] || '';
       var isModel = ['{', '>'].indexOf(modelName[0]) == -1;
-      return isModel ? scope[modelName] : match;
+
+      // Escape {{}}
+      return isModel ?
+        first + model.replace(/\{\{([^\}]+)\}\}/, '\\{{$1}}') :
+        match;
     })
     // Helpers
-    .replace(/\{\{\{([^\}]+)\}\}\}/g, function (match, params) {
+    .replace(/([^\{]?)\{\{\{([^\}]+)\}\}\}/g, function (match, first, params) {
+      if (first == '\\') return match;
+
       params = params.split(' ');
       var helperName = params.shift();
-      return helpers[helperName].apply(scope, params);
+
+      // Escape {{}}
+      return helpers[helperName].apply(scope, params)
+        .replace(/\{\{([^\}]+)\}\}/, '\\{{$1}}');
     })
     // Partials
-    .replace(/\{\{>([^\}]+)\}\}/g, function (match, partialName) {
-      return renderTemplate(partials[partialName], scope);
+    .replace(/([^\{]?)\{\{>([^\}]+)\}\}/g, function (match, first, partialName) {
+      if (first == '\\') return match;
+
+      // Escape {{}}
+      return renderTemplate(partials[partialName], scope)
+        .replace(/\{\{([^\}]+)\}\}/, '\\{{$1}}');
+    })
+    // Unescape {{}}
+    .replace(/\\\{\{([^\}]+)\}\}/g, function (match, content) {
+      return '{{' + content + '}}';
     });
 }
 

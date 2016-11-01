@@ -29,7 +29,7 @@ describe('MDRenderer', function () {
       ].join('\n'));
     });
 
-    it('should render helpers', function () {
+    it('should render a template with helper notation', function () {
       MDRenderer.registerHelper('test_helper', function (param1, param2, param3) {
         return [
           this.fooModel + ' ' + param1,
@@ -100,6 +100,27 @@ describe('MDRenderer', function () {
         'bar',
         'baz',
         '[}]: #'
+      ].join('\n'));
+    });
+
+    it('should not render notations preceded by backslash', function () {
+      const template = [
+        '\\{{model}}',
+        '\\{{{helper}}}',
+        '\\{{>partial}}'
+      ].join('\n');
+
+      MDRenderer.registerHelper('helper', String.bind(null, 'bar'));
+      MDRenderer.registerPartial('partial', 'baz');
+
+      const view = MDRenderer.renderTemplate(template, {
+        model: 'foo'
+      });
+
+      expect(view).to.equal([
+        '{{model}}',
+        '{{{helper}}}',
+        '{{>partial}}'
       ].join('\n'));
     });
   });
