@@ -80,8 +80,8 @@ function adjustSteps(operations) {
   var newStepSplits = newStep.split('.');
   var oldSuperStep = oldStepSplits[0];
   var newSuperStep = newStepSplits[0];
-  var oldSubStep = oldStepSplits[1];
-  var newSubStep = newStepSplits[1];
+  var oldSubStep = oldStepSplits[1] || 0;
+  var newSubStep = newStepSplits[1] || 0;
 
   // Calculates whether delta is greater than 0 or not
   var stepsAdded = oldSuperStep < newSuperStep ||

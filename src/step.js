@@ -93,6 +93,9 @@ function tagStep(message) {
   Git(['add', manualPath]);
   commitStep(step, message);
 
+  // Meta-data for step editing
+  LocalStorage.setItem('NEW_STEP', step);
+
   // If in the middle of rebase, don't add a tag since the process can be aborted.
   // The tag will be added later on by the git editor
   if (!Git.rebasing()) {
