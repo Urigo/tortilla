@@ -62,7 +62,7 @@ function popStep() {
 
   if (stepDescriptor)
     // Meta-data for step editing
-    LocalStorage.setItem('NEW_STEP', stepDescriptor.number);
+    LocalStorage.setItem('NEW_STEP', getCurrentStep());
   else
     return console.warn('Removed commit was not a step');
 

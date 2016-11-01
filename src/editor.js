@@ -69,7 +69,7 @@ function adjustSteps(operations) {
   var newStep = LocalStorage.getItem('NEW_STEP');
 
   // If delta is 0 no adjustments are needed
-  if (oldStep == newStep) return;
+  if (oldStep == newStep) return retagSteps(operations);
 
   // Grabbing step splits for easy access
   var oldStepSplits = oldStep.split('.');
@@ -110,11 +110,7 @@ function adjustSteps(operations) {
     });
   });
 
-  // Reset all tags
-  operations.push({
-    method: 'exec',
-    command: 'node ' + Paths.tortilla.history + ' retag'
-  });
+  retagSteps(operations);
 }
 
 // Reword the last step in the rebase file
@@ -128,11 +124,7 @@ function rewordStep(operations, message) {
     command: 'node ' + argv.join(' ')
   });
 
-  // Reset all tags
-  operations.push({
-    method: 'exec',
-    command: 'node ' + Paths.tortilla.history + ' retag'
-  });
+  retagSteps(operations);
 }
 
 // Convert all manuals since the beginning of history to the opposite format
@@ -162,7 +154,11 @@ function convertManuals(operations) {
     return offset;
   });
 
-  // Reset all tags
+  retagSteps(operations);
+}
+
+// Reset all tags
+function retagSteps(operations) {
   operations.push({
     method: 'exec',
     command: 'node ' + Paths.tortilla.history + ' retag'
