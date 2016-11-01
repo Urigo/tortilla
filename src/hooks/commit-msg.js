@@ -15,14 +15,14 @@ var Step = require('../step');
   if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) return;
 
   // If we're amending to the root commit then a step prefix is not needed
-  if (Git.gonnaAmend() && !LocalStorage.getItem('STEP')) return;
+  if (Git.gonnaAmend() && !LocalStorage.getItem('HOOK_STEP')) return;
 
   var commitMessage = Fs.readFileSync(Paths.git.messages.commit, 'utf8');
   // Prepend a step prefix to the commit message
-  var step = LocalStorage.getItem('STEP') || Step.next(1);
+  var step = LocalStorage.getItem('HOOK_STEP') || Step.next(1);
   var fixedcommitMessage = 'Step ' + step + ': ' + commitMessage
-  // Clearing storage to prevent conflicts with upcomming commits
-  LocalStorage.removeItem('STEP');
+  // Clearing storage to prevent conflicts with upcoming commits
+  LocalStorage.removeItem('HOOK_STEP');
 
   // Rewrite the commit with a step prefix
   Fs.writeFileSync(Paths.git.messages.commit, fixedcommitMessage);

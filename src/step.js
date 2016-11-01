@@ -7,7 +7,7 @@ var Paths = require('./paths');
 var Utils = require('./utils');
 
 /*
-  Contains step related utilities. Also the entry point for `npm step` commands.
+  Contains step related utilities.
  */
 
 (function () {
@@ -43,6 +43,8 @@ var Utils = require('./utils');
 function pushStep(message, options) {
   var step = getNextStep();
   commitStep(step, message, options);
+  // Meta-data for step editing
+  LocalStorage.setItem('NEW_STEP', step);
 }
 
 // Pop the last step
@@ -55,16 +57,20 @@ function popStep() {
 
   var removedCommitMessage = Git.recentCommit(['--format=%s']);
   var stepDescriptor = getStepDescriptor(removedCommitMessage);
+
   Git.print(['reset', '--hard', 'HEAD~1']);
 
-  if (!stepDescriptor)
+  if (stepDescriptor)
+    // Meta-data for step editing
+    LocalStorage.setItem('NEW_STEP', stepDescriptor.number);
+  else
     return console.warn('Removed commit was not a step');
 
   // Tag removal should be done by the editor after continuing rebase in case
   // of abortion otherwise we are screwed
   if (Git.rebasing()) return;
 
-  var isSuperStep = !!getSuperStepDescriptor(removedCommitMessage);
+  var isSuperStep = !!stepDescriptor.number.split('.')[1];
   // If this is a super step, delete the tag of the popped commit
   if (!isSuperStep) return;
 
@@ -133,9 +139,16 @@ function commitStep(step, message, options) {
   if (options.allowEmpty) argv.push('--allow-empty');
 
   // Specified step is gonna be used for when forming the commit message
-  LocalStorage.setItem('STEP', step);
-  // commit
-  Git.print(argv);
+  LocalStorage.setItem('HOOK_STEP', step);
+
+  try {
+    // commit
+    Git.print(argv);
+  }
+  finally {
+    // Clearing storage to prevent conflicts with upcoming commits
+    LocalStorage.removeItem('HOOK_STEP');
+  }
 }
 
 // Get the current step

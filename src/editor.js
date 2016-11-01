@@ -1,6 +1,7 @@
 var Fs = require('fs-extra');
 var Path = require('path');
 var Minimist = require('minimist');
+var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Step = require('./step');
 
@@ -30,6 +31,7 @@ var Step = require('./step');
   // The methods will manipulate the operations array.
   switch (method) {
     case 'edit': editStep(operations); break;
+    case 'adjust': adjustSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
     case 'convert': convertManuals(operations); break;
   }
@@ -48,13 +50,60 @@ var Step = require('./step');
 // Edit the last step in the rebase file
 function editStep(operations) {
   operations[0].method = 'edit';
-  var offset = 1;
 
-  // Creating a clone of the operations array otherwise splices couldn't be applied
-  // without aborting the itration. In addition we hold an offset variable to handle
-  // the changes that are made in the array's length
-  operations.slice(offset).forEach(function (operation, index) {
-    var isSuperStep = !!Step.superDescriptor(operation.message);
+  // Probably editing the recent step in which case no adjustments are needed
+  if (operations.length <= 1) return;
+
+  // Prepare meta-data for upcoming adjustments
+  var nextStep = Step.next();
+  LocalStorage.setItem('OLD_STEP', nextStep);
+  LocalStorage.setItem('NEW_STEP', nextStep);
+
+  // Once we finish editing our step, adjust the rest of the steps accordingly
+  operations.splice(1, 0, {
+    method: 'exec',
+    command: 'node ' + Paths.tortilla.editor + ' adjust'
+  });
+}
+
+// Adjusts upcoming step numbers in rebase
+function adjustSteps(operations) {
+  // Grab meta-data
+  var oldStep = LocalStorage.getItem('OLD_STEP');
+  var newStep = LocalStorage.getItem('NEW_STEP');
+
+  // If delta is 0 no adjustments are needed
+  if (oldStep == newStep) return;
+
+  // Grabbing step splits for easy access
+  var oldStepSplits = oldStep.split('.');
+  var newStepSplits = newStep.split('.');
+  var oldSuperStep = oldStepSplits[0];
+  var newSuperStep = newStepSplits[0];
+  var oldSubStep = oldStepSplits[1];
+  var newSubStep = newStepSplits[1];
+
+  // Calculates whether delta is greater than 0 or not
+  var stepsAdded = oldSuperStep < newSuperStep ||
+    (oldSuperStep == newSuperStep && oldSubStep < oldSuperStep);
+  // The step limit of which adjustments are needed would be determined by the step
+  // which is greater
+  var stepLimit = stepsAdded ? newSuperStep : oldSuperStep;
+
+  var limitPassed = false;
+  var offset = 0;
+
+  operations.slice().forEach(function (operation, index) {
+    // If limit have passed no need to run the following check again
+    if (!limitPassed) {
+      var currStepSplit = Step.current().split('.');
+      var currSuperStep = currStepSplit[0];
+      var currSubStep = currStepSplit[1];
+
+      if (currSuperStep > stepLimit) return limitPassed = true;
+    }
+
+    var isSuperStep = !!currSubStep;
 
     // If this is a super step, replace pick operation with the super pick
     if (isSuperStep) operations.splice(index + offset, 1, {

@@ -23,8 +23,8 @@ var Step = require('../step');
   if (!stepDescriptor) return;
 
   // If gonna amend then the step is already determined
-  if (Git.gonnaAmend() && !LocalStorage.getItem('STEP'))
-    LocalStorage.setItem('STEP', stepDescriptor.number);
+  if (Git.gonnaAmend() && !LocalStorage.getItem('HOOK_STEP'))
+    LocalStorage.setItem('HOOK_STEP', stepDescriptor.number);
 
   // Rewrite the commit message with no step prefix
   Fs.writeFileSync(Paths.git.messages.commit, stepDescriptor.message);

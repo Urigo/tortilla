@@ -1,5 +1,4 @@
 var Path = require('path');
-var LocalCache = require('./local-cache');
 var Utils = require('./utils');
 
 /*
@@ -8,7 +7,7 @@ var Utils = require('./utils');
   therefore this module was created.
  */
 
-var cache = new LocalCache();
+var cache = {};
 var resolve = Path.resolve.bind(Path);
 
 var tortilla = {
@@ -37,7 +36,7 @@ function resolveAll(cwd) {
   if (!cwd)
     throw TypeError('A project path must be provided');
 
-  if (cache.getItem(cwd)) return cache.getItem(cwd);
+  if (cache[cwd]) return cache[cwd];
 
   var gitHeads = {
     _: resolve(cwd, '.git/HEAD'),
@@ -76,7 +75,7 @@ function resolveAll(cwd) {
     modules: resolve(cwd, 'node_modules')
   };
 
-  return cache.setItem(cwd, {
+  return cache[cwd] = {
     _: resolve(cwd),
     readme: resolve(cwd, 'README.md'),
     steps: resolve(cwd, 'steps'),
@@ -85,7 +84,7 @@ function resolveAll(cwd) {
     resolve: resolveAll,
     git: git,
     npm: npm
-  });
+  };
 }
 
 
