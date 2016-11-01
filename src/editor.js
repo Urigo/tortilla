@@ -75,20 +75,12 @@ function adjustSteps(operations) {
   if (oldStep == newStep) return retagSteps(operations);
 
   // Grabbing step splits for easy access
-  var oldStepSplits = oldStep.split('.');
-  var newStepSplits = newStep.split('.');
-  var oldSuperStep = oldStepSplits[0];
-  var newSuperStep = newStepSplits[0];
-  var oldSubStep = oldStepSplits[1] || 0;
-  var newSubStep = newStepSplits[1] || 0;
+  var oldSuperStep = oldStep.split('.')[0];
+  var newSuperStep = newStep.split('.')[0];
 
-  // Calculates whether delta is greater than 0 or not
-  var stepsAdded = oldSuperStep < newSuperStep ||
-    (oldSuperStep == newSuperStep && oldSubStep < oldSuperStep);
   // The step limit of which adjustments are needed would be determined by the step
   // which is greater
-  var stepLimit = stepsAdded ? newSuperStep : oldSuperStep;
-
+  var stepLimit = oldSuperStep == newSuperStep ? oldSuperStep : Infinity;
   var offset = 0;
 
   operations.slice().forEach(function (operation, index) {
