@@ -54,8 +54,17 @@ function convertManual(step) {
   // Indicates whether we should continue rebasing at the end of the invocation.
   // If this script is not run by the git editor we should continue rebasing
   var shouldContinue = !Git.rebasing();
+
   // Enter rebase, after all this is what rebase-continue is all about
-  if (shouldContinue) Step.edit(step);
+  if (shouldContinue) {
+    var base = Step.base(step);
+
+    Git(['rebase', '-i', base, '--keep-empty'], {
+      env: {
+        GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
+      }
+    });
+  }
 
   // Fetch the current manual
   var manualPath = getManualPath(step);
