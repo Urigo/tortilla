@@ -32,7 +32,7 @@ function retagSteps() {
     .filter(Boolean);
 
   // Delete all tags to prevent conflicts
-  Git(['tag', '-d', 'root']);
+  if (Git.tagExists('root')) Git(['tag', '-d', 'root']);
 
   stepTags.forEach(function (stepTag) {
     Git(['tag', '-d', stepTag]);
