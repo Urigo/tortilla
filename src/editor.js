@@ -35,6 +35,9 @@ var Step = require('./step');
     dev: dev
   };
 
+  // Set flag just in case recent rebase was aborted
+  LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
+
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
   switch (method) {
@@ -61,8 +64,8 @@ function editStep(operations) {
   // Probably root commit
   if (!descriptor) return;
 
-  LocalStorage.setItem('OLD_STEP', descriptor.number);
-  LocalStorage.setItem('NEW_STEP', descriptor.number);
+  LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+  LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
 
   var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' adjust"'
 
@@ -76,11 +79,14 @@ function editStep(operations) {
 // Adjusts upcoming step numbers in rebase
 function adjustSteps(operations) {
   // Grab meta-data
-  var oldStep = LocalStorage.getItem('OLD_STEP');
-  var newStep = LocalStorage.getItem('NEW_STEP');
+  var oldStep = LocalStorage.getItem('REBASE_OLD_STEP');
+  var newStep = LocalStorage.getItem('REBASE_NEW_STEP');
 
   // If delta is 0 no adjustments are needed
-  if (oldStep == newStep) return retagSteps(operations);
+  if (oldStep == newStep) {
+    LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+    return retagSteps(operations);
+  }
 
   // Grabbing step splits for easy access
   var oldSuperStep = oldStep.split('.')[0];
@@ -91,17 +97,29 @@ function adjustSteps(operations) {
   var stepLimit = oldSuperStep == newSuperStep ? oldSuperStep : Infinity;
   var offset = 0;
 
-  operations.slice().forEach(function (operation, index) {
+  operations.slice().some(function (operation, index) {
     var currStepSplit = Step.descriptor(operation.message).number;
     var currSuperStep = currStepSplit[0];
     var currSubStep = currStepSplit[1];
 
-    if (currSuperStep > stepLimit) return;
+    // If limit reached
+    if (currSuperStep > stepLimit) {
+      // Get local storage item path
+      var storageItem = Path.resolve(Paths.storage, 'REBASE_HOOKS_DISABLED');
 
-    var isSuperStep = !currSubStep;
+      // prepend local storage item setting operation, this would be a flag which will be
+      // used in git-hooks
+      operations.splice(index + offset++, 0, {
+        method: 'exec',
+        command: 'echo 1 > ' + storageItem
+      });
+
+      // Abort operations loop
+      return true;
+    }
 
     // If this is a super step, replace pick operation with the super pick
-    if (isSuperStep) operations.splice(index + offset, 1, {
+    if (!currSubStep) operations.splice(index + offset, 1, {
       method: 'exec',
       command: 'node ' + Paths.tortilla.history + ' super-pick ' + operation.hash
     });

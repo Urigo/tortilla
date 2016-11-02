@@ -44,7 +44,7 @@ function pushStep(message, options) {
   var step = getNextStep();
   commitStep(step, message, options);
   // Meta-data for step editing
-  LocalStorage.setItem('NEW_STEP', step);
+  LocalStorage.setItem('REBASE_NEW_STEP', step);
 }
 
 // Pop the last step
@@ -62,7 +62,7 @@ function popStep() {
 
   if (stepDescriptor)
     // Meta-data for step editing
-    LocalStorage.setItem('NEW_STEP', getCurrentStep());
+    LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
   else
     return console.warn('Removed commit was not a step');
 
@@ -94,7 +94,7 @@ function tagStep(message) {
   commitStep(step, message);
 
   // Meta-data for step editing
-  LocalStorage.setItem('NEW_STEP', step);
+  LocalStorage.setItem('REBASE_NEW_STEP', step);
 
   // If in the middle of rebase, don't add a tag since the process can be aborted.
   // The tag will be added later on by the git editor

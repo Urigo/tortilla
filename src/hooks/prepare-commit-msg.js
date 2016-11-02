@@ -11,6 +11,8 @@ var Step = require('../step');
  */
 
 (function () {
+  // Should abort hook once steps limit reached
+  if (Git.rebasing() && LocalStorage.getItem('REBASE_HOOKS_DISABLED')) return;
   // Amend is the only thing allowed by tortilla, the rest is irrelevant
   if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) return;
   // We don't wanna affect cherry-picks done by step editing
