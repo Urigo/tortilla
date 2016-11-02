@@ -108,9 +108,9 @@ function convertManual(step, options) {
     if (!options.dev) newManual = convertProdManual(newManual, scope);
   }
   else {
+    // Abort in case prod format is not wanted
+    if (!options.prod) return;
     newManual = convertProdManual(manual, scope);
-    // Update the manual in case prod format is not wanted
-    if (!options.prod) newManual = convertDevManual(newManual, scope);
   }
 
   // If no changes made, abort
