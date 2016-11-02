@@ -103,14 +103,14 @@ function convertManual(step, options) {
 
   // Get new manual
   if (isManualProd(manual)) {
-    // If no production conversion specified, abort
-    if (!options.dev) return;
     newManual = convertDevManual(manual, scope);
+    // Update the manual in case dev format is not wanted
+    if (!options.dev) newManual = convertProdManual(newManual, scope);
   }
   else {
-    // If no development conversion specified, abort
-    if (!options.prod) return;
     newManual = convertProdManual(manual, scope);
+    // Update the manual in case prod format is not wanted
+    if (!options.prod) newManual = convertDevManual(newManual, scope);
   }
 
   // If no changes made, abort
