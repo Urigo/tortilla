@@ -54,10 +54,28 @@ describe('Manual', function () {
 
       this.tortilla(['manual', 'convert', '--all']);
 
-      manualsPaths.forEach(function (manualPath) {
+      manualsPaths.forEach((manualPath) => {
         const manual = this.exec('cat', [manualPath]);
         expect(manual).to.be.a.file('prod-manuals/' + manualPath);
-      }, this);
+      });
+    });
+
+    it('should align alternated manuals to production formats', function () {
+      const manualsPaths = [
+        'README.md',
+        'steps/step1.md',
+        'steps/step2.md',
+        'steps/step3.md'
+      ];
+
+      this.tortilla(['manual', 'convert', '1']);
+      this.tortilla(['manual', 'convert', '3']);
+      this.tortilla(['manual', 'convert', '--all', '--prod']);
+
+      manualsPaths.forEach((manualPath) => {
+        const manual = this.exec('cat', [manualPath]);
+        expect(manual).to.be.a.file('prod-manuals/' + manualPath);
+      });
     });
 
     it('should convert all manual markdowns through out history to development format', function () {
@@ -71,10 +89,28 @@ describe('Manual', function () {
       this.tortilla(['manual', 'convert', '--all']);
       this.tortilla(['manual', 'convert', '--all']);
 
-      manualsPaths.forEach(function (manualPath) {
+      manualsPaths.forEach((manualPath) => {
         const manual = this.exec('cat', [manualPath]);
         expect(manual).to.be.a.file('dev-manuals/' + manualPath);
-      }, this);
+      });
+    });
+
+    it('should align alternated manuals to development formats', function () {
+      const manualsPaths = [
+        'README.md',
+        'steps/step1.md',
+        'steps/step2.md',
+        'steps/step3.md'
+      ];
+
+      this.tortilla(['manual', 'convert', '1']);
+      this.tortilla(['manual', 'convert', '3']);
+      this.tortilla(['manual', 'convert', '--all', '--dev']);
+
+      manualsPaths.forEach((manualPath) => {
+        const manual = this.exec('cat', [manualPath]);
+        expect(manual).to.be.a.file('dev-manuals/' + manualPath);
+      });
     });
   });
 });

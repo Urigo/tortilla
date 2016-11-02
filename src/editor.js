@@ -15,17 +15,25 @@ var Step = require('./step');
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm']
+    string: ['_', 'message', 'm'],
+    boolean: ['prod', 'dev']
   });
 
   // The first argument will be the rebase file path provided to us by git
   var method = argv._[0];
   var rebaseFilePath = argv._[1];
   var message = argv.message || argv.m;
+  var prod = argv.prod;
+  var dev = argv.dev;
 
   var rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
   var operations = disassemblyOperations(rebaseFileContent);
+
+  var options = {
+    prod: prod,
+    dev: dev
+  };
 
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
@@ -33,7 +41,7 @@ var Step = require('./step');
     case 'edit': editStep(operations); break;
     case 'adjust': adjustSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
-    case 'convert': convertManuals(operations); break;
+    case 'convert': convertManuals(operations, options); break;
   }
 
   // Put everything back together and rewrite the rebase file
@@ -123,27 +131,31 @@ function rewordStep(operations, message) {
 }
 
 // Convert all manuals since the beginning of history to the opposite format
-function convertManuals(operations) {
-  var path = Paths.readme;
+function convertManuals(operations, options) {
   var offset = 2;
+
+  var argv = ['convert', '--root'];
+  if (options.prod) argv.push('--prod');
+  if (options.dev) argv.push('--dev');
 
   // Convert README.md
   operations.splice(1, 0, {
     method: 'exec',
-    command: 'node ' + Paths.tortilla.manual + ' convert --root'
+    command: 'node ' + Paths.tortilla.manual + ' ' + argv.join(' ')
   });
 
   operations.slice(offset).forEach(function (operation, index) {
     var stepDescriptor = Step.superDescriptor(operation.message);
     if (!stepDescriptor) return;
 
-    var file = 'step' + stepDescriptor.number + '.md';
-    var path = Path.resolve(Paths.steps, file);
+    argv = ['convert', stepDescriptor.number];
+    if (options.prod) argv.push('--prod');
+    if (options.dev) argv.push('--dev');
 
     // Convert step manual file
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: 'node ' + Paths.tortilla.manual + ' convert ' + stepDescriptor.number
+      command: 'node ' + Paths.tortilla.manual + ' ' + argv.join(' ')
     });
 
     return offset;

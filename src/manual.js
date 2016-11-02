@@ -20,24 +20,37 @@ var prodFlag = '[__prod__]: #';
 
   var argv = Minimist(process.argv.slice(2), {
     string: ['_'],
-    boolean: ['all', 'root']
+    boolean: ['all', 'root', 'prod', 'dev']
   });
 
   var method = argv._[0];
   var step = argv._[1];
   var all = argv.all;
   var root = argv.root;
+  var prod = argv.prod;
+  var dev = argv.dev;
 
   if (!step && all) step = 'all';
   if (!step && root) step = 'root';
 
+  if (!prod && !dev) {
+    prod = true;
+    dev = true;
+  }
+
+
+  var options = {
+    prod: prod,
+    dev: dev
+  };
+
   switch (method) {
-    case 'convert': return convertManual(step);
+    case 'convert': return convertManual(step, options);
   }
 })();
 
 // Converts manual into the opposite format
-function convertManual(step) {
+function convertManual(step, options) {
   if (step) {
     var isSuperStep = !step.split('.')[1];
     if (!isSuperStep) throw TypeError('Provided step must be a super step');
@@ -49,11 +62,17 @@ function convertManual(step) {
   }
 
   // Convert all manuals since the beginning of history
-  if (step == 'all') return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
-    env: {
-      GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' convert'
-    }
-  });
+  if (step == 'all') {
+    var argv = ['convert'];
+    if (options.prod) argv.push('--prod');
+    if (options.dev) argv.push('--dev');
+
+    return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
+      env: {
+        GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' ' + argv.join(' ')
+      }
+    });
+  }
 
   // Indicates whether we should continue rebasing at the end of the invocation.
   // If this script is not run by the git editor we should continue rebasing
@@ -83,10 +102,16 @@ function convertManual(step) {
   var newManual;
 
   // Get new manual
-  if (isManualProd(manual))
-    newManual = convertDevelopmentManual(manual, scope);
-  else
-    newManual = convertProductionManual(manual, scope);
+  if (isManualProd(manual)) {
+    // If no production conversion specified, abort
+    if (!options.dev) return;
+    newManual = convertDevManual(manual, scope);
+  }
+  else {
+    // If no development conversion specified, abort
+    if (!options.prod) return;
+    newManual = convertProdManual(manual, scope);
+  }
 
   // If no changes made, abort
   if (newManual == null) return;
@@ -108,7 +133,7 @@ function convertManual(step) {
 }
 
 // Converts manual content to production format
-function convertProductionManual(manual, scope) {
+function convertProdManual(manual, scope) {
   var header = MDRenderer.renderTemplateFile('header.md', scope)
   var body = MDRenderer.renderTemplate(manual, scope);
   var footer = MDRenderer.renderTemplateFile('footer.md', scope);
@@ -121,7 +146,7 @@ function convertProductionManual(manual, scope) {
 }
 
 // Converts manual content to development format
-function convertDevelopmentManual(manual) {
+function convertDevManual(manual) {
   var chunks = MDParser.parse(manual, 1);
   var body = chunks[2].chunks;
 

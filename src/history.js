@@ -25,7 +25,7 @@ var Step = require('./step');
   }
 })();
 
-// The retagger is responsible for resetting all step tags
+// The re-tagger is responsible for resetting all step tags
 function retagSteps() {
   var stepTags = Git(['tag', '-l', 'step*'])
     .split('\n')
@@ -38,7 +38,7 @@ function retagSteps() {
     Git(['tag', '-d', stepTag]);
   });
 
-  // If any steps exist take the hash before the inital step, else take the recent hash
+  // If any steps exist take the hash before the initial step, else take the recent hash
   var stepsExist = Git.recentCommit(['--grep=^Step 1.1']);
   var rootHash = stepsExist ? Step.base('1.1') : Git.recentCommit(['--format=%h']);
 
