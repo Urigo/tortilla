@@ -118,9 +118,9 @@ describe('MDRenderer', function () {
       });
 
       expect(view).to.equal([
-        '{{model}}',
-        '{{{helper}}}',
-        '{{>partial}}'
+        '\\{{model}}',
+        '\\{{{helper}}}',
+        '\\{{>partial}}'
       ].join('\n'));
     });
   });

@@ -35,42 +35,24 @@ function renderTemplate(template, scope) {
   scope = scope || {};
 
   // Replace notations with values. ORDER IS CRITIC!
-  return template
-    // Models
-    .replace(/([^\{]?)\{\{([^\}]+)\}\}/g, function (match, first, modelName) {
-      if (first == '\\') return match;
+  return template.replace(/\\?\{\{([^\}]+)\}\}\}?/g, function (match, content) {
+    if (match[0] == '\\') return match;
 
-      var model = scope[modelName] || '';
-      var isModel = ['{', '>'].indexOf(modelName[0]) == -1;
+    // Helper
+    if (content[0] == '{' && match[match.length - 1] == '}') {
+      var params = content.substr(1).split(' ');
+      var name = params.shift();
+      return helpers[name].apply(scope, params);
+    }
+    // Partial
+    if (content[0] == '>') {
+      var name = content.substr(1);
+      return renderTemplate(partials[name], scope);
+    }
 
-      // Escape {{}}
-      return isModel ?
-        first + model.replace(/\{\{([^\}]+)\}\}/, '\\{{$1}}') :
-        match;
-    })
-    // Helpers
-    .replace(/([^\{]?)\{\{\{([^\}]+)\}\}\}/g, function (match, first, params) {
-      if (first == '\\') return match;
-
-      params = params.split(' ');
-      var helperName = params.shift();
-
-      // Escape {{}}
-      return helpers[helperName].apply(scope, params)
-        .replace(/\{\{([^\}]+)\}\}/, '\\{{$1}}');
-    })
-    // Partials
-    .replace(/([^\{]?)\{\{>([^\}]+)\}\}/g, function (match, first, partialName) {
-      if (first == '\\') return match;
-
-      // Escape {{}}
-      return renderTemplate(partials[partialName], scope)
-        .replace(/\{\{([^\}]+)\}\}/, '\\{{$1}}');
-    })
-    // Unescape {{}}
-    .replace(/\\\{\{([^\}]+)\}\}/g, function (match, content) {
-      return '{{' + content + '}}';
-    });
+    // Model
+    return scope[content] || '';
+  });
 }
 
 // Register a new helper. Registered helpers will be wrapped with a
