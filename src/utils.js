@@ -19,7 +19,8 @@ var node;
     cwd = ChildProcess.execFileSync('git', [
       'rev-parse', '--show-toplevel'
     ], {
-      cwd: cwd
+      cwd: cwd,
+      stdio: 'ignore'
     }).toString()
       .trim();
   }
