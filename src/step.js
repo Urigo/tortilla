@@ -221,11 +221,7 @@ function getStepBase(step) {
   if (step == null)
     throw TypeError('A step must be provided');
 
-  if (step == 'root') {
-    var stepRootHash = Git(['rev-parse', 'root']);
-    var nativeRootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
-    return stepRootHash == nativeRootHash ? '--root' : 'root~1';
-  }
+  if (step == 'root') return '--root';
 
   var hash = Git.recentCommit([
     '--grep=^Step ' + step + ':',
