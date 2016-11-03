@@ -94,13 +94,7 @@ function adjustSteps(operations) {
     return retagSteps(operations);
   }
 
-  // Grabbing step splits for easy access
-  var oldSuperStep = oldStep.split('.')[0];
-  var newSuperStep = newStep.split('.')[0];
-
-  // The step limit of which adjustments are needed would be determined by the step
-  // which is greater
-  var stepLimit = oldSuperStep == newSuperStep ? oldSuperStep : Infinity;
+  var stepLimit = getStepLimit(oldStep, newStep);
   var offset = 0;
 
   operations.slice().some(function (operation, index) {
@@ -194,6 +188,32 @@ function retagSteps(operations) {
     method: 'exec',
     command: 'node ' + Paths.tortilla.history + ' retag'
   });
+}
+
+// The step limit of which adjustments are needed would be determined by the step
+// which is greater
+function getStepLimit(oldStep, newStep) {
+  // Grabbing step splits for easy access
+  var oldStepSplits = oldStep.split('.')[0];
+  var newStepSplits = newStep.split('.')[0];
+  var oldSuperStep = oldStepSplits[0];
+  var newSuperStep = newStepSplits[0];
+  var oldSubStep = oldStepSplits[1];
+  var newSubStep = newStepSplits[1];
+
+  if (oldSuperStep == newSuperStep) {
+    // 1.1, 1.2 or 1.2, 1.1
+    if (oldSubStep) return oldSuperStep;
+    // 1, 1.1
+    return Infinity;
+  }
+
+  // 1.1, 2.1 or 1.1, 2
+  if (oldSubStep) return Infinity;
+  // 1, 2.1
+  if (newSubStep && newSuperStep == oldSuperStep + 1) return newSuperStep;
+  // 1, 2 or 1, 3.1
+  return Infinity;
 }
 
 // Convert rebase file content to operations array
