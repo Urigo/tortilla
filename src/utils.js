@@ -144,6 +144,26 @@ function exists(path, type) {
   }
 }
 
+// Create a temporary scope which will define provided variables on the environment
+function scopeEnv(fn, env) {
+  var keys = Object.keys(env);
+  var originalEnv = pluck(process.env, keys);
+
+  var nullKeys = keys.filter(function (key) {
+    return process.env[key] == null;
+  });
+
+  extend(process.env, env);
+
+  try {
+    fn();
+  }
+  finally {
+    extend(process.env, originalEnv);
+    contract(process.env, nullKeys);
+  }
+}
+
 // Filter all strings matching the provided pattern in an array
 function filterMatches(arr, pattern) {
   pattern = pattern || '';
@@ -166,6 +186,23 @@ function extend(destination) {
   });
 
   return destination;
+}
+
+// Deletes all keys in the provided object
+function contract(destination, keys) {
+  keys.forEach(function (key) {
+    delete destination[key];
+  });
+
+  return destination;
+}
+
+// Plucks all keys from object
+function pluck(obj, keys) {
+  return keys.reduce(function (result, key) {
+    result[key] = obj[key];
+    return result;
+  }, {});
 }
 
 // Pad the provided string with the provided pad params from the left
@@ -217,8 +254,11 @@ module.exports = {
   npm: npm,
   childProcessOf: isChildProcessOf,
   exists: exists,
+  scopeEnv: scopeEnv,
   filterMatches: filterMatches,
   extend: extend,
+  contract: contract,
+  pluck: pluck,
   pad: pad,
   kebabCase: toKebabCase,
   startCase: toStartCase,

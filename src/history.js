@@ -112,3 +112,10 @@ function getNextStep(stepDescriptor) {
   var isSubStep = !!stepDescriptor.number.split('.')[1];
   return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }
+
+
+module.exports = {
+  retagSteps: retagSteps,
+  rewordRecentStep: rewordRecentStep,
+  superPickStep: superPickStep
+};

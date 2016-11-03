@@ -2,6 +2,7 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
 var Git = require('./git');
+var History = require('./history');
 var LocalStorage = require('./local-storage');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
@@ -88,7 +89,6 @@ function createProject(projectName, options) {
     Git.print(['commit', '--amend'], { cwd: tempPaths._ });
   }
 
-  Git(['tag', 'root'], { cwd: tempPaths._ });
   // Initializing
   initializeProject(tempPaths);
 
@@ -103,8 +103,6 @@ function createProject(projectName, options) {
 function initializeProject(projectDir) {
   var projectPaths = projectDir.resolve ? projectDir : Paths.resolve(projectDir);
   var localStorage = LocalStorage.create(projectPaths);
-
-  localStorage.assertTortilla();
 
   var hookFiles = Fs.readdirSync(projectPaths.tortilla.hooks);
 
@@ -128,6 +126,11 @@ function initializeProject(projectDir) {
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
+
+  // Retag steps
+  Utils.scopeEnv(History.retagSteps.bind(History), {
+    TORTILLA_CWD: projectPaths._
+  });
 }
 
 

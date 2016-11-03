@@ -7,6 +7,7 @@ var MDComponent = require('./md-parser/md-component');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
 var Step = require('./step');
+var Utils = require('./utils');
 
 /*
   Contains manual related utilities.
@@ -37,7 +38,6 @@ var prodFlag = '[__prod__]: #';
     prod = true;
     dev = true;
   }
-
 
   var options = {
     prod: prod,
@@ -79,15 +79,9 @@ function convertManual(step, options) {
   var shouldContinue = !Git.rebasing();
 
   // Enter rebase, after all this is what rebase-continue is all about
-  if (shouldContinue) {
-    var base = Step.base(step);
-
-    Git(['rebase', '-i', base, '--keep-empty'], {
-      env: {
-        GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
-      }
-    });
-  }
+  if (shouldContinue) Utils.scopeEnv(Step.edit.bind(Step, step), {
+    TORTILLA_STDIO: 'ignore'
+  });
 
   // Fetch the current manual
   var manualPath = getManualPath(step);
