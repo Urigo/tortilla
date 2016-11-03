@@ -154,6 +154,15 @@ describe('Step', function () {
       const stepCommitHash = Step.recentCommit('%H');
       expect(stepTagHash).to.equal(stepCommitHash);
     });
+
+    it('should reword the last step by default if no step specified', function () {
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'reword', '-m', 'target']);
+
+      const message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.2: target');
+    });
   });
 
   describe('edit()', function () {
@@ -332,6 +341,18 @@ describe('Step', function () {
 
       const oldFileExists = this.exists(`${this.testDir}/steps/step1.md`);
       expect(oldFileExists).to.be.truthy;
+    });
+
+    it('should edit the last step by default if no step specified', function () {
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'edit']);
+
+      const isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      const message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.2: target');
     });
   });
 });

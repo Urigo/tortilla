@@ -105,9 +105,6 @@ function tagStep(message) {
 
 // Edit the provided step
 function editStep(step) {
-  if (step == null)
-    throw TypeError('A step must be provided');
-
   var base = getStepBase(step);
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
@@ -119,9 +116,6 @@ function editStep(step) {
 
 // Reword the provided step with the provided message
 function rewordStep(step, message) {
-  if (step == null)
-    throw TypeError('A step must be provided');
-
   var base = getStepBase(step);
   var argv = [Paths.tortilla.editor, 'reword'];
   if (message) argv.push('-m', '"' + message + '"');
@@ -218,8 +212,12 @@ function getNextSuperStep(offset) {
 
 // Get the hash of the step followed by ~1, mostly useful for a rebase
 function getStepBase(step) {
-  if (step == null)
-    throw TypeError('A step must be provided');
+  if (!step) {
+    var message = getRecentStepCommit('%s');
+    if (!message) return '--root';
+
+    step = getStepDescriptor(message).number;
+  }
 
   if (step == 'root') return '--root';
 
