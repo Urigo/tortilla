@@ -101,6 +101,8 @@ function createProject(projectName, options) {
 // Initialize tortilla esentials on an existing project. Used commonly when cloning a
 // tortilla project from a git-repo
 function initializeProject(projectDir) {
+  projectDir = projectDir || Utils.cwd();
+
   var projectPaths = projectDir.resolve ? projectDir : Paths.resolve(projectDir);
   var localStorage = LocalStorage.create(projectPaths);
 
