@@ -133,6 +133,8 @@ function initializeProject(projectDir) {
   Utils.scopeEnv(History.retagSteps.bind(History), {
     TORTILLA_CWD: projectPaths._
   });
+
+  console.log('### Tortilla is ready to use ###');
 }
 
 
