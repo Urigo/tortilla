@@ -61,11 +61,17 @@ function editStep(operations) {
 
   // Prepare meta-data for upcoming adjustments
   var descriptor = Step.descriptor(operations[0].message);
-  // Probably root commit
-  if (!descriptor) return;
 
-  LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
-  LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
+  // Step exists
+  if (descriptor) {
+    LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+    LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
+  }
+  // Probably root commit
+  else {
+    LocalStorage.setItem('REBASE_OLD_STEP', 0);
+    LocalStorage.setItem('REBASE_NEW_STEP', 0);
+  }
 
   var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' adjust"'
 

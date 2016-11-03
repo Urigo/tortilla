@@ -159,10 +159,10 @@ function commitStep(step, message, options) {
 // Get the current step
 function getCurrentStep() {
   var recentStepCommit = getRecentStepCommit('%s');
-  if (!recentStepCommit) return 'root';
+  if (!recentStepCommit) return 0;
 
   var descriptor = getStepDescriptor(recentStepCommit);
-  if (!descriptor) return 'root';
+  if (!descriptor) return 0;
 
   return descriptor.number;
 }
