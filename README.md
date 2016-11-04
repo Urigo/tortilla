@@ -1,6 +1,8 @@
 # Tortilla
 
-A tutorials framework based on git and NodeJS for JavaScript tutorials. This skeleton contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for deployment. If you're not familiar with the basic rules that you should follow when working with Tortilla, be sure to go through the following guidelines.
+A tutorials framework based on git and NodeJS for JavaScript tutorials. This framework contains some handy git-helpers which will help us maintain our commits history nice and clean and will make sure that our project is suitable for deployment. If you're not familiar with the basic rules that you should follow when working with Tortilla, be sure to go through the following guidelines.
+
+[![Tortilla](https://img.youtube.com/vi/dHfmN1NtcUk/0.jpg)](https://www.youtube.com/watch?v=dHfmN1NtcUk)
 
 ### Commits
 
