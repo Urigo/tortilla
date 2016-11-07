@@ -152,11 +152,26 @@ function commitStep(step, message, options) {
 
 // Get the current step
 function getCurrentStep() {
+  // Probably root commit
   var recentStepCommit = getRecentStepCommit('%s');
-  if (!recentStepCommit) return 0;
+  if (!recentStepCommit) return 'root';
 
+  // Cover unexpected behavior
   var descriptor = getStepDescriptor(recentStepCommit);
-  if (!descriptor) return 0;
+  if (!descriptor) return 'root';
+
+  return descriptor.number;
+}
+
+// Get the current super step
+function getCurrentSuperStep() {
+  // Probably root commit
+  var recentStepCommit = getRecentSuperStepCommit('%s');
+  if (!recentStepCommit) return 'root';
+
+  // Cover unexpected behavior
+  var descriptor = getSuperStepDescriptor(recentStepCommit);
+  if (!descriptor) return 'root';
 
   return descriptor.number;
 }
@@ -310,6 +325,7 @@ module.exports = {
   reword: rewordStep,
   commit: commitStep,
   current: getCurrentStep,
+  currentSuper: getCurrentSuperStep,
   next: getNextStep,
   nextSuper: getNextSuperStep,
   base: getStepBase,

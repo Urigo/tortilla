@@ -69,8 +69,8 @@ function editStep(operations) {
   }
   // Probably root commit
   else {
-    LocalStorage.setItem('REBASE_OLD_STEP', 0);
-    LocalStorage.setItem('REBASE_NEW_STEP', 0);
+    LocalStorage.setItem('REBASE_OLD_STEP', 'root');
+    LocalStorage.setItem('REBASE_NEW_STEP', 'root');
   }
 
   var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' adjust"'
@@ -193,6 +193,9 @@ function retagSteps(operations) {
 // The step limit of which adjustments are needed would be determined by the step
 // which is greater
 function getStepLimit(oldStep, newStep) {
+  oldStep = oldStep == 'root' ? '0' : oldStep;
+  newSuperStep = newStep == 'root' ? '0' : newStep;
+
   // Grabbing step splits for easy access
   var oldStepSplits = oldStep.split('.')[0];
   var newStepSplits = newStep.split('.')[0];

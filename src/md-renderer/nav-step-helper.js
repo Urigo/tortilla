@@ -8,15 +8,15 @@ var Step = require('../step');
  */
 
 MDRenderer.registerHelper('nav_step', function() {
-  var step = this.step || getStep();
+  var step = this.step || Step.currentSuper();
   // If there is no belonging step, don't render anything
   if (!step) return '';
 
   // Editing root
   if (step == 'root') {
-    var anySteps = !!Git(['tag', '-l', 'step1']);
+    var anySuperStep = !!Git(['log', 'ORIG_HEAD', '-1', '--grep', '^Step [0-9]\\+:']);
     // If there are no any steps yet, don't show nav bar
-    if (!anySteps) return '';
+    if (!anySuperStep) return '';
 
     return MDRenderer.renderTemplateFile('next-button-template.md', {
       text: 'Begin Tutorial',
@@ -27,17 +27,20 @@ MDRenderer.registerHelper('nav_step', function() {
   // Convert to number just in case, so we can run arbitrary operations
   var step = Number(step);
 
-  // Note that the tags will not necessarily be in the right order so it's
-  // important to sort them if we count on it
-  var stepTags = Git(['tag', '-l', 'step*'])
-    .split('\n')
+  // Get an array of all super steps in the current tutorial
+  var superSteps = Git([
+    'log', 'ORIG_HEAD',
+    '--grep', '^Step [0-9]\\+:',
+    '--format=%s'
+  ]).split('\n')
     .filter(Boolean)
-    .sort(compareTags);
+    .map(function (commitMessage) { return commitMessage.match(/^Step (\d+)/)[1] })
+    .map(Number);
 
-  // If this is the only step or there are no steps at all
-  if ((stepTags.length - 2) < 0) return '';
+  // If there are no super steps at all
+  if (superSteps.length == 0) return '';
 
-  // If this is the first step
+  // If this is the first super step
   if (step == 1)
     return MDRenderer.renderTemplateFile('nav-buttons-template.md', {
       next_text: 'Next Step',
@@ -46,11 +49,11 @@ MDRenderer.registerHelper('nav_step', function() {
       prev_ref: '../README.md'
     });
 
-  var currentTag = 'step' + step;
-  var recentTag = stepTags[stepTags.length - 1];
+  // The order is the other way around, this way we save ourselves the sorting
+  var recentSuperStep = superSteps[0];
 
   // If this is the last step
-  if (currentTag == recentTag)
+  if (step == recentSuperStep)
     return MDRenderer.renderTemplateFile('prev-button-template.md', {
       text: 'Previous Step',
       ref: 'step' + (step - 1) + '.md'
@@ -64,23 +67,3 @@ MDRenderer.registerHelper('nav_step', function() {
     prev_ref: 'step' + (step - 1) + '.md'
   });
 });
-
-function getStep() {
-  // If no steps found then we're at the root commit
-  var stepCommitMessage = Step.recentCommit('%s');
-  if (!stepCommitMessage) return 'root';
-
-  // Only super steps are allowed
-  var stepDescriptor = Step.superDescriptor(stepCommitMessage);
-  if (!stepDescriptor) return;
-
-  return stepDescriptor.number;
-}
-
-// Compares which tag has a bigger step
-function compareTags(tag1, tag2) {
-  var step1 = Number(tag1.split('step')[1]);
-  var step2 = Number(tag2.split('step')[1]);
-
-  return step1 > step2;
-}
