@@ -20,7 +20,9 @@ var Utils = require('../utils');
   [}]: #
  */
 
-MDRenderer.registerHelper('diff_step', function(step) {
+MDRenderer.registerHelper('diff_step', function(step, pattern) {
+  pattern = pattern || /.*/;
+
   var stepData = Git.recentCommit([
     '--grep=^Step ' + step, '--format=%h %s'
   ]).split(' ')
@@ -36,8 +38,12 @@ MDRenderer.registerHelper('diff_step', function(step) {
 
   var stepTitle = '#### ' + stepMessage;
   var diff = Git(['diff', stepHash + '^', stepHash]);
+
   // Convert diff string to json format
-  var files = ParseDiff(diff);
+  var files = ParseDiff(diff).filter(function (file) {
+    // Filter files which match the given pattern
+    return file.from.match(pattern) || file.to.match(pattern);
+  });
 
   var mdDiffs = files
     .map(getMdDiff)

@@ -40,6 +40,13 @@ describe('Template Helpers', function() {
       expect(view).to.be.a.markdown('rename-file');
     });
 
+    it('should render only the file matching the pattern', function () {
+      this.applyTestPatch('add-multiple-files');
+
+      const view = MDRenderer.renderTemplate('{{{diff_step 1.1 test-file.js}}}');
+      expect(view).to.be.a.markdown('add-multiple-files');
+    });
+
     it('should render an error message if step not found', function () {
       this.applyTestPatch('add-file');
 

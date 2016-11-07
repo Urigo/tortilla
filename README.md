@@ -42,7 +42,7 @@ A manual in a production format is a manual which is suitable for deployment. On
 
 #### Development Manual
 
-A manual file in a development format is a manual which is suitable for development. Once we convert a manual into this format, we should get a clean and a user-friendly version of it. Auto-generated content would not be shown, and complex markdown components would appear as template-helpers. Right now the only available template helper would `{{{diff_step (index)}}}`, it shares the same syntax as [handlebar's](handlebarsjs.com) and it will show us the changes of the specified step in a pretty markdown layout (`index` represents the index of the step). It is recommended to only work in development format, otherwise you gonna have a very rough time, so make sure to [convert](#convert-manual) the manuals whenever you clone a Tortilla project.
+A manual file in a development format is a manual which is suitable for development. Once we convert a manual into this format, we should get a clean and a user-friendly version of it. Auto-generated content would not be shown, and complex markdown components would appear as template-helpers. Right now the only available template helper would `{{{diff_step (index) (file)}}}`, it shares the same syntax as [handlebar's](handlebarsjs.com) and it will show us the changes of the specified step in a pretty markdown layout (`index` represents the index of the step and `file` is an optional param for a specific file of which we'd like to show the code diff). It is recommended to only work in development format, otherwise you gonna have a very rough time, so make sure to [convert](#convert-manual) the manuals whenever you clone a Tortilla project.
 
 ### How Do I Start
 
