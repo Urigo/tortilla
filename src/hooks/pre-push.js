@@ -28,7 +28,7 @@ var Utils = require('../utils');
     // If in development, throw an error which will abort the pushing process
     throw Error([
       '\'' + manualPath + '\' must be in production mode before pushing changes!',
-      'To fix this, run `$ npm run manual -- convert ' + stepOption + '` and then',
+      'To fix this, run `$ toritlla manual convert ' + stepOption + '` and then',
       'try to push again.'
     ].join('\n'));
   });

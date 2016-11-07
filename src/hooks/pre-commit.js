@@ -11,12 +11,12 @@ var Step = require('../step');
 
   // Prohibit regular commits
   if (!Git.gonnaAmend()) throw Error(
-    'New commits are prohibited! Use `$ npm step -- push` instead'
+    'New commits are prohibited! Use `$ tortilla step push` instead'
   );
 
   if (!Git.rebasing()) throw Error([
     'Changes are not allowed outside editing mode!',
-    'Use `$ npm step -- edit` and then make your changes'
+    'Use `$ tortilla step edit` and then make your changes'
   ].join('\n'));
 
   var stepMessage = Step.recentCommit('%s');

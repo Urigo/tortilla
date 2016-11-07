@@ -5,6 +5,6 @@
 
 (function () {
   if (!process.env.TORTILLA_CHILD_PROCESS) throw Error(
-    'Rebase mode is prohibited! Use `$ npm step -- edit` instead'
+    'Rebase mode is prohibited! Use `$ tortilla step edit` instead'
   )
 })();
