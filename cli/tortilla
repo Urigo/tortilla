@@ -2,7 +2,6 @@
 var Program = require('commander');
 var Pack = require('../package.json');
 var Essentials = require('../src/essentials');
-var LocalStorage = require('../src/local-storage');
 
 /*
   CLI entry point.
@@ -20,14 +19,6 @@ Program
   .option('--override', 'Override dir if already exists')
   .action(function (name, options) {
     Essentials.create(name, options);
-  });
-
-Program
-  .command('init [dir]')
-  .description('Initialize Tortilla essentials in the provided project [dir]')
-  .action(function (dir) {
-    LocalStorage.assertTortilla();
-    Essentials.init(dir);
   });
 
 Program

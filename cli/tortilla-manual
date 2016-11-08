@@ -1,6 +1,6 @@
 #!/usr/local/bin/node
 var Program = require('commander');
-var LocalStorage = require('../src/local-storage');
+var Essentials = require('../src/essentials');
 var Manual = require('../src/manual');
 
 /*
@@ -15,7 +15,7 @@ Program
   .option('--prod', 'Convert manual to production format')
   .option('--dev', 'Convert manual to development format')
   .action(function (step, options) {
-    LocalStorage.assertTortilla(true);
+    Essentials.ensure();
 
     step = step || (options.root && 'root');
     step = step || (options.all && 'all');

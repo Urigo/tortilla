@@ -20,37 +20,8 @@ function createLocalStorage(cwd) {
     localStorage = new LocalCache();
 
   return Utils.extend(localStorage, {
-    create: createLocalStorage,
-    assertGit: assertGit,
-    assertTortilla: assertTortilla
+    create: createLocalStorage
   });
-}
-
-function assertGit(exists) {
-  var isGit = !(this instanceof LocalCache);
-
-  if (exists && !isGit) throw Error([
-    'Project is not initialized by git!',
-    'Please run `$ git init` or `$ tortilla create` before proceeding.'
-  ].join('\n'));
-
-  if (!exists && isGit) throw Error([
-    'Git is already initialized on this project!'
-  ])
-}
-
- // Asserts if tortilla is initialized or not
-function assertTortilla(exists) {
-  var isInit = this.getItem('INIT');
-
-  if (exists && !isInit) throw Error([
-    'Tortilla essentials must be initialized!',
-    'Please run `$ tortilla init` before proceeding.'
-  ].join('\n'));
-
-  if (!exists && isInit) throw Error([
-    'Tortilla essentials are already initialized!'
-  ].join('\n'));
 }
 
 

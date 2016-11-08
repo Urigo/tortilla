@@ -80,7 +80,7 @@ function createProject(projectName, options) {
   Git(['commit', '-m', title], { cwd: tempPaths._ });
 
   // Initializing
-  initializeProject(tempPaths);
+  ensureTortilla(tempPaths);
 
   // Copy from temp to output
   Fs.removeSync(options.output);
@@ -88,13 +88,17 @@ function createProject(projectName, options) {
   Fs.removeSync(tempPaths._);
 }
 
-// Initialize tortilla esentials on an existing project. Used commonly when cloning a
-// tortilla project from a git-repo
-function initializeProject(projectDir) {
+// Make sure that tortilla essentials are initialized on an existing project.
+// Used most commonly when cloning or creating a project
+function ensureTortilla(projectDir) {
   projectDir = projectDir || Utils.cwd();
 
   var projectPaths = projectDir.resolve ? projectDir : Paths.resolve(projectDir);
   var localStorage = LocalStorage.create(projectPaths);
+
+  // If tortilla is already initialized don't do anything
+  var isInitialized = localStorage.getItem('INIT');
+  if (isInitialized) return;
 
   var hookFiles = Fs.readdirSync(projectPaths.tortilla.hooks);
 
@@ -123,12 +127,10 @@ function initializeProject(projectDir) {
   Utils.scopeEnv(History.retagSteps.bind(History), {
     TORTILLA_CWD: projectPaths._
   });
-
-  console.log('### Tortilla is ready to use ###');
 }
 
 
 module.exports = {
   create: createProject,
-  init: initializeProject
+  ensure: ensureTortilla
 };

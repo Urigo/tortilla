@@ -25,7 +25,13 @@ function gonnaAmend() {
 
 // Tells if a tag exists or not
 function tagExists(tag) {
-  return Utils.exists(Path.resolve(Paths.git.refs.tags, tag));
+  try {
+    git(['rev-parse', tag]);
+    return true;
+  }
+  catch (err) {
+    return false;
+  }
 }
 
 // Get the recent commit by the provided arguments. An offset can be specified which
