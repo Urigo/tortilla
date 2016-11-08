@@ -11,7 +11,7 @@ describe('Manual', function () {
     beforeEach(function () {
       for (let step = 1; step <= 3; step++) {
         const manualPath = 'steps/step' + step + '.md';
-        const manual = '# Step ' + step;
+        const manual = 'Step ' + step + ' manual';
 
         this.tortilla(['step', 'tag', '-m', 'dummy']);
         this.tortilla(['step', 'edit', step]);

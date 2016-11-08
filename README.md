@@ -42,7 +42,7 @@ A manual in a production format is a manual which is suitable for deployment. On
 
 #### Development Manual
 
-A manual file in a development format is a manual which is suitable for development. Once we convert a manual into this format, we should get a clean and a user-friendly version of it. Auto-generated content would not be shown, and complex markdown components would appear as template-helpers. Right now the only available template helper would `{{{diff_step (index) (file)}}}`, it shares the same syntax as [handlebar's](handlebarsjs.com) and it will show us the changes of the specified step in a pretty markdown layout (`index` represents the index of the step and `file` is an optional param for a specific file of which we'd like to show the code diff). It is recommended to only work in development format, otherwise you gonna have a very rough time, so make sure to [convert](#convert-manual) the manuals whenever you clone a Tortilla project.
+A manual file in a development format is a manual which is suitable for development. Once we convert a manual into this format, we should get a clean and a user-friendly version of it. Auto-generated content would not be shown, and complex markdown components would appear as template-helpers. There is no need to provide the development manual with a title, it will be generated automatically by Tortilla once we convert it into production format based on the commit message. Right now the only available template helper would `{{{diff_step (index) (file)}}}`, it shares the same syntax as [handlebar's](handlebarsjs.com) and it will show us the changes of the specified step in a pretty markdown layout (`index` represents the index of the step and `file` is an optional param for a specific file of which we'd like to show the code diff). It is recommended to only work in development format, otherwise you gonna have a very rough time, so make sure to [convert](#convert-manual) the manuals whenever you clone a Tortilla project.
 
 ### How Do I Start
 
@@ -52,9 +52,9 @@ First you will need to install Tortilla's CLI tool:
 
 Once you have it installed you can go ahead and create a new Tortilla project:
 
-    $ tortilla create "project name" --message="commit message" --output="output path"
+    $ tortilla create "project name" --output="output path"
 
-This command will initialize a new Tortilla project in the provided path (Defaults to the current path). The project will be initialized with the provided project name (Defaults to `tortilla-project`) and the provided message as the initial commit message (Will open an editor if no message is provided). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
+This command will initialize a new Tortilla project in the provided path (Defaults to the current path). The project will be initialized with the provided project name (Defaults to `tortilla-project`). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
 
 Anytime you clone a Tortilla project from a git-host you will need to re-initialize it so Tortilla can work properly:
 

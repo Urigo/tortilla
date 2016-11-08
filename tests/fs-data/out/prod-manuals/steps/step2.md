@@ -1,9 +1,9 @@
 [__prod__]: #
 [{]: <region> (header)
-
+# Step 2: dummy
 [}]: #
 [{]: <region> (body)
-# Step 2
+Step 2 manual
 
 [}]: #
 [{]: <region> (footer)

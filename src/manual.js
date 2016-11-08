@@ -90,7 +90,8 @@ function convertManual(step, options) {
 
   var scope = {
     step: step,
-    manualPath: manualPath
+    manualPath: manualPath,
+    commitMessage: getStepCommitMessage(step)
   };
 
   var newManual;
@@ -151,6 +152,15 @@ function convertDevManual(manual) {
 function getManualPath(step) {
   if (step == 'root') return Path.resolve(Paths.readme)
   return Path.resolve(Paths.steps, 'step' + step + '.md');
+}
+
+function getStepCommitMessage(step) {
+  if (step == 'root') {
+    var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
+    return Git(['log', '-1', rootHash, '--format=%s']);
+  }
+
+  return Git(['log', '-1', '--grep', '^Step ' + step + ':', '--format=%s'])
 }
 
 // Returns if manual is in production format or not

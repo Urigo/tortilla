@@ -27,12 +27,10 @@ var exec = Utils.exec;
 
   var method = argv._[0];
   var arg1 = argv._[1];
-  var message = argv.message || argv.m;
   var output = argv.output || argv.o;
   var override = argv.override;
 
   var options = {
-    message: message,
     output: output,
     override: override
   };
@@ -68,26 +66,18 @@ function createProject(projectName, options) {
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);
 
-  // Fillin template files
+  // Fill in template files
   MDRenderer.overwriteTemplateFile(tempPaths.npm.package, {
     name: packageName,
   });
 
   MDRenderer.overwriteTemplateFile(tempPaths.readme, {
-    title: title
   });
 
   // Git chores
   Git.print(['init'], { cwd: tempPaths._ });
   Git(['add', '.'], { cwd: tempPaths._ });
-
-  if (options.message) {
-    Git.print(['commit', '-m', options.message], { cwd: tempPaths._ });
-  }
-  else {
-    Git(['commit', '-m', 'Create a new tortilla project'], { cwd: tempPaths._ });
-    Git.print(['commit', '--amend'], { cwd: tempPaths._ });
-  }
+  Git(['commit', '-m', title], { cwd: tempPaths._ });
 
   // Initializing
   initializeProject(tempPaths);
