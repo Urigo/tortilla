@@ -110,12 +110,19 @@ function ensureTortilla(projectDir) {
 
     // Place an executor in the project's git hooks
     var hook = [
-      '#!/bin/sh',
+      '',
+      '# Tortilla',
       'cd .',
       'node ' + handlerPath + ' "$@"'
     ].join('\n');
 
-    Fs.writeFileSync(hookPath, hook);
+    // If exists, append logic
+    if (Utils.exists(hookPath, 'file'))
+      Fs.appendFileSync(hookPath, '\n' + hook);
+    // Else, create file
+    else
+      Fs.writeFileSync(hookPath, '#!/bin/sh' + hook);
+
     // Give read permissions to hooks so git can execute properly
     Fs.chmodSync(hookPath, 0755);
   });
