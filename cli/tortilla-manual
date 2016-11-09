@@ -8,24 +8,15 @@ var Manual = require('../src/manual');
  */
 
 Program
-  .command('convert [step]')
-  .description('Convert [step] manual to its opposite format')
-  .option('--root', 'Convert \'README.md\'')
-  .option('--all', 'Convert all manuals through out history')
-  .option('--prod', 'Convert manual to production format')
-  .option('--dev', 'Convert manual to development format')
+  .command('render [step]')
+  .description('Render [step] manual to its opposite format')
+  .option('--root', 'Render \'README.md\'')
+  .option('--all', 'Render all manuals through out history')
   .action(function (step, options) {
     Essentials.ensure();
-
     step = step || (options.root && 'root');
     step = step || (options.all && 'all');
-
-    if (!options.dev && !options.prod) {
-      options.prod = true;
-      options.dev = true;
-    }
-
-    Manual.convert(step, options);
+    Manual.render(step);
   });
 
 Program.parse(process.argv);

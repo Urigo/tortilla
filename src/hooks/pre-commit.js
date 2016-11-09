@@ -30,17 +30,17 @@ var Step = require('../step');
     var errorMessage = '\'' + manualFile + '\' is the only file that can be modified';
 
     // Files that don't start with 'steps/'
-    var stagedFiles = Git.stagedFiles(/^(?!steps\/)/);
+    var stagedFiles = Git.stagedFiles(/^(?!steps\/|manuals\/)/);
     if (stagedFiles.length) throw Error(errorMessage);
 
     // '.md' files that start with 'steps/' e.g. steps/step1.md
-    var pattern = new RegExp('^steps/(?!' + tag + '\\.md)');
+    var pattern = new RegExp('^(steps|manuals/steps)/(?!' + tag + '\\.md)');
     stagedFiles = Git.stagedFiles(pattern);
     if (stagedFiles.length) throw Error(errorMessage);
   }
   // Else manual files can't be modifed
   else {
-    var stagedFiles = Git.stagedFiles(/^steps\//);
+    var stagedFiles = Git.stagedFiles(/^(steps|manuals)\//);
 
     if (stagedFiles.length) throw Error(
       'Step manual files can\'t be modified'

@@ -75,15 +75,22 @@ function resolveAll(cwd) {
     modules: resolve(cwd, 'node_modules')
   };
 
+  var manuals = {
+    _: resolve(cwd, 'manuals'),
+    readme: resolve(cwd, 'manuals/README.md'),
+    steps: resolve(cwd, 'manuals/steps')
+  };
+
   return cache[cwd] = {
     _: resolve(cwd),
     readme: resolve(cwd, 'README.md'),
     steps: resolve(cwd, 'steps'),
     storage: resolve(cwd, '.git/.tortilla'),
+    manuals: manuals,
     tortilla: tortilla,
-    resolve: resolveAll,
     git: git,
-    npm: npm
+    npm: npm,
+    resolve: resolveAll
   };
 }
 

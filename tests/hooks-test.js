@@ -63,8 +63,8 @@ describe('Hooks', function () {
       }
     });
 
-    this.exec('rm', ['README.md']);
-    this.git(['add', 'README.md']);
+    this.exec('rm', ['manuals/README.md']);
+    this.git(['add', 'manuals/README.md']);
 
     expect(commit).to.throw(Error);
   });
@@ -79,19 +79,10 @@ describe('Hooks', function () {
 
     this.tortilla(['step', 'tag', '-m', 'dummy']);
     this.tortilla(['step', 'edit', '1']);
-    this.exec('touch', ['steps/step2.md']);
-    this.git(['add', 'steps/step2.md']);
+    this.exec('touch', ['manuals/steps/step2.md']);
+    this.git(['add', 'manuals/steps/step2.md']);
 
     expect(commit).to.throw(Error);
-  });
-
-  it('should disallow manaul files in development format to be pushed', function () {
-    const push = this.git.bind(this, ['push', 'origin', 'master']);
-
-    this.tortilla(['manual', 'convert', '--all']);
-    this.tortilla(['step', 'tag', '-m', 'dummy']);
-
-    expect(push).to.throw(Error);
   });
 
   it('should allow amending during step editing', function () {
@@ -117,8 +108,8 @@ describe('Hooks', function () {
 
     this.tortilla(['step', 'tag', '-m', 'dummy']);
     this.tortilla(['step', 'edit', '1']);
-    this.exec('sh', ['-c', 'echo test > steps/step1.md']);
-    this.git(['add', 'steps/step1.md']);
+    this.exec('sh', ['-c', 'echo test > manuals/steps/step1.md']);
+    this.git(['add', 'manuals/steps/step1.md']);
 
     expect(commit).to.not.throw(Error);
   });

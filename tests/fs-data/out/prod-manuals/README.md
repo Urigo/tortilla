@@ -1,4 +1,3 @@
-[__prod__]: #
 [{]: <region> (header)
 # Tortilla Project
 [}]: #

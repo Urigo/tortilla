@@ -1,4 +1,3 @@
-[__prod__]: #
 [{]: <region> (header)
 # Step 3: dummy
 [}]: #

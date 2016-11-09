@@ -15,8 +15,7 @@ var Step = require('./step');
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm'],
-    boolean: ['prod', 'dev']
+    string: ['_', 'message', 'm']
   });
 
   // The first argument will be the rebase file path provided to us by git
@@ -30,11 +29,6 @@ var Step = require('./step');
   // Convert to array of jsons so it would be more comfortable to word with
   var operations = disassemblyOperations(rebaseFileContent);
 
-  var options = {
-    prod: prod,
-    dev: dev
-  };
-
   // Set flag just in case recent rebase was aborted
   LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
 
@@ -44,7 +38,7 @@ var Step = require('./step');
     case 'edit': editStep(operations); break;
     case 'adjust': adjustSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
-    case 'convert': convertManuals(operations, options); break;
+    case 'render': renderManuals(operations); break;
   }
 
   // Put everything back together and rewrite the rebase file
@@ -148,32 +142,24 @@ function rewordStep(operations, message) {
   retagSteps(operations);
 }
 
-// Convert all manuals since the beginning of history to the opposite format
-function convertManuals(operations, options) {
+// Render all manuals since the beginning of history to the opposite format
+function renderManuals(operations) {
   var offset = 2;
 
-  var argv = ['convert', '--root'];
-  if (options.prod) argv.push('--prod');
-  if (options.dev) argv.push('--dev');
-
-  // Convert README.md
+  // Render README.md
   operations.splice(1, 0, {
     method: 'exec',
-    command: 'node ' + Paths.tortilla.manual + ' ' + argv.join(' ')
+    command: 'node ' + Paths.tortilla.manual + ' render --root'
   });
 
   operations.slice(offset).forEach(function (operation, index) {
     var stepDescriptor = Step.superDescriptor(operation.message);
     if (!stepDescriptor) return;
 
-    argv = ['convert', stepDescriptor.number];
-    if (options.prod) argv.push('--prod');
-    if (options.dev) argv.push('--dev');
-
-    // Convert step manual file
+    // Render step manual file
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: 'node ' + Paths.tortilla.manual + ' ' + argv.join(' ')
+      command: 'node ' + Paths.tortilla.manual + ' render ' + stepDescriptor.number
     });
 
     return offset;

@@ -71,9 +71,6 @@ function createProject(projectName, options) {
     name: packageName,
   });
 
-  MDRenderer.overwriteTemplateFile(tempPaths.readme, {
-  });
-
   // Git chores
   Git.print(['init'], { cwd: tempPaths._ });
   Git(['add', '.'], { cwd: tempPaths._ });

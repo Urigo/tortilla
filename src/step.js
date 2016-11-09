@@ -85,12 +85,12 @@ function tagStep(message) {
   var step = getNextSuperStep();
   var tag = 'step' + step;
   var manualFile = tag + '.md';
-  var manualPath = Path.resolve(Paths.steps, manualFile);
+  var manualTemplatePath = Path.resolve(Paths.manuals.steps, manualFile);
 
-  if (!Utils.exists(Paths.steps)) Fs.mkdirSync(Paths.steps);
-  Fs.writeFileSync(manualPath, '');
+  Fs.ensureDirSync(Paths.manuals.steps);
+  Fs.writeFileSync(manualTemplatePath, '');
 
-  Git(['add', manualPath]);
+  Git(['add', manualTemplatePath]);
   commitStep(step, message);
 
   // Meta-data for step editing

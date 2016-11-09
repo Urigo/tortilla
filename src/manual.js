@@ -2,7 +2,6 @@ var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');
-var MDParser = require('./md-parser');
 var MDComponent = require('./md-parser/md-component');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
@@ -13,44 +12,30 @@ var Utils = require('./utils');
   Contains manual related utilities.
  */
 
-var prodFlag = '[__prod__]: #';
-
 
 (function () {
   if (require.main !== module) return;
 
   var argv = Minimist(process.argv.slice(2), {
     string: ['_'],
-    boolean: ['all', 'root', 'prod', 'dev']
+    boolean: ['all', 'root']
   });
 
   var method = argv._[0];
   var step = argv._[1];
   var all = argv.all;
   var root = argv.root;
-  var prod = argv.prod;
-  var dev = argv.dev;
 
   if (!step && all) step = 'all';
   if (!step && root) step = 'root';
 
-  if (!prod && !dev) {
-    prod = true;
-    dev = true;
-  }
-
-  var options = {
-    prod: prod,
-    dev: dev
-  };
-
   switch (method) {
-    case 'convert': return convertManual(step, options);
+    case 'render': return renderManual(step);
   }
 })();
 
 // Converts manual into the opposite format
-function convertManual(step, options) {
+function renderManual(step) {
   if (step) {
     var isSuperStep = !step.split('.')[1];
     if (!isSuperStep) throw TypeError('Provided step must be a super step');
@@ -62,17 +47,12 @@ function convertManual(step, options) {
   }
 
   // Convert all manuals since the beginning of history
-  if (step == 'all') {
-    var argv = ['convert'];
-    if (options.prod) argv.push('--prod');
-    if (options.dev) argv.push('--dev');
-
+  if (step == 'all')
     return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
       env: {
-        GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' ' + argv.join(' ')
+        GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' render'
       }
     });
-  }
 
   // Indicates whether we should continue rebasing at the end of the invocation.
   // If this script is not run by the git editor we should continue rebasing
@@ -84,38 +64,21 @@ function convertManual(step, options) {
   });
 
   // Fetch the current manual
-  var manualPath = getManualPath(step);
-  var manual = Fs.readFileSync(manualPath, 'utf8');
-  var newManual;
+  var manualTemplatePath = getManualTemplatePath(step);
+  var manualTemplate = Fs.readFileSync(manualTemplatePath, 'utf8');
 
-  var scope = {
+  var manualView = renderManualView(manualTemplate, {
     step: step,
-    manualPath: manualPath,
     commitMessage: getStepCommitMessage(step)
-  };
-
-  var newManual;
-
-  // Get new manual
-  if (isManualProd(manual)) {
-    newManual = convertDevManual(manual, scope);
-    // Update the manual in case dev format is not wanted
-    if (!options.dev) newManual = convertProdManual(newManual, scope);
-  }
-  else {
-    // Abort in case prod format is not wanted
-    if (!options.prod) return;
-    newManual = convertProdManual(manual, scope);
-  }
-
-  // If no changes made, abort
-  if (newManual == null) return;
+  });
 
   // Rewrite manual
-  Fs.writeFileSync(manualPath, newManual);
+  var manualViewPath = getManualViewPath(step);
+  Fs.ensureDirSync(Path.dirname(manualViewPath));
+  Fs.writeFileSync(manualViewPath, manualView);
 
   // Amend changes
-  Git(['add', manualPath]);
+  Git(['add', manualViewPath]);
 
   Git.print(['commit', '--amend'], {
     env: {
@@ -127,8 +90,8 @@ function convertManual(step, options) {
   if (shouldContinue) Git.print(['rebase', '--continue']);
 }
 
-// Converts manual content to production format
-function convertProdManual(manual, scope) {
+// Renders manual template into informative view
+function renderManualView(manual, scope) {
   var header = MDRenderer.renderTemplateFile('header.md', scope)
   var body = MDRenderer.renderTemplate(manual, scope);
   var footer = MDRenderer.renderTemplateFile('footer.md', scope);
@@ -137,23 +100,22 @@ function convertProdManual(manual, scope) {
   body = MDComponent.wrap('region', 'body', body);
   footer = MDComponent.wrap('region', 'footer', footer);
 
-  return [prodFlag, header, body, footer].join('\n');
+  return [header, body, footer].join('\n');
 }
 
-// Converts manual content to development format
-function convertDevManual(manual) {
-  var chunks = MDParser.parse(manual, 1);
-  var body = chunks[2].chunks;
-
-  return body.toTemplate();
+// Gets the manual template belonging to the given step
+function getManualTemplatePath(step) {
+  if (step == 'root') return Paths.manuals.readme;
+  return Path.resolve(Paths.manuals.steps, 'step' + step + '.md');
 }
 
-// Gets the manual belonging to the given step
-function getManualPath(step) {
-  if (step == 'root') return Path.resolve(Paths.readme)
+// Gets the manual view belonging to the given step
+function getManualViewPath(step) {
+  if (step == 'root') return Paths.readme;
   return Path.resolve(Paths.steps, 'step' + step + '.md');
 }
 
+// Gets the commit message belonging to the given step
 function getStepCommitMessage(step) {
   if (step == 'root') {
     var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
@@ -163,14 +125,9 @@ function getStepCommitMessage(step) {
   return Git(['log', '-1', '--grep', '^Step ' + step + ':', '--format=%s'])
 }
 
-// Returns if manual is in production format or not
-function isManualProd(manual) {
-  return manual.split('\n')[0] == prodFlag;
-}
-
 
 module.exports = {
-  convert: convertManual,
-  path: getManualPath,
-  isProd: isManualProd
+  render: renderManual,
+  manualTemplatePath: getManualTemplatePath,
+  manualViewPath: getManualViewPath
 };
