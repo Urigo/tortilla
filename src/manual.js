@@ -74,7 +74,6 @@ function renderManual(step) {
 
   // Rewrite manual
   var manualViewPath = getManualViewPath(step);
-  Fs.ensureDirSync(Path.dirname(manualViewPath));
   Fs.writeFileSync(manualViewPath, manualView);
 
   // Amend changes
@@ -105,14 +104,14 @@ function renderManualView(manual, scope) {
 
 // Gets the manual template belonging to the given step
 function getManualTemplatePath(step) {
-  if (step == 'root') return Paths.manuals.readme;
-  return Path.resolve(Paths.manuals.steps, 'step' + step + '.md');
+  if (step == 'root') return Path.resolve(Paths.manuals.templates, 'root.md');
+  return Path.resolve(Paths.manuals.templates, 'step' + step + '.md');
 }
 
 // Gets the manual view belonging to the given step
 function getManualViewPath(step) {
   if (step == 'root') return Paths.readme;
-  return Path.resolve(Paths.steps, 'step' + step + '.md');
+  return Path.resolve(Paths.manuals.views, 'step' + step + '.md');
 }
 
 // Gets the commit message belonging to the given step

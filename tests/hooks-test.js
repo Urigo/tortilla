@@ -63,8 +63,8 @@ describe('Hooks', function () {
       }
     });
 
-    this.exec('rm', ['manuals/README.md']);
-    this.git(['add', 'manuals/README.md']);
+    this.exec('touch', ['README.md']);
+    this.git(['add', 'README.md']);
 
     expect(commit).to.throw(Error);
   });
@@ -79,8 +79,8 @@ describe('Hooks', function () {
 
     this.tortilla(['step', 'tag', '-m', 'dummy']);
     this.tortilla(['step', 'edit', '1']);
-    this.exec('touch', ['manuals/steps/step2.md']);
-    this.git(['add', 'manuals/steps/step2.md']);
+    this.exec('touch', ['manuals/src/step2.md']);
+    this.git(['add', 'manuals/src/step2.md']);
 
     expect(commit).to.throw(Error);
   });
@@ -108,8 +108,8 @@ describe('Hooks', function () {
 
     this.tortilla(['step', 'tag', '-m', 'dummy']);
     this.tortilla(['step', 'edit', '1']);
-    this.exec('sh', ['-c', 'echo test > manuals/steps/step1.md']);
-    this.git(['add', 'manuals/steps/step1.md']);
+    this.exec('sh', ['-c', 'echo test > manuals/src/step1.md']);
+    this.git(['add', 'manuals/src/step1.md']);
 
     expect(commit).to.not.throw(Error);
   });

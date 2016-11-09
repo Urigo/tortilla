@@ -85,9 +85,10 @@ function tagStep(message) {
   var step = getNextSuperStep();
   var tag = 'step' + step;
   var manualFile = tag + '.md';
-  var manualTemplatePath = Path.resolve(Paths.manuals.steps, manualFile);
+  var manualTemplatePath = Path.resolve(Paths.manuals.templates, manualFile);
 
-  Fs.ensureDirSync(Paths.manuals.steps);
+  Fs.ensureDirSync(Paths.manuals.templates);
+  Fs.ensureDirSync(Paths.manuals.views);
   Fs.writeFileSync(manualTemplatePath, '');
 
   Git(['add', manualTemplatePath]);

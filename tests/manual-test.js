@@ -10,7 +10,7 @@ describe('Manual', function () {
 
     beforeEach(function () {
       for (let step = 1; step <= 3; step++) {
-        const manualPath = 'manuals/steps/step' + step + '.md';
+        const manualPath = 'manuals/src/step' + step + '.md';
         const manual = 'Step ' + step + ' manual';
 
         this.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -25,31 +25,31 @@ describe('Manual', function () {
     it('should render a specified manual file to production format', function () {
       this.tortilla(['manual', 'render', '2']);
 
-      const manual = this.exec('cat', ['steps/step2.md']);
-      expect(manual).to.be.a.markdown('prod-manuals/steps/step2');
+      const manual = this.exec('cat', ['manuals/dist/step2.md']);
+      expect(manual).to.be.a.markdown('manuals/dist/step2');
     });
 
     it('should render last manual by default if non is provided', function () {
       this.tortilla(['manual', 'render']);
 
-      const manual = this.exec('cat', ['steps/step3.md']);
-      expect(manual).to.be.a.markdown('prod-manuals/steps/step3');
+      const manual = this.exec('cat', ['manuals/dist/step3.md']);
+      expect(manual).to.be.a.markdown('manuals/dist/step3');
     });
 
     it('should render all manual files through out history', function () {
-      const manualsPaths = [
-        'README.md',
-        'steps/step1.md',
-        'steps/step2.md',
-        'steps/step3.md'
-      ];
-
       this.tortilla(['manual', 'render', '--all']);
 
-      manualsPaths.forEach((manualPath) => {
-        const manual = this.exec('cat', [manualPath]);
-        expect(manual).to.be.a.file('prod-manuals/' + manualPath);
-      });
+      let manual = this.exec('cat', ['README.md']);
+      expect(manual).to.be.a.file('manuals/README.md');
+
+      manual = this.exec('cat', ['manuals/dist/step1.md']);
+      expect(manual).to.be.a.file('manuals/dist/step1.md');
+
+      manual = this.exec('cat', ['manuals/dist/step2.md']);
+      expect(manual).to.be.a.file('manuals/dist/step2.md');
+
+      manual = this.exec('cat', ['manuals/dist/step3.md']);
+      expect(manual).to.be.a.file('manuals/dist/step3.md');
     });
   });
 });
