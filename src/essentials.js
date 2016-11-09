@@ -68,11 +68,15 @@ function createProject(projectName, options) {
 
   // Fill in template files
   MDRenderer.overwriteTemplateFile(tempPaths.npm.package, {
-    name: packageName,
+    name: packageName
+  });
+
+  MDRenderer.overwriteTemplateFile(tempPaths.readme, {
+    title: title
   });
 
   // Git chores
-  Git.print(['init'], { cwd: tempPaths._ });
+  Git(['init'], { cwd: tempPaths._ });
   Git(['add', '.'], { cwd: tempPaths._ });
   Git(['commit', '-m', title], { cwd: tempPaths._ });
 
@@ -83,6 +87,8 @@ function createProject(projectName, options) {
   Fs.removeSync(options.output);
   Fs.copySync(tempPaths._, options.output);
   Fs.removeSync(tempPaths._);
+
+  console.log('New Tortilla project created and ready to use');
 }
 
 // Make sure that tortilla essentials are initialized on an existing project.
