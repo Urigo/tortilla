@@ -20,7 +20,7 @@ var node;
       'rev-parse', '--show-toplevel'
     ], {
       cwd: cwd,
-      stdio: 'ignore'
+      stdio: ['pipe', 'pipe', 'ignore']
     }).toString()
       .trim();
   }
