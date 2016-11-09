@@ -36,7 +36,8 @@ function renderTemplate(template, scope) {
 
   // Replace notations with values. ORDER IS CRITIC!
   return template.replace(/\\?\{\{([^\}]+)\}\}\}?/g, function (match, content) {
-    if (match[0] == '\\') return match;
+    // Escape backslashes
+    if (match[0] == '\\') return match.substr(1);
 
     // Helper
     if (content[0] == '{' && match[match.length - 1] == '}') {
