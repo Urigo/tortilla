@@ -20,7 +20,7 @@ MDRenderer.registerHelper('nav_step', function() {
 
     return MDRenderer.renderTemplateFile('next-button-template.md', {
       text: 'Begin Tutorial',
-      ref: 'steps/step1.md'
+      ref: 'manuals/dist/step1.md'
     });
   }
 
@@ -46,7 +46,7 @@ MDRenderer.registerHelper('nav_step', function() {
       next_text: 'Next Step',
       next_ref: 'step2.md',
       prev_text: 'Intro',
-      prev_ref: '../README.md'
+      prev_ref: '../../README.md'
     });
 
   // The order is the other way around, this way we save ourselves the sorting

@@ -1,4 +1,3 @@
-[__prod__]: #
 [{]: <region> (header)
 # Tortilla Project
 [}]: #
@@ -7,7 +6,7 @@ A newly created Tortilla project. For more information, see https://github.com/U
 [}]: #
 [{]: <region> (footer)
 [{]: <helper> (nav_step)
-| [Begin Tutorial >](steps/step1.md) |
+| [Begin Tutorial >](manuals/dist/step1.md) |
 |----------------------:|
 [}]: #
 [}]: #

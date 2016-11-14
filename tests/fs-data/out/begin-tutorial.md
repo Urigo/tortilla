@@ -1,4 +1,4 @@
 [{]: <helper> (nav_step)
-| [Begin Tutorial >](steps/step1.md) |
+| [Begin Tutorial >](manuals/dist/step1.md) |
 |----------------------:|
 [}]: #

@@ -1,4 +1,4 @@
 [{]: <helper> (nav_step)
-| [< Intro](../README.md) | [Next Step >](step2.md) |
+| [< Intro](../../README.md) | [Next Step >](step2.md) |
 |:--------------------------------|--------------------------------:|
 [}]: #
