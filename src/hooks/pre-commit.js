@@ -29,30 +29,28 @@ var Step = require('../step');
     var manualFile = tag + '.md';
     var errorMessage = '\'' + manualFile + '\' is the only file that can be modified';
 
-    // Files that don't start with 'steps/'
+    // Files that don't start with 'manuals/'
     var stagedFiles = Git.stagedFiles(/^(?!manuals\/)/);
     if (stagedFiles.length) throw Error(errorMessage);
 
-    // '.md' files that start with 'steps/' e.g. steps/step1.md
+    // '.md' files that start with 'manuals/' e.g. manuals/src/step1.md
     var pattern = new RegExp('^manuals/(src|dist)/(?!' + tag + '\\.md)');
     stagedFiles = Git.stagedFiles(pattern);
     if (stagedFiles.length) throw Error(errorMessage);
   }
-  // Else manual files can't be modifed
-  else {
+  // Else, if this is not root commit prohibit manual files modifications
+  else if (stepDescriptor) {
     var stagedFiles = Git.stagedFiles(/^manuals\//);
 
     if (stagedFiles.length) throw Error(
       'Step manual files can\'t be modified'
     );
-
-    // It means we're editing root
-    if (!stepDescriptor) return;
-
-    stagedFiles = Git.stagedFiles(/^README.md/);
-
-    if (stagedFiles.length) throw Error(
-      'README.md can\'t be modified'
-    );
   }
+
+  var stagedFiles = Git.stagedFiles(/^README.md/);
+
+  if (stagedFiles.length) throw Error([
+    'README.md can\'t be modified.',
+    'Run `$ tortilla step edit --root` and edit \'manuals/src/root.md\' file instead',
+  ].join('\n'));
 })();
