@@ -36,6 +36,27 @@ describe('Manual', function () {
       expect(manual).to.be.a.markdown('manuals/dist/step3');
     });
 
+    it('should render root manual if specified and create a symlink to it', function () {
+      this.tortilla(['manual', 'render', '--root']);
+
+      let manual = this.exec('cat', ['README.md']);
+      expect(manual).to.be.a.markdown('manuals/README');
+
+      manual = this.exec('cat', ['manuals/dist/root.md']);
+      expect(manual).to.be.a.markdown('manuals/README');
+    });
+
+    it('should not create a symlink to root manual if already exists', function () {
+      this.tortilla(['manual', 'render', '--root']);
+      this.tortilla(['manual', 'render', '--root']);
+
+      let manual = this.exec('cat', ['README.md']);
+      expect(manual).to.be.a.markdown('manuals/README');
+
+      manual = this.exec('cat', ['manuals/dist/root.md']);
+      expect(manual).to.be.a.markdown('manuals/README');
+    });
+
     it('should render all manual files through out history', function () {
       this.tortilla(['manual', 'render', '--all']);
 

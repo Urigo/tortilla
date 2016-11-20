@@ -12,7 +12,7 @@
     "tortilla": "cli/tortilla"
   },
   "scripts": {
-    "test": "TORTILLA_STDIO=ignore TORTILLA_CWD=/tmp/tortilla_test mocha tests/test --timeout=10000"
+    "test": "TORTILLA_STDIO=ignore TORTILLA_CWD=/tmp/tortilla_test mocha tests/test --timeout=15000"
   },
   "dependencies": {
     "commander": "^2.9.0",

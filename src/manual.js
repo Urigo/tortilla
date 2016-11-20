@@ -78,6 +78,13 @@ function renderManual(step) {
 
   // Amend changes
   Git(['add', manualViewPath]);
+  var symlinkPath = Path.resolve(Paths.manuals.views, 'root.md');
+
+  // If this is the root step, create a symlink to README.md if not yet exists
+  if (step == 'root' && !Utils.exists(symlinkPath)) {
+    Fs.symlinkSync(manualViewPath, symlinkPath);
+    Git(['add', symlinkPath]);
+  }
 
   Git.print(['commit', '--amend'], {
     env: {
