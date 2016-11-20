@@ -24,7 +24,7 @@ MDRenderer.registerHelper('diff_step', function(step, pattern) {
   pattern = pattern || /.*/;
 
   var stepData = Git.recentCommit([
-    '--grep=^Step ' + step, '--format=%h %s'
+    '--grep=^Step ' + step + ':', '--format=%h %s'
   ]).split(' ')
     .filter(Boolean);
 
