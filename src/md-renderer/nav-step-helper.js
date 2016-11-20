@@ -20,7 +20,7 @@ MDRenderer.registerHelper('nav_step', function() {
 
     return MDRenderer.renderTemplateFile('next-button-template.md', {
       text: 'Begin Tutorial',
-      ref: 'manuals/dist/step1.md'
+      ref: 'manuals/views/step1.md'
     });
   }
 

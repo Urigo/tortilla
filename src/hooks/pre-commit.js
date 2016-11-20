@@ -33,8 +33,8 @@ var Step = require('../step');
     var stagedFiles = Git.stagedFiles(/^(?!manuals\/)/);
     if (stagedFiles.length) throw Error(errorMessage);
 
-    // '.md' files that start with 'manuals/' e.g. manuals/src/step1.md
-    var pattern = new RegExp('^manuals/(src|dist)/(?!' + tag + '\\.md)');
+    // '.md' files that start with 'manuals/' e.g. manuals/templates/step1.md
+    var pattern = new RegExp('^manuals/(templates|views)/(?!' + tag + '\\.md)');
     stagedFiles = Git.stagedFiles(pattern);
     if (stagedFiles.length) throw Error(errorMessage);
   }
@@ -51,6 +51,6 @@ var Step = require('../step');
 
   if (stagedFiles.length) throw Error([
     'README.md can\'t be modified.',
-    'Run `$ tortilla step edit --root` and edit \'manuals/src/root.md\' file instead',
+    'Run `$ tortilla step edit --root` and edit \'manuals/templates/root.md\' file instead',
   ].join('\n'));
 })();

@@ -10,7 +10,7 @@ describe('Manual', function () {
 
     beforeEach(function () {
       for (let step = 1; step <= 3; step++) {
-        const manualPath = 'manuals/src/step' + step + '.md';
+        const manualPath = 'manuals/templates/step' + step + '.md';
         const manual = 'Step ' + step + ' manual';
 
         this.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -25,25 +25,25 @@ describe('Manual', function () {
     it('should render a specified manual file to production format', function () {
       this.tortilla(['manual', 'render', '2']);
 
-      const manual = this.exec('cat', ['manuals/dist/step2.md']);
-      expect(manual).to.be.a.markdown('manuals/dist/step2');
+      const manual = this.exec('cat', ['manuals/views/step2.md']);
+      expect(manual).to.be.a.markdown('manuals/step2');
     });
 
     it('should render last manual by default if non is provided', function () {
       this.tortilla(['manual', 'render']);
 
-      const manual = this.exec('cat', ['manuals/dist/step3.md']);
-      expect(manual).to.be.a.markdown('manuals/dist/step3');
+      const manual = this.exec('cat', ['manuals/views/step3.md']);
+      expect(manual).to.be.a.markdown('manuals/step3');
     });
 
     it('should render root manual if specified and create a symlink to it', function () {
       this.tortilla(['manual', 'render', '--root']);
 
       let manual = this.exec('cat', ['README.md']);
-      expect(manual).to.be.a.markdown('manuals/README');
+      expect(manual).to.be.a.markdown('manuals/root');
 
-      manual = this.exec('cat', ['manuals/dist/root.md']);
-      expect(manual).to.be.a.markdown('manuals/README');
+      manual = this.exec('cat', ['manuals/views/root.md']);
+      expect(manual).to.be.a.markdown('manuals/root');
     });
 
     it('should not create a symlink to root manual if already exists', function () {
@@ -51,26 +51,26 @@ describe('Manual', function () {
       this.tortilla(['manual', 'render', '--root']);
 
       let manual = this.exec('cat', ['README.md']);
-      expect(manual).to.be.a.markdown('manuals/README');
+      expect(manual).to.be.a.markdown('manuals/root');
 
-      manual = this.exec('cat', ['manuals/dist/root.md']);
-      expect(manual).to.be.a.markdown('manuals/README');
+      manual = this.exec('cat', ['manuals/views/root.md']);
+      expect(manual).to.be.a.markdown('manuals/root');
     });
 
     it('should render all manual files through out history', function () {
       this.tortilla(['manual', 'render', '--all']);
 
       let manual = this.exec('cat', ['README.md']);
-      expect(manual).to.be.a.file('manuals/README.md');
+      expect(manual).to.be.a.file('manuals/root.md');
 
-      manual = this.exec('cat', ['manuals/dist/step1.md']);
-      expect(manual).to.be.a.file('manuals/dist/step1.md');
+      manual = this.exec('cat', ['manuals/views/step1.md']);
+      expect(manual).to.be.a.file('manuals/step1.md');
 
-      manual = this.exec('cat', ['manuals/dist/step2.md']);
-      expect(manual).to.be.a.file('manuals/dist/step2.md');
+      manual = this.exec('cat', ['manuals/views/step2.md']);
+      expect(manual).to.be.a.file('manuals/step2.md');
 
-      manual = this.exec('cat', ['manuals/dist/step3.md']);
-      expect(manual).to.be.a.file('manuals/dist/step3.md');
+      manual = this.exec('cat', ['manuals/views/step3.md']);
+      expect(manual).to.be.a.file('manuals/step3.md');
     });
   });
 });

@@ -77,8 +77,8 @@ function resolveAll(cwd) {
 
   var manuals = {
     _: resolve(cwd, 'manuals'),
-    templates: resolve(cwd, 'manuals/src'),
-    views: resolve(cwd, 'manuals/dist')
+    templates: resolve(cwd, 'manuals/templates'),
+    views: resolve(cwd, 'manuals/views')
   };
 
   return cache[cwd] = {
