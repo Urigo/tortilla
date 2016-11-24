@@ -1,6 +1,6 @@
 #!/usr/local/bin/node
 var Program = require('commander');
-var Essentials = require('../src/essentials');
+var LocalStorage = require('../src/local-storage');
 var Manual = require('../src/manual');
 
 /*
@@ -13,7 +13,7 @@ Program
   .option('--root', 'Render \'README.md\'')
   .option('--all', 'Render all manuals through out history')
   .action(function (step, options) {
-    Essentials.ensure();
+    LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
     step = step || (options.all && 'all');
     Manual.render(step);

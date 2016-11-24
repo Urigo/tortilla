@@ -20,8 +20,23 @@ function createLocalStorage(cwd) {
     localStorage = new LocalCache();
 
   return Utils.extend(localStorage, {
-    create: createLocalStorage
+    create: createLocalStorage,
+    assertTortilla: assertTortilla
   });
+}
+
+// Asserts if tortilla is initialized or not
+function assertTortilla(exists) {
+  var isInit = this.getItem('INIT');
+
+  if (exists && !isInit) throw Error([
+    'Tortilla essentials must be initialized!',
+    'Please run `$ tortilla init` before proceeding.'
+  ].join('\n'));
+
+  if (!exists && isInit) throw Error([
+    'Tortilla essentials are already initialized!'
+  ].join('\n'));
 }
 
 

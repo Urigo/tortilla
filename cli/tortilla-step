@@ -1,6 +1,6 @@
 #!/usr/local/bin/node
 var Program = require('commander');
-var Essentials = require('../src/essentials');
+var LocalStorage = require('../src/local-storage');
 var Step = require('../src/step');
 
 /*
@@ -13,7 +13,7 @@ Program
   .option('-m, --message [message]', 'The step\'s message')
   .option('--allow-empty', 'Allow an empty step to be pushed')
   .action(function (options) {
-    Essentials.ensure();
+    LocalStorage.assertTortilla(true);
     Step.push(options.message, options);
   });
 
@@ -21,7 +21,7 @@ Program
   .command('pop')
   .description('Pop recent step and delete its tag')
   .action(function () {
-    Essentials.ensure();
+    LocalStorage.assertTortilla(true);
     Step.pop();
   });
 
@@ -30,7 +30,7 @@ Program
   .description('Create a super step, tag it and start a new set')
   .option('-m, --message [message]', 'The step\'s message')
   .action(function (options) {
-    Essentials.ensure();
+    LocalStorage.assertTortilla(true);
     Step.tag(options.message);
   });
 
@@ -39,7 +39,7 @@ Program
   .description('Edit [step] and adjust upcoming steps\' indices')
   .option('--root [root]', 'Edit the root commit')
   .action(function (step, options) {
-    Essentials.ensure();
+    LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
     Step.edit(step);
   });
@@ -50,7 +50,7 @@ Program
   .option('--root', 'Reword the root commit')
   .option('-m, --message [message]', 'The step\'s message')
   .action(function (step, options) {
-    Essentials.ensure();
+    LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
     Step.reword(step, options.message);
   });

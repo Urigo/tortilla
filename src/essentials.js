@@ -1,6 +1,7 @@
 var Fs = require('fs-extra');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
+var Ascii = require('./ascii');
 var Git = require('./git');
 var History = require('./history');
 var LocalStorage = require('./local-storage');
@@ -87,8 +88,6 @@ function createProject(projectName, options) {
   Fs.removeSync(options.output);
   Fs.copySync(tempPaths._, options.output);
   Fs.removeSync(tempPaths._);
-
-  console.log('New Tortilla project created and ready to use');
 }
 
 // Make sure that tortilla essentials are initialized on an existing project.
@@ -137,6 +136,8 @@ function ensureTortilla(projectDir) {
   Utils.scopeEnv(History.retagSteps.bind(History), {
     TORTILLA_CWD: projectPaths._
   });
+
+  Ascii.print('ready');
 }
 
 
