@@ -82,7 +82,8 @@ function renderManual(step) {
 
   // If this is the root step, create a symlink to README.md if not yet exists
   if (step == 'root' && !Utils.exists(symlinkPath)) {
-    Fs.symlinkSync(manualViewPath, symlinkPath);
+    var relativeSymlink = Path.relative(Path.dirname(symlinkPath), manualViewPath);
+    Fs.symlinkSync(manualViewPath, relativeSymlink);
     Git(['add', symlinkPath]);
   }
 
