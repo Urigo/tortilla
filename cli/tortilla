@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 var Program = require('commander');
 var Pack = require('../package.json');
 var Essentials = require('../src/essentials');
