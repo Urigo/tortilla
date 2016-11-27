@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+var Program = require('commander');
+var LocalStorage = require('../src/local-storage');
+
+/*
+  Strict CLI.
+ */
+
+Program
+  .command('get')
+  .description('Prints whether strict mode is enabled or disabled')
+  .action(function () {
+    LocalStorage.assertTortilla(true);
+    var mode = !!LocalStorage.getItem('USE_STRICT');
+    printStrictMode(mode);
+  });
+
+Program
+  .command('set <mode>')
+  .description('Enable or disable strict mode')
+  .action(function (mode) {
+    LocalStorage.assertTortilla(true);
+    mode = JSON.parse(mode);
+
+    if (mode)
+      LocalStorage.setItem('USE_STRICT', true);
+    else
+      LocalStorage.removeItem('USE_STRICT');
+
+    printStrictMode(mode);
+  });
+
+function printStrictMode(mode) {
+  if (mode == null) mode = !!LocalStorage.getItem('USE_STRICT');
+  var strictStatus = mode ? 'enabled' : 'disabled';
+  console.log('Strict mode is ' + strictStatus);
+}
+
+Program.parse(process.argv);
+

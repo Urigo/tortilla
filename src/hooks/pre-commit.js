@@ -1,4 +1,5 @@
 var Git = require('../git');
+var LocalStorage = require('../local-storage');
 var Step = require('../step');
 
 /*
@@ -8,6 +9,7 @@ var Step = require('../step');
 
 (function () {
   if (process.env.TORTILLA_CHILD_PROCESS) return;
+  if (!LocalStorage.getItem('USE_STRICT')) return;
 
   // Prohibit regular commits
   if (!Git.gonnaAmend()) throw Error(

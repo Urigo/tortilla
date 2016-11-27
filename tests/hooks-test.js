@@ -8,10 +8,12 @@ describe('Hooks', function () {
   this.slow(1000);
 
   it('should disallow new commits to be added', function () {
-    const commit = this.git.bind(this, ['commit', '--allow-empty'], {
+    const commit = this.git.bind(this, [
+      'commit', '--allow-empty', '--allow-empty-message'
+    ], {
       env: {
         TORTILLA_CHILD_PROCESS: '',
-        GIT_SEQUENCE_EDITOR: true
+        GIT_EDITOR: true
       }
     });
 
@@ -19,10 +21,12 @@ describe('Hooks', function () {
   });
 
   it('should disallow amending', function () {
-    const commit = this.git.bind(this, ['commit', '--amend', '--allow-empty'], {
+    const commit = this.git.bind(this, [
+      'commit', '--amend', '--allow-empty', '--allow-empty-message'
+    ], {
       env: {
         TORTILLA_CHILD_PROCESS: '',
-        GIT_SEQUENCE_EDITOR: true
+        GIT_EDITOR: true
       }
     });
 
@@ -44,7 +48,7 @@ describe('Hooks', function () {
     const commit = this.git.bind(this, ['commit'], {
       env: {
         TORTILLA_CHILD_PROCESS: '',
-        GIT_SEQUENCE_EDITOR: true
+        GIT_EDITOR: true
       }
     });
 
@@ -59,7 +63,7 @@ describe('Hooks', function () {
     const commit = this.git.bind(this, ['commit'], {
       env: {
         TORTILLA_CHILD_PROCESS: '',
-        GIT_SEQUENCE_EDITOR: true
+        GIT_EDITOR: true
       }
     });
 
@@ -85,8 +89,36 @@ describe('Hooks', function () {
     expect(commit).to.throw(Error);
   });
 
+  it('should disable pre-commit restrictions if strict mode is disabled', function () {
+    this.tortilla(['strict', 'set', 'false']);
+
+    const commit = this.git.bind(this, ['commit', '--allow-empty', '--allow-empty-message'], {
+      env: {
+        TORTILLA_CHILD_PROCESS: '',
+        GIT_EDITOR: true
+      }
+    });
+
+    expect(commit).to.not.throw(Error);
+  });
+
+  it('should disable pre-rebase restrictions if strict mode is disabled', function () {
+    this.tortilla(['strict', 'set', 'false']);
+
+    const rebase = this.git.bind(this, ['rebase', '-i', '--root'], {
+      env: {
+        TORTILLA_CHILD_PROCESS: '',
+        GIT_SEQUENCE_EDITOR: true
+      }
+    });
+
+    expect(rebase).to.not.throw(Error);
+  });
+
   it('should allow amending during step editing', function () {
-    const commit = this.git.bind(this, ['commit', '--amend', '--allow-empty'], {
+    const commit = this.git.bind(this, [
+      'commit', '--amend', '--allow-empty', '--allow-empty-message'
+    ], {
       env: {
         TORTILLA_CHILD_PROCESS: '',
         GIT_EDITOR: true

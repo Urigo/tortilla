@@ -26,12 +26,14 @@ Program
   .command('init [dir]')
   .description('Initialize Tortilla essentials in the provided project [dir]')
   .action(function (dir) {
-    LocalStorage.assertTortilla();
+    var localStorage = dir ? LocalStorage.create(dir) : LocalStorage;
+    localStorage.assertTortilla();
     Essentials.ensure(dir);
   });
 
 Program
   .command('manual <command...>', 'Manage manual files')
-  .command('step <command...>', 'Manage step commits history');
+  .command('step <command...>', 'Manage step commits history')
+  .command('strict <command...>', 'Manage strict mode');
 
 Program.parse(process.argv);

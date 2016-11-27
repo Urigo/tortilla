@@ -103,3 +103,15 @@ Replace the provided step's message with the provided message (Will open an edit
     $ tortilla manual render "step index"
 
 Renders and rebases specified step's manual. If you would like to render the root manual you can provide a `--root`. If you would like to render all manuals since the beginning of history you can provide a `--all` option. If no step is specified, the last manual will be rendered by default.
+
+#### Get Strict Mode
+
+    $ tortilla strict get
+
+Gets the current status of strict mode. By default, a newly initialized Tortilla project will be set to be in strict mode, which will restrict you doing from running git operations out side git's scope.
+
+#### Set Strict Mode
+
+    $ tortilla strict set "mode status"
+
+Sets the status of strict mode. Any falsy or truthy value will do. Once strict mode is set, an approval message will be printed to terminal.

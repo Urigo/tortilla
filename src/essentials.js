@@ -131,6 +131,7 @@ function ensureTortilla(projectDir) {
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
+  localStorage.setItem('USE_STRICT', true);
 
   // Retag steps
   Utils.scopeEnv(History.retagSteps.bind(History), {
