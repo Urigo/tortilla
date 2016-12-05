@@ -26,6 +26,8 @@ As you can see, each commit should present a single step in the tutorial, it mea
 
 Some of the commits represent a [sub-step](#sub-step) (e.g. step 1.1, 1.2 etc) and some of the represent a [super-step](#super-step) (e.g. step 1, 2 etc), together they form a whole step. Note that the only exception is the initial commit whose message can be whatever you'd like, the rest of the commits **must** follow these rules, otherwise you will encounter some unexpected behaviors.
 
+> Credit goes to **[@stubailo](http://www.github.com/stubailo)** who originally came up with the commit templates' concept
+
 #### Sub Step
 
 A sub-step is a small portion of the whole step, each sub-step should usually represent a small change which should be followed by an explanation in the tutorial. Sub-steps should be sorted by their chronological order, sub-steps which assemble the same step should have the same super index, and an consecutive sub index separated by a period (e.g. 1.1, 1.2 etc).
