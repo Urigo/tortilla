@@ -74,6 +74,7 @@ function renderManual(step) {
 
   // Rewrite manual
   var manualViewPath = getManualViewPath(step);
+  Fs.ensureDir(Paths.manuals.views);
   Fs.writeFileSync(manualViewPath, manualView);
 
   // Amend changes
@@ -83,7 +84,7 @@ function renderManual(step) {
   // If this is the root step, create a symlink to README.md if not yet exists
   if (step == 'root' && !Utils.exists(symlinkPath)) {
     var relativeSymlink = Path.relative(Path.dirname(symlinkPath), manualViewPath);
-    Fs.symlinkSync(manualViewPath, relativeSymlink);
+    Fs.symlinkSync(relativeSymlink, symlinkPath);
     Git(['add', symlinkPath]);
   }
 
