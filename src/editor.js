@@ -92,7 +92,11 @@ function adjustSteps(operations) {
   var offset = 0;
 
   operations.slice().some(function (operation, index) {
-    var currStepSplit = Step.descriptor(operation.message).number;
+    var currStepDescriptor = Step.descriptor(operation.message);
+    // Skip commits which are not step commits
+    if (!currStepDescriptor) return;
+
+    var currStepSplit = currStepDescriptor.number.split('.');
     var currSuperStep = currStepSplit[0];
     var currSubStep = currStepSplit[1];
 
