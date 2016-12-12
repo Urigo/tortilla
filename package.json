@@ -7,7 +7,6 @@
     "type": "git",
     "url": "https://github.com/Urigo/tortilla.git"
   },
-  "main": "essentials",
   "bin": {
     "tortilla": "cli/tortilla"
   },
