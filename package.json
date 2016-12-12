@@ -11,11 +11,9 @@
     "tortilla": "cli/tortilla"
   },
   "scripts": {
-    "prepublish": "tar -czf src/skeleton.tar.gz src/skeleton && rm -rf src/skeleton",
-    "postpublish": "mkdir src/skeleton && tar --strip-components 1 -xf src/skeleton.tar.gz -C src && rm -rf src/skeleton.tar.gz",
-    "postinstall": "npm run postpublish",
-    "localinstall": "npm run prepublish && sudo npm install -g . && npm run postpublish",
-    "test": "TORTILLA_STDIO=ignore TORTILLA_CWD=/tmp/tortilla_test mocha tests/test --timeout=15000"
+    "publish-tortilla": "make publish",
+    "install-tortilla": "make install",
+    "test": "make test"
   },
   "dependencies": {
     "commander": "^2.9.0",
