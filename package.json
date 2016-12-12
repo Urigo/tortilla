@@ -12,6 +12,8 @@
     "tortilla": "cli/tortilla"
   },
   "scripts": {
+    "prepublish": "tar -czf src/skeleton.tar.gz src/skeleton && rm -rf src/skeleton",
+    "postinstall": "mkdir src/skeleton && tar --strip-components 1 -xf src/skeleton.tar.gz -C src && rm -rf src/skeleton.tar.gz",
     "test": "TORTILLA_STDIO=ignore TORTILLA_CWD=/tmp/tortilla_test mocha tests/test --timeout=15000"
   },
   "dependencies": {
