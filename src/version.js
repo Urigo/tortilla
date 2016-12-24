@@ -22,7 +22,7 @@ function bumpVersion(versionType, options) {
   // The formatted version e.g. 'v1.0.0'
   var formattedVersion = formatVersion(currentVersion);
 
-  var superSteps = Git(['tag', '-l', 'step*'])
+  var superTags = Git(['tag', '-l', 'step*'])
     // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
@@ -30,23 +30,17 @@ function bumpVersion(versionType, options) {
     // We want to avoid version tags e.g. 'step1v1.0.0'
     .filter(function (tagName) {
       return tagName.match(/^step\d+$/);
-    })
-    // Pluck all super step numbers
-    .map(function (tagName) {
-      return tagName.match(/^step(\d+)$/)[1];
-    })
-    // Convert all elements from strings to numbers
-    .map(Number);
+    });
 
   // Create root tag along with the provided message, if at all
   if (options.message)
-    Git.print(['tag', 'root' + formattedVersion, '-m', options.message]);
+    Git.print(['tag', 'root' + formattedVersion, 'root', '-m', options.message]);
   // Otherwise, open the editor
   else
     Git.print(['tag', 'root' + formattedVersion, '-a']);
 
-  superSteps.forEach(function (superStep) {
-    Git(['tag', 'step' + superStep + formattedVersion]);
+  superTags.forEach(function (superTag) {
+    Git(['tag', superTag + formattedVersion, superTag]);
   });
 }
 
@@ -102,13 +96,13 @@ function deformatVersion(versionString) {
   // If the version string doesn't have the right format, abort
   if (!versionMatches) return;
 
-  // Ignore the 'whole' match
-  var versionSlices = versionMatches.slice(1);
+  // Ignore the 'whole' match and map version slices into numbers
+  var versionSlices = versionMatches.slice(1).map(Number);
 
   return {
-    major: Number(versionSlices[0]),
-    minor: Number(versionSlices[1]),
-    patch: Number(versionSlices[2])
+    major: versionSlices[0],
+    minor: versionSlices[1],
+    patch: versionSlices[2]
   };
 }
 
