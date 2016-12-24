@@ -23,6 +23,7 @@ var tortilla = {
   paths: resolve(__dirname, 'paths.js'),
   step: resolve(__dirname, 'step.js'),
   utils: resolve(__dirname, 'utils.js'),
+  version: resolve(__dirname, 'version.js'),
   ascii: resolve(__dirname, 'ascii'),
   hooks: resolve(__dirname, 'hooks'),
   mdParser: resolve(__dirname, 'md-parser'),
