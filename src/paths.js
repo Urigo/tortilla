@@ -15,7 +15,7 @@ var tortilla = {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
-  history: resolve(__dirname, 'history.js'),
+  rebase: resolve(__dirname, 'rebase.js'),
   initializer: resolve(__dirname, 'initializer.js'),
   localCache: resolve(__dirname, 'local-cache.js'),
   localStorage: resolve(__dirname, 'local-storage.js'),

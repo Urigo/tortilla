@@ -119,13 +119,13 @@ function adjustSteps(operations) {
     // If this is a super step, replace pick operation with the super pick
     if (!currSubStep) operations.splice(index + offset, 1, {
       method: 'exec',
-      command: 'node ' + Paths.tortilla.history + ' super-pick ' + operation.hash
+      command: 'node ' + Paths.tortilla.rebase + ' super-pick ' + operation.hash
     });
 
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
-      command: 'GIT_EDITOR=true node ' + Paths.tortilla.history + ' reword'
+      command: 'GIT_EDITOR=true node ' + Paths.tortilla.rebase + ' reword'
     });
   });
 
@@ -134,7 +134,7 @@ function adjustSteps(operations) {
 
 // Reword the last step in the rebase file
 function rewordStep(operations, message) {
-  var argv = [Paths.tortilla.history, 'reword'];
+  var argv = [Paths.tortilla.rebase, 'reword'];
   if (message) argv.push('"' + message + '"');
 
   // Replace original message with the provided message
@@ -176,7 +176,7 @@ function renderManuals(operations) {
 function retagSteps(operations) {
   operations.push({
     method: 'exec',
-    command: 'node ' + Paths.tortilla.history + ' retag'
+    command: 'node ' + Paths.tortilla.rebase + ' retag'
   });
 }
 

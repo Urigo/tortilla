@@ -2,8 +2,8 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
 var Ascii = require('./ascii');
+var Rebase = require('./rebase');
 var Git = require('./git');
-var History = require('./history');
 var LocalStorage = require('./local-storage');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
@@ -138,7 +138,7 @@ function ensureTortilla(projectDir) {
   localStorage.setItem('USE_STRICT', true);
 
   // Retag steps
-  Utils.scopeEnv(History.retagSteps.bind(History), {
+  Utils.scopeEnv(Rebase.retagSteps.bind(Rebase), {
     TORTILLA_CWD: projectPaths._
   });
 

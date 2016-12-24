@@ -4,7 +4,7 @@ var LocalStorage = require('./local-storage');
 var Step = require('./step');
 
 /*
-  The history module is responsible for performing tasks done by the editor using an
+  The rebase module is responsible for performing tasks done by the editor using an
   interactive rebase.
  */
 
