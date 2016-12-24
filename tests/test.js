@@ -60,3 +60,4 @@ require('./md-renderer-test');
 require('./md-parser-test');
 require('./template-helpers-test');
 require('./manual-test');
+require('./version-test');
