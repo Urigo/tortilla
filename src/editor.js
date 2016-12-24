@@ -187,8 +187,8 @@ function getStepLimit(oldStep, newStep) {
   newSuperStep = newStep == 'root' ? '0' : newStep;
 
   // Grabbing step splits for easy access
-  var oldStepSplits = oldStep.split('.')[0];
-  var newStepSplits = newStep.split('.')[0];
+  var oldStepSplits = oldStep.split('.');
+  var newStepSplits = newStep.split('.');
   var oldSuperStep = oldStepSplits[0];
   var newSuperStep = newStepSplits[0];
   var oldSubStep = oldStepSplits[1];
