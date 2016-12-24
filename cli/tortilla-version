@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+var Program = require('commander');
+var LocalStorage = require('../src/local-storage');
+
+/*
+  Version CLI.
+ */
+
+Program
+  .command('bump <type>')
+  .description('Bump current version by the provided <type>')
+  .option('-m, --message [message]', 'A [message] describing the new version')
+  .action(function (type, options) {
+    LocalStorage.assertTortilla(true);
+    // TODO: Implement
+  });
+
+Program
+  .command('current')
+  .description('Prints the current version')
+  .action(function () {
+    LocalStorage.assertTortilla(true);
+    // TODO: Implement
+  });
+
+Program.parse(process.argv);
