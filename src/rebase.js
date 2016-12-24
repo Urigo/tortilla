@@ -29,7 +29,11 @@ var Step = require('./step');
 function retagSteps() {
   var stepTags = Git(['tag', '-l', 'step*'])
     .split('\n')
-    .filter(Boolean);
+    .filter(Boolean)
+    // We want to avoid version tags e.g. 'step1v1.0.0'
+    .filter(function (tagName) {
+      return tagName.match(/^step\d+$/);
+    });
 
   // Delete all tags to prevent conflicts
   if (Git.tagExists('root')) Git(['tag', '-d', 'root']);
