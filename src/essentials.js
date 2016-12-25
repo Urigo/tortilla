@@ -62,7 +62,11 @@ function createProject(projectName, options) {
   }
 
   Fs.removeSync(tempPaths._);
-  Fs.copySync(Paths.tortilla.skeleton, tempPaths._);
+  // Clone skeleton
+  Git.print(['clone', Paths.tortilla.skeleton, tempPaths._]);
+  // Remove .git to remove unnecessary meta-data, git essentials should be
+  // initialized later on
+  Fs.removeSync(tempPaths.git._);
 
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);

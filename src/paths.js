@@ -27,8 +27,8 @@ var tortilla = {
   hooks: resolve(__dirname, 'hooks'),
   mdParser: resolve(__dirname, 'md-parser'),
   mdRenderer: resolve(__dirname, 'md-renderer'),
-  skeleton: resolve(__dirname, 'skeleton'),
-  templates: resolve(__dirname, 'templates')
+  templates: resolve(__dirname, 'templates'),
+  skeleton: resolve('https://github.com/Urigo/tortilla-skeleton.git')
 };
 
 
