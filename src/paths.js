@@ -15,20 +15,21 @@ var tortilla = {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
-  history: resolve(__dirname, 'history.js'),
+  rebase: resolve(__dirname, 'rebase.js'),
   initializer: resolve(__dirname, 'initializer.js'),
   localCache: resolve(__dirname, 'local-cache.js'),
   localStorage: resolve(__dirname, 'local-storage.js'),
   manual: resolve(__dirname, 'manual.js'),
   paths: resolve(__dirname, 'paths.js'),
+  release: resolve(__dirname, 'release.js'),
   step: resolve(__dirname, 'step.js'),
   utils: resolve(__dirname, 'utils.js'),
   ascii: resolve(__dirname, 'ascii'),
   hooks: resolve(__dirname, 'hooks'),
   mdParser: resolve(__dirname, 'md-parser'),
   mdRenderer: resolve(__dirname, 'md-renderer'),
-  skeleton: resolve(__dirname, 'skeleton'),
-  templates: resolve(__dirname, 'templates')
+  templates: resolve(__dirname, 'templates'),
+  skeleton: 'git@github.com:Urigo/tortilla-skeleton.git'
 };
 
 

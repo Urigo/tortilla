@@ -2,8 +2,8 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
 var Ascii = require('./ascii');
+var Rebase = require('./rebase');
 var Git = require('./git');
-var History = require('./history');
 var LocalStorage = require('./local-storage');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
@@ -62,7 +62,11 @@ function createProject(projectName, options) {
   }
 
   Fs.removeSync(tempPaths._);
-  Fs.copySync(Paths.tortilla.skeleton, tempPaths._);
+  // Clone skeleton
+  Git.print(['clone', Paths.tortilla.skeleton, tempPaths._]);
+  // Remove .git to remove unnecessary meta-data, git essentials should be
+  // initialized later on
+  Fs.removeSync(tempPaths.git._);
 
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);
@@ -134,7 +138,7 @@ function ensureTortilla(projectDir) {
   localStorage.setItem('USE_STRICT', true);
 
   // Retag steps
-  Utils.scopeEnv(History.retagSteps.bind(History), {
+  Utils.scopeEnv(Rebase.retagSteps.bind(Rebase), {
     TORTILLA_CWD: projectPaths._
   });
 

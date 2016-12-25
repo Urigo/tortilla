@@ -4,7 +4,7 @@ var LocalStorage = require('./local-storage');
 var Step = require('./step');
 
 /*
-  The history module is responsible for performing tasks done by the editor using an
+  The rebase module is responsible for performing tasks done by the editor using an
   interactive rebase.
  */
 
@@ -29,7 +29,11 @@ var Step = require('./step');
 function retagSteps() {
   var stepTags = Git(['tag', '-l', 'step*'])
     .split('\n')
-    .filter(Boolean);
+    .filter(Boolean)
+    // We want to avoid version tags e.g. 'step1@1.0.0'
+    .filter(function (tagName) {
+      return tagName.match(/^step\d+$/);
+    });
 
   // Delete all tags to prevent conflicts
   if (Git.tagExists('root')) Git(['tag', '-d', 'root']);

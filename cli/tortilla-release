@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+var Program = require('commander');
+var LocalStorage = require('../src/local-storage');
+var Release = require('../src/release');
+
+/*
+  Release CLI.
+ */
+
+Program
+  .command('bump <type>')
+  .description('Bump the provided release <type>')
+  .option('-m, --message [message]', 'A [message] describing the new release')
+  .action(function (type, options) {
+    LocalStorage.assertTortilla(true);
+    Release.bump(type, options);
+  });
+
+Program
+  .command('current')
+  .description('Print the current release')
+  .action(function () {
+    LocalStorage.assertTortilla(true);
+    var currentRelease = Release.current();
+    var formattedRelease = Release.format(currentRelease);
+    console.log(formattedRelease);
+  });
+
+Program
+  .command('diff <sourceRelease> <destinationRelease>')
+  .description('Run "git diff" between <sourceRelease> and <destinationRelease>')
+  .allowUnknownOption(true)
+  .action(function (sourceRelease, destinationRelease) {
+    LocalStorage.assertTortilla(true);
+    Release.diff(sourceRelease, destinationRelease, process.argv.slice(5));
+  });
+
+Program.parse(process.argv);

@@ -34,6 +34,7 @@ Program
 Program
   .command('manual <command...>', 'Manage manual files')
   .command('step <command...>', 'Manage step commits history')
-  .command('strict <command...>', 'Manage strict mode');
+  .command('strict <command...>', 'Manage strict mode')
+  .command('release <command...>', 'Manage tutorial releases');
 
 Program.parse(process.argv);
