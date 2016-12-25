@@ -26,4 +26,12 @@ Program
     console.log(formattedRelease);
   });
 
+Program
+  .command('diff <sourceRelease> <destinationRelease>')
+  .description('Run "git diff" between <sourceRelease> and <destinationRelease>')
+  .action(function (sourceRelease, destinationRelease) {
+    LocalStorage.assertTortilla(true);
+    Release.diff(sourceRelease, destinationRelease, process.argv.slice(4));
+  });
+
 Program.parse(process.argv);
