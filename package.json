@@ -11,8 +11,6 @@
     "tortilla": "cli/tortilla"
   },
   "scripts": {
-    "publish-tortilla": "make publish",
-    "install-tortilla": "make install",
     "test": "make test"
   },
   "dependencies": {
