@@ -97,6 +97,16 @@ function getCurrentRelease() {
   };
 }
 
+// Invokes 'git diff' with the given releases. An additional arguments vector which will
+// be invoked as is may be provided
+function diffRelease(sourceRelease, destinationRelease, argv) {
+  argv = argv || [];
+  var srouceTag = getHeadRelease(sourceRelease);
+  var destinationTag = getHeadRelease(destinationRelease);
+
+  Git.print(['diff', srouceTag, destinationTag].concat(argv));
+}
+
 // Takes a release json and puts it into a pretty string
 // e.g. { major: 1, minor: 1, patch: 1 } -> '1.1.1'
 function formatRelease(releaseJson) {
@@ -119,10 +129,36 @@ function deformatRelease(releaseString) {
   };
 }
 
+// Gets the latest step tag for the given release string
+// e.g. given a release string of 1.0.0, and assuming that we have the tags 'root@1.0.0',
+// 'step1@1.0.0' and 'step2@1.0.0' the returned value would be 'step2@1.0.0'
+function getHeadRelease(releaseString) {
+  var stepTags = Git(['tag', '-l', 'step*@' + sourceRelease])
+    // Put tags into an array
+    .split('\n')
+    // If no tags found, filter the empty string
+    .filter(Boolean)
+    // Pluck the number of each step
+    .map(function (stepTag) {
+      return stepTag.match(/^step(\d+)/)[1];
+    })
+    // Map all step numbers to numbers
+    .map(Number)
+    // Put the latest step first
+    .sort(function (a, b) {
+      return b - a;
+    });
+
+  // If there are no step tags, assume 'root' is the head of the release
+  return stepTags[0] || 'root@' + releaseString;
+}
+
 
 module.exports = {
   bump: bumpRelease,
   current: getCurrentRelease,
+  diff: diffRelease,
   format: formatRelease,
-  deformat: deformatRelease
+  deformat: deformatRelease,
+  head: getHeadRelease
 };
