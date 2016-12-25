@@ -1,6 +1,11 @@
 var Git = require('./git');
 var Utils = require('./utils');
 
+/*
+  The 'version' module contains different utilities and methods which are responsible
+  for version management. Before invoking any method, be sure to fetch **all** the step
+  tags from the git-host, since most calculations are based on them.
+ */
 
 // Creates a bumped version tag of the provided type
 // e.g. if the current version is v1.0.0 and we provide this function with a version type
@@ -11,12 +16,20 @@ function bumpVersion(versionType, options) {
 
   // Increase version type
   switch (versionType) {
-    case 'major': currentVersion.major++;
-    case 'minor': currentVersion.minor++;
-    case 'patch': currentVersion.patch++;
-    default: throw Error(
-      'Provided version type must be one of "major", "minor" or "patch"'
-    );
+    case 'major':
+      currentVersion.major++;
+      currentVersion.minor = 0;
+      currentVersion.patch = 0;
+      break;
+    case 'minor':
+      currentVersion.minor++;
+      currentVersion.patch = 0;
+      break;
+    case 'patch':
+      currentVersion.patch++;
+      break;
+    default:
+      throw Error('Provided version type must be one of "major", "minor" or "patch"');
   }
 
   // The formatted version e.g. 'v1.0.0'
@@ -45,18 +58,18 @@ function bumpVersion(versionType, options) {
 }
 
 function getCurrentVersion() {
-  var versions = Git(['log', '-l', 'step*'])
+  var versions = Git(['log', '-l', 'root*'])
     // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
     .filter(Boolean)
-    // Filter all the step tags which are proceeded by their version
+    // Filter all the root tags which are proceeded by their version
     .filter(function (tagName) {
-      return tagName.match(/^step\d+v/);
+      return tagName.match(/^root\d+v/);
     })
     // Map all the version strings
     .map(function (tagName) {
-      return tagName.match(/^step\d+v(.+)$/)[1];
+      return tagName.match(/^root\d+v(.+)$/)[1];
     })
     // Deformat all the versions into a json so it would be more comfortable to work with
     .map(function (versionString) {

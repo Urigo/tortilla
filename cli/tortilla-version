@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 var Program = require('commander');
+var Version = require('version');
 var LocalStorage = require('../src/local-storage');
 
 /*
@@ -12,7 +13,7 @@ Program
   .option('-m, --message [message]', 'A [message] describing the new version')
   .action(function (type, options) {
     LocalStorage.assertTortilla(true);
-    // TODO: Implement
+    Version.bump(type, options);
   });
 
 Program
@@ -20,7 +21,9 @@ Program
   .description('Prints the current version')
   .action(function () {
     LocalStorage.assertTortilla(true);
-    // TODO: Implement
+    var currentVersion = Version.current();
+    var formattedVersion = Version.format(currentVersion);
+    console.log(formatVersion);
   });
 
 Program.parse(process.argv);
