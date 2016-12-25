@@ -108,6 +108,18 @@ Replace the provided step's message with the provided message (Will open an edit
 
 Renders and rebases specified step's manual. If you would like to render the root manual you can provide a `--root`. If you would like to render all manuals since the beginning of history you can provide a `--all` option. If no step is specified, the last manual will be rendered by default.
 
+#### Bump Release
+
+    $ tortilla release bump "release type" --message="release message"
+
+Whenever making changes in the tutorial using Tortilla, the commits are being overridden, a behavior we're not always interested in, since sometimes we would like to reference or view previous releases of the tutorial. The `release` command solves this problem by creating tags which are used as snap shot for the current tutorial state. The new tags will be consisted of a `root` and `steps`, each one is proceeded by `@` and its release signature, e.g. `root@1.0.0` or `step@0.2.1`. The first argument of this command is the release type and must be one of `major`, `minor` or `patch`. The `message` argument is optional, and should provide a short description message for the release. If no message is provided, a text editor will be opened, where you can type the change-log of the release. The change-log will be attached to the `root` tag. Before using this command, make sure to pull **all** tags, otherwise you might encounter some unexpected behaviors.
+
+#### Get Release
+
+    $ tortilla release current
+
+Gets the current tutorial release based on the stashed `root` tags; e.g. if we have the tags `root@0.2.1`, `root@1.0.1` and `root@1.0.0`, the printed result would be `1.0.1`.
+
 #### Get Strict Mode
 
     $ tortilla strict get
