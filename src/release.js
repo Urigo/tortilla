@@ -53,8 +53,10 @@ function bumpRelease(releaseType, options) {
     Git.print(['tag', 'root@' + formattedRelease, '-a']);
 
   superTags.forEach(function (superTag) {
-    Git(['tag', superTag + '@' + formattedRelease, superTag]);
+    Git.print(['tag', superTag + '@' + formattedRelease, superTag]);
   });
+
+  console.log(formattedRelease);
 }
 
 // Gets the current release based on the latest root tag
