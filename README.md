@@ -120,6 +120,12 @@ Whenever making changes in the tutorial using Tortilla, the commits are being ov
 
 Gets the current tutorial release based on the stashed `root` tags; e.g. if we have the tags `root@0.2.1`, `root@1.0.1` and `root@1.0.0`, the printed result would be `1.0.1`.
 
+#### Diff Release
+
+    $ tortilla release diff "source release" "destination release"
+
+Runs `git diff` between `source release` and `destination release`. An additional arguments vector might be appended which will be invoked as is when running `git diff`.
+
 #### Get Strict Mode
 
     $ tortilla strict get
