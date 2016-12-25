@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+var Program = require('commander');
+var LocalStorage = require('../src/local-storage');
+var Release = require('../src/release');
+
+/*
+  Release CLI.
+ */
+
+Program
+  .command('bump <type>')
+  .description('Bump the provided release <type>')
+  .option('-m, --message [message]', 'A [message] describing the new release')
+  .action(function (type, options) {
+    LocalStorage.assertTortilla(true);
+    Release.bump(type, options);
+  });
+
+Program
+  .command('current')
+  .description('Print the current release')
+  .action(function () {
+    LocalStorage.assertTortilla(true);
+    var currentRelease = Release.current();
+    var formattedRelease = Release.format(currentRelease);
+    console.log(formattedRelease);
+  });
+
+Program.parse(process.argv);

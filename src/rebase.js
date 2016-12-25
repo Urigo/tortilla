@@ -30,7 +30,7 @@ function retagSteps() {
   var stepTags = Git(['tag', '-l', 'step*'])
     .split('\n')
     .filter(Boolean)
-    // We want to avoid version tags e.g. 'step1v1.0.0'
+    // We want to avoid version tags e.g. 'step1@1.0.0'
     .filter(function (tagName) {
       return tagName.match(/^step\d+$/);
     });
