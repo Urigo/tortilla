@@ -29,6 +29,7 @@ Program
 Program
   .command('diff <sourceRelease> <destinationRelease>')
   .description('Run "git diff" between <sourceRelease> and <destinationRelease>')
+  .allowUnknownOption(true)
   .action(function (sourceRelease, destinationRelease) {
     LocalStorage.assertTortilla(true);
     Release.diff(sourceRelease, destinationRelease, process.argv.slice(5));
