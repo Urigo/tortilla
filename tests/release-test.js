@@ -10,19 +10,37 @@ describe('Release', function () {
 
     it('Should bump a major version', function () {
       this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
-      const tagExists = this.git.bind(this, ['rev-parse', 'root@1.0.0']);
+
+      let tagExists;
+
+      tagExists = this.git.bind(this, ['rev-parse', 'root@1.0.0']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@1.0.0']);
       expect(tagExists).to.not.throw(Error);
     });
 
     it('Should bump a minor version', function () {
       this.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
-      const tagExists = this.git.bind(this, ['rev-parse', 'root@0.1.0']);
+
+      let tagExists;
+
+      tagExists = this.git.bind(this, ['rev-parse', 'root@0.1.0']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@0.1.0']);
       expect(tagExists).to.not.throw(Error);
     });
 
     it('Should bump a patch version', function () {
       this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
-      const tagExists = this.git.bind(this, ['rev-parse', 'root@0.0.1']);
+
+      let tagExists;
+
+      tagExists = this.git.bind(this, ['rev-parse', 'root@0.0.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@0.0.1']);
       expect(tagExists).to.not.throw(Error);
     });
 
@@ -36,10 +54,19 @@ describe('Release', function () {
       tagExists = this.git.bind(this, ['rev-parse', 'root@1.0.0']);
       expect(tagExists).to.not.throw(Error);
 
+      tagExists = this.git.bind(this, ['rev-parse', 'release@1.0.0']);
+      expect(tagExists).to.not.throw(Error);
+
       tagExists = this.git.bind(this, ['rev-parse', 'root@1.1.0']);
       expect(tagExists).to.not.throw(Error);
 
+      tagExists = this.git.bind(this, ['rev-parse', 'release@1.1.0']);
+      expect(tagExists).to.not.throw(Error);
+
       tagExists = this.git.bind(this, ['rev-parse', 'root@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@1.1.1']);
       expect(tagExists).to.not.throw(Error);
     });
 
@@ -67,6 +94,9 @@ describe('Release', function () {
 
       tagExists = this.git.bind(this, ['rev-parse', 'step3@1.1.1']);
       expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
     });
 
     it('Should be able to handle multiple bumps for the same version type', function () {
@@ -81,16 +111,31 @@ describe('Release', function () {
       tagExists = this.git.bind(this, ['rev-parse', 'root@0.0.1']);
       expect(tagExists).to.not.throw(Error);
 
+      tagExists = this.git.bind(this, ['rev-parse', 'release@0.0.1']);
+      expect(tagExists).to.not.throw(Error);
+
       tagExists = this.git.bind(this, ['rev-parse', 'root@0.1.0']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@0.1.0']);
       expect(tagExists).to.not.throw(Error);
 
       tagExists = this.git.bind(this, ['rev-parse', 'root@1.0.0']);
       expect(tagExists).to.not.throw(Error);
 
+      tagExists = this.git.bind(this, ['rev-parse', 'release@1.0.0']);
+      expect(tagExists).to.not.throw(Error);
+
       tagExists = this.git.bind(this, ['rev-parse', 'root@2.0.0']);
       expect(tagExists).to.not.throw(Error);
 
+      tagExists = this.git.bind(this, ['rev-parse', 'release@2.0.0']);
+      expect(tagExists).to.not.throw(Error);
+
       tagExists = this.git.bind(this, ['rev-parse', 'root@2.0.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'release@2.0.1']);
       expect(tagExists).to.not.throw(Error);
     });
   });

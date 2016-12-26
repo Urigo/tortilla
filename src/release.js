@@ -48,36 +48,39 @@ function bumpRelease(releaseType, options) {
       return tagName.match(/^step\d+$/);
     });
 
-  // Create root tag along with the provided message, if at all
-  if (options.message)
-    Git.print(['tag', 'root@' + formattedRelease, 'root', '-m', options.message]);
-  // Otherwise, open the editor
-  else
-    Git.print(['tag', 'root@' + formattedRelease, '-a']);
+  Git(['tag', 'root@' + formattedRelease, 'root']);
 
   superTags.forEach(function (superTag) {
-    Git.print(['tag', superTag + '@' + formattedRelease, superTag]);
+    Git(['tag', superTag + '@' + formattedRelease, superTag]);
   });
+
+  // Create a tag with the provided message which will reference to HEAD
+  // e.g. 'release@1.0.0'
+  if (options.message)
+    Git.print(['tag', 'release@' + formattedRelease, 'HEAD', '-m', options.message]);
+  // If no message provided, open the editor
+  else
+    Git.print(['tag', 'release@' + formattedRelease, 'HEAD', '-a']);
 
   console.log(formattedRelease);
 }
 
-// Gets the current release based on the latest root tag
-// e.g. if we have the tags 'root@0.0.1', 'root@0.0.2' and 'root@0.1.0' this method
+// Gets the current release based on the latest release tag
+// e.g. if we have the tags 'release@0.0.1', 'release@0.0.2' and 'release@0.1.0' this method
 // will return { major: 0, minor: 1, patch: 0 }
 function getCurrentRelease() {
-  var releases = Git(['tag', '-l', 'root*'])
+  var releases = Git(['tag', '-l', 'release*'])
     // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
     .filter(Boolean)
-    // Filter all the root tags which are proceeded by their release
+    // Filter all the release tags which are proceeded by their release
     .filter(function (tagName) {
-      return tagName.match(/^root@/);
+      return tagName.match(/^release@/);
     })
     // Map all the release strings
     .map(function (tagName) {
-      return tagName.match(/^root@(.+)$/)[1];
+      return tagName.match(/^release@(.+)$/)[1];
     })
     // Deformat all the releases into a json so it would be more comfortable to work with
     .map(function (releaseString) {
@@ -105,8 +108,8 @@ function getCurrentRelease() {
 function diffRelease(sourceRelease, destinationRelease, argv) {
   argv = argv || [];
 
-  var sourceTag = getHeadRelease(sourceRelease);
-  var destinationTag = getHeadRelease(destinationRelease);
+  var sourceTag = 'release@' + sourceRelease;
+  var destinationTag = 'release@' + destinationRelease;
 
   // Get the root commit hash for each release tag
   var sourceRootHash = Git(['rev-list', '--max-parents=0', sourceTag]);
@@ -203,37 +206,11 @@ function deformatRelease(releaseString) {
   };
 }
 
-// Gets the latest step tag for the given release string
-// e.g. given a release string of 1.0.0, and assuming that we have the tags 'root@1.0.0',
-// 'step1@1.0.0' and 'step2@1.0.0' the returned value would be 'step2@1.0.0'
-function getHeadRelease(releaseString) {
-  var stepTags = Git(['tag', '-l', 'step*@' + releaseString])
-    // Put tags into an array
-    .split('\n')
-    // If no tags found, filter the empty string
-    .filter(Boolean)
-    // Pluck the number of each step
-    .map(function (stepTag) {
-      return stepTag.match(/^step(\d+)/)[1];
-    })
-    // Map all step numbers to numbers
-    .map(Number)
-    // Put the latest step first
-    .sort(function (a, b) {
-      return b - a;
-    });
-
-  // If there are no step tags, assume 'root' is the head of the release
-  var releaseTagBase = stepTags[0] ? 'step' + stepTags[0] : 'root';
-  return releaseTagBase + '@' + releaseString;
-}
-
 
 module.exports = {
   bump: bumpRelease,
   current: getCurrentRelease,
   diff: diffRelease,
   format: formatRelease,
-  deformat: deformatRelease,
-  head: getHeadRelease
+  deformat: deformatRelease
 };
