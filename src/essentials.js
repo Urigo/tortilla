@@ -85,6 +85,11 @@ function createProject(projectName, options) {
   Git(['add', '.'], { cwd: tempPaths._ });
   Git(['commit', '-m', title], { cwd: tempPaths._ });
 
+  if (options.message)
+    Git.print(['commit', '--amend', '-m', options.message], { cwd: tempPaths._ });
+  else
+    Git.print(['commit', '--amend'], { cwd: tempPaths._ });
+
   // Initializing
   ensureTortilla(tempPaths);
 
