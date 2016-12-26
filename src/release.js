@@ -1,4 +1,7 @@
+var Fs = require('fs-extra');
+var Path = require('path');
 var Git = require('./git');
+var Paths = require('./paths');
 var Utils = require('./utils');
 
 /*
@@ -101,10 +104,63 @@ function getCurrentRelease() {
 // be invoked as is may be provided
 function diffRelease(sourceRelease, destinationRelease, argv) {
   argv = argv || [];
+
   var srouceTag = getHeadRelease(sourceRelease);
   var destinationTag = getHeadRelease(destinationRelease);
 
-  Git.print(['diff', srouceTag, destinationTag].concat(argv));
+  argv = ['diff', srouceTag, destinationTag].concat(argv);
+
+  // Get the root commit hash for each release tag
+  var sourceRootHash = Git(['rev-list', '--max-parents=0', sourceTag]);
+  var destinationRootHash = Git(['rev-list', '--max-parents=0', destinationTag]);
+
+  // If they have the same root, there shouldn't be any problems with 'diff'
+  if (sourceRootHash == destinationRootHash) {
+    return Git.print(argv);
+  }
+
+  // The 'registers' are directories which will be used for temporary FS calculations
+  var tempRegister = Path.resolve(Paths.storage, 'temp_register');
+  var diffRegister = Path.resolve(Paths.storage, 'diff_register');
+  var tempPaths = Paths.resolve(tempRegister);
+  var diffPaths = Paths.resolve(diffRegister);
+
+  // Make sure they are not exist before proceeding
+  Fs.removeSync(tempRegister);
+  Fs.removeSync(diffRegister);
+
+  // Initialize an empty git repo in the 'diff' register
+  Git(['init'], { cwd: diffRegister });
+
+  // Put all source release files in the 'temp' register
+  Fs.copy(Paths.git._, tempPaths.git._);
+  Git(['checkout', sourceTag], { cwd: tempRegister });
+  Fs.remove(tempPaths.git._);
+
+  // Copy all files from 'temp' to 'diff' and create a new commit
+  Fs.copy(tempRegister, diffRegister);
+  Git(['add', '.'], { cwd: diffRegister });
+  Git(['add', '-u'], { cwd: diffRegister });
+  Git(['commit', '-m', 'Release' + sourceRelease], { cwd: diffRegister });
+
+  // Repeat the same process but for destination release
+  Fs.removeSync(tempRegister);
+
+  Fs.copy(Paths.git._, tempPaths.git._);
+  Git(['checkout', destinationTag], { cwd: tempRegister });
+  Fs.remove(tempPaths.git._);
+
+  Fs.copy(tempRegister, diffRegister);
+  Git(['add', '.'], { cwd: diffRegister });
+  Git(['add', '-u'], { cwd: diffRegister });
+  Git(['commit', '-m', 'Release' + destinationTag], { cwd: diffRegister });
+
+  // Run 'diff' between the newly created commits
+  Git.print(argv, { cwd: diffRegister });
+
+  // Clean registers to optimize memory usage
+  Fs.removeSync(tempRegister);
+  Fs.removeSync(diffRegister);
 }
 
 // Takes a release json and puts it into a pretty string
