@@ -174,5 +174,38 @@ describe('Release', function () {
 
       expect(releaseDiff).to.be.a.diff('release-update-names');
     });
+
+    it('Should be able to run "git diff" for two releases with different roots', function () {
+      this.tortilla(['step', 'edit', '--root']);
+      this.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
+      this.git(['add', 'VERSION']);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+      this.tortilla(['step', 'tag', '-m', 'First step']);
+      this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+
+      this.tortilla(['step', 'edit', '--root']);
+      this.exec('sh', ['-c', 'echo 1.1.0 > VERSION']);
+      this.git(['add', 'VERSION']);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+      this.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
+
+      this.tortilla(['step', 'edit', '--root']);
+      this.exec('sh', ['-c', 'echo 1.1.1 > VERSION']);
+      this.git(['add', 'VERSION']);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+      this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
+
+      const releaseDiff = this.tortilla(['release', 'diff', '1.1.1', '1.0.0'], {
+        env: {
+          TORTILLA_STDIO: 'inherit',
+          GIT_PAGER: 'cat'
+        }
+      });
+
+      expect(releaseDiff).to.be.a.diff('release-update');
+    });
   });
 });

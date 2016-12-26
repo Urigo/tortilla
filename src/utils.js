@@ -137,6 +137,7 @@ function exists(path, type) {
     switch (type) {
       case 'dir': return stats.isDirectory();
       case 'file': return stats.isFile();
+      case 'symlink': return stats.isSymbolicLink();
       default: return true;
     }
   }

@@ -14,7 +14,8 @@ var Utils = require('./utils');
   initialize a project.
  */
 
-var tempPaths = Paths.resolve('/tmp/tortilla');
+var registerDir = '/tmp/tortilla_register1';
+var registerPaths = Paths.resolve(registerDir);
 var exec = Utils.exec;
 
 
@@ -61,42 +62,42 @@ function createProject(projectName, options) {
     if (!options.override) return;
   }
 
-  Fs.removeSync(tempPaths._);
+  Fs.removeSync(registerDir);
   // Clone skeleton
-  Git.print(['clone', Paths.tortilla.skeleton, tempPaths._]);
+  Git.print(['clone', Paths.tortilla.skeleton, registerDir]);
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
-  Fs.removeSync(tempPaths.git._);
+  Fs.removeSync(registerPaths.git._);
 
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);
 
   // Fill in template files
-  MDRenderer.overwriteTemplateFile(tempPaths.npm.package, {
+  MDRenderer.overwriteTemplateFile(registerPaths.npm.package, {
     name: packageName
   });
 
-  MDRenderer.overwriteTemplateFile(tempPaths.readme, {
+  MDRenderer.overwriteTemplateFile(registerPaths.readme, {
     title: title
   });
 
   // Git chores
-  Git(['init'], { cwd: tempPaths._ });
-  Git(['add', '.'], { cwd: tempPaths._ });
-  Git(['commit', '-m', title], { cwd: tempPaths._ });
+  Git(['init'], { cwd: registerDir });
+  Git(['add', '.'], { cwd: registerDir });
+  Git(['commit', '-m', title], { cwd: registerDir });
 
   if (options.message)
-    Git.print(['commit', '--amend', '-m', options.message], { cwd: tempPaths._ });
+    Git.print(['commit', '--amend', '-m', options.message], { cwd: registerDir });
   else
-    Git.print(['commit', '--amend'], { cwd: tempPaths._ });
+    Git.print(['commit', '--amend'], { cwd: registerDir });
 
   // Initializing
-  ensureTortilla(tempPaths);
+  ensureTortilla(registerPaths);
 
   // Copy from temp to output
   Fs.removeSync(options.output);
-  Fs.copySync(tempPaths._, options.output);
-  Fs.removeSync(tempPaths._);
+  Fs.copySync(registerDir, options.output);
+  Fs.removeSync(registerDir);
 }
 
 // Make sure that tortilla essentials are initialized on an existing project.
