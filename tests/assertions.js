@@ -23,6 +23,10 @@ Assertion.addMethod('file', function (expectedFileName, extension) {
   );
 });
 
+Assertion.addMethod('diff', function (expectedMDName) {
+  new Assertion(this._obj).to.be.a.file(expectedMDName, 'diff');
+});
+
 Assertion.addMethod('markdown', function (expectedMDName) {
   new Assertion(this._obj).to.be.a.file(expectedMDName, 'md');
 });

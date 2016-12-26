@@ -31,7 +31,7 @@ Program
   .description('Run "git diff" between <sourceRelease> and <destinationRelease>')
   .action(function (sourceRelease, destinationRelease) {
     LocalStorage.assertTortilla(true);
-    Release.diff(sourceRelease, destinationRelease, process.argv.slice(4));
+    Release.diff(sourceRelease, destinationRelease, process.argv.slice(5));
   });
 
 Program.parse(process.argv);

@@ -1,0 +1,7 @@
+diff --git a/VERSION b/VERSION
+index 524cb55..3eefcb9 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-1.1.1
++1.0.0

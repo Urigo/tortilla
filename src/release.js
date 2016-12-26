@@ -133,7 +133,7 @@ function deformatRelease(releaseString) {
 // e.g. given a release string of 1.0.0, and assuming that we have the tags 'root@1.0.0',
 // 'step1@1.0.0' and 'step2@1.0.0' the returned value would be 'step2@1.0.0'
 function getHeadRelease(releaseString) {
-  var stepTags = Git(['tag', '-l', 'step*@' + sourceRelease])
+  var stepTags = Git(['tag', '-l', 'step*@' + releaseString])
     // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
@@ -150,7 +150,8 @@ function getHeadRelease(releaseString) {
     });
 
   // If there are no step tags, assume 'root' is the head of the release
-  return stepTags[0] || 'root@' + releaseString;
+  var releaseTagBase = stepTags[0] ? 'step' + stepTags[0] : 'root';
+  return releaseTagBase + '@' + releaseString;
 }
 
 
