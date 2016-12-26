@@ -7,8 +7,14 @@ const Utils = require('../src/utils');
 before(function () {
   // Consts
   // TODO: Add a random post-fix
+  this.plainDir = '/tmp/tortilla_plain';
   this.testDir = '/tmp/tortilla_test';
   this.repoDir = '/tmp/tortilla.git';
+
+  // Initializing test tortilla project
+  ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [
+    'create', '-m', 'Test tortilla project', '-o', this.plainDir, '--override'
+  ]);
 
   // Utils
   Object.assign(this, Utils);
@@ -33,10 +39,10 @@ before(function () {
 });
 
 beforeEach(function () {
-  // Initializing test tortilla project
-  ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [
-    'create', '-m', 'Test tortilla project', '-o', this.testDir, '--override'
-  ]);
+  // Copy the plain project into the test dir, rather than recreating it over
+  // and over again
+  Fs.removeSync(this.testDir);
+  Fs.copySync(this.plainDir, this.testDir);
 
   // Initializing repo
   Fs.removeSync(this.repoDir);
