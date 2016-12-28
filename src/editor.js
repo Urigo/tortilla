@@ -195,17 +195,23 @@ function getStepLimit(oldStep, newStep) {
   var newSubStep = newStepSplits[1];
 
   if (oldSuperStep == newSuperStep) {
-    // 1.1, 1.2 or 1.2, 1.1
+    // 1.1, 1.2 or 1.2, 1.1 or 1.1 or 1.1, 1
     if (oldSubStep) return oldSuperStep;
     // 1, 1.1
     return Infinity;
   }
 
-  // 1.1, 2.1 or 1.1, 2
-  if (oldSubStep) return Infinity;
   // 1, 2.1
-  if (newSubStep && newSuperStep == oldSuperStep + 1) return newSuperStep;
-  // 1, 2 or 1, 3.1
+  if (!oldSubStep && newSubStep && newSuperStep == Number(oldSuperStep) + 1) {
+    return newSuperStep;
+  }
+
+  // 2.1, 1
+  if (!newSubStep && oldSubStep && oldSuperStep == Number(newSuperStep) + 1) {
+    return oldSuperStep;
+  }
+
+  // 1, 2 or 1, 3.1 or 1.1, 2.1 or 1.1, 2
   return Infinity;
 }
 
