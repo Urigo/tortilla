@@ -96,6 +96,12 @@ Add a new super-step and finish the current step with the provided message (Will
 
 Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the upcoming commits, this helper is smart enough to adjust their content and messages based on your actions. An optional `--root` option can be provided if you would like to edit the root. If no step is specified, the last step will be edited by default.
 
+#### Sort Step
+
+    $ tortilla step sort "step index"
+
+Sort all the step indexes in the given super step, e.g. assuming we have step `2.1`, `2.4` and `2.3` and we would like to sort them, we will simply run this command with a step index of `2`. This is useful when cherry-picking from other repositories or branches and the steps are not in the right order. If provided with `--root`, all steps in the commits list will be sorted. If no step was provided, it will sort the last super step by default.
+
 #### Reword Step
 
     $ tortilla step reword "step index" --message="step message"

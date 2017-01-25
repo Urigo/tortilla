@@ -355,4 +355,85 @@ describe('Step', function () {
       expect(message).to.equal('Step 1.2: target');
     });
   });
+
+  describe('sort()', function () {
+    this.slow(7000);
+
+    it('should sort all step indexes from the given step', function () {
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+
+      this.git([
+        'commit', '-m', 'Step 2.3: target commit', '--allow-empty', '--no-verify'
+      ], {
+        env: {
+          TORTILLA_CHILD_PROCESS: ''
+        }
+      });
+
+      this.tortilla(['step', 'push', '-m', 'target step', '--allow-empty']);
+      this.tortilla(['step', 'sort', '2']);
+
+      let stepCommitMessage = Step.recentCommit('%s');
+      expect(stepCommitMessage).to.equal('Step 2.3: target step');
+
+      stepCommitMessage = Step.recentCommit(1, '%s');
+      expect(stepCommitMessage).to.equal('Step 2.2: target commit');
+    });
+
+    it('should sort all step indexes from root', function () {
+      // Root re-basing can't be applied with `keep-empty`
+      this.exec('touch', ['1.1']);
+      this.exec('touch', ['1.3']);
+      this.exec('touch', ['1.4']);
+      this.exec('touch', ['2.1']);
+
+      this.git(['add', '1.1']);
+      this.tortilla(['step', 'push', '-m', 'dummy']);
+
+      this.git(['add', '1.3']);
+      this.git([
+        'commit', '-m', 'Step 1.3: target commit', '--no-verify'
+      ], {
+        env: {
+          TORTILLA_CHILD_PROCESS: ''
+        }
+      });
+
+      this.git(['add', '1.4']);
+      this.tortilla(['step', 'push', '-m', 'target step', '--allow-empty']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.git(['add', '2.1']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'sort', '--root']);
+
+      let stepCommitMessage = Step.recentCommit(2, '%s');
+      expect(stepCommitMessage).to.equal('Step 1.3: target step');
+
+      stepCommitMessage = Step.recentCommit(3, '%s');
+      expect(stepCommitMessage).to.equal('Step 1.2: target commit');
+    });
+
+    it('should sort recent super step by default', function () {
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+
+      this.git([
+        'commit', '-m', 'Step 2.3: target commit', '--allow-empty', '--no-verify'
+      ], {
+        env: {
+          TORTILLA_CHILD_PROCESS: ''
+        }
+      });
+
+      this.tortilla(['step', 'push', '-m', 'target step', '--allow-empty']);
+      this.tortilla(['step', 'sort']);
+
+      let stepCommitMessage = Step.recentCommit('%s');
+      expect(stepCommitMessage).to.equal('Step 2.3: target step');
+
+      stepCommitMessage = Step.recentCommit(1, '%s');
+      expect(stepCommitMessage).to.equal('Step 2.2: target commit');
+    });
+  });
 });

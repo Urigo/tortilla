@@ -66,7 +66,7 @@ function retagSteps() {
   });
 }
 
-// Responsible for editing the recent commit's message. It will also adjust the step's
+// Responsible for editing the recent commit's message. It will also sort the step's
 // number if needed
 function rewordRecentStep(message) {
   // Calculate next step based on the current commit's message

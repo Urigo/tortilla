@@ -35,6 +35,7 @@ var Utils = require('./utils');
     case 'pop': return popStep();
     case 'tag': return tagStep(message);
     case 'edit': return editStep(step);
+    case 'sort': return sortStep(step);
     case 'reword': return rewordStep(step, message);
   }
 })();
@@ -111,6 +112,40 @@ function editStep(step) {
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
       GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' edit'
+    }
+  });
+}
+
+// Adjust all the step indexes from the provided step
+function sortStep(step) {
+  // If no step was provided, take the most recent one
+  if (!step) {
+    step = getRecentStepCommit('%s')
+    step = getStepDescriptor(step);
+    step = step ? step.number : 'root';
+  }
+
+  // If root, make sure to sort all step indexes since the beginning of history
+  if (step == 'root') {
+    var newStep = '1';
+    var oldStep = 'root';
+    var base = '--root';
+  }
+  // Else, adjust only the steps in the given super step
+  else {
+    var newStep = step.split('.').map(Number)[0];
+    var oldStep = newStep - 1 || 'root';
+    newStep = newStep + '.' + 1;
+    var base = getStepBase(newStep);
+  }
+
+  // Setting local storage variables so re-sortment could be done properly
+  LocalStorage.setItem('REBASE_NEW_STEP', newStep);
+  LocalStorage.setItem('REBASE_OLD_STEP', oldStep);
+
+  Git.print(['rebase', '-i', base, '--keep-empty'], {
+    env: {
+      GIT_SEQUENCE_EDITOR: 'node ' + Paths.tortilla.editor + ' sort'
     }
   });
 }
@@ -323,6 +358,7 @@ module.exports = {
   pop: popStep,
   tag: tagStep,
   edit: editStep,
+  sort: sortStep,
   reword: rewordStep,
   commit: commitStep,
   current: getCurrentStep,

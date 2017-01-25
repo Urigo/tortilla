@@ -36,12 +36,22 @@ Program
 
 Program
   .command('edit [step]')
-  .description('Edit [step] and adjust upcoming steps\' indices')
+  .description('Edit [step] and sort upcoming steps\' indexes')
   .option('--root [root]', 'Edit the root commit')
   .action(function (step, options) {
     LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
     Step.edit(step);
+  });
+
+Program
+  .command('sort [step]')
+  .description('Adjust all step indexes from given [step]')
+  .option('--root [root]', 'Adjust from root commit')
+  .action(function (step, options) {
+    LocalStorage.assertTortilla(true);
+    step = step || (options.root && 'root');
+    Step.sort(step);
   });
 
 Program

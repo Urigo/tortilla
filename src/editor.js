@@ -36,7 +36,7 @@ var Step = require('./step');
   // The methods will manipulate the operations array.
   switch (method) {
     case 'edit': editStep(operations); break;
-    case 'adjust': adjustSteps(operations); break;
+    case 'sort': sortSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
   }
@@ -50,10 +50,10 @@ var Step = require('./step');
 function editStep(operations) {
   operations[0].method = 'edit';
 
-  // Probably editing the recent step in which case no adjustments are needed
+  // Probably editing the recent step in which case no sortments are needed
   if (operations.length <= 1) return;
 
-  // Prepare meta-data for upcoming adjustments
+  // Prepare meta-data for upcoming sortments
   var descriptor = Step.descriptor(operations[0].message);
 
   // Step exists
@@ -67,9 +67,9 @@ function editStep(operations) {
     LocalStorage.setItem('REBASE_NEW_STEP', 'root');
   }
 
-  var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' adjust"'
+  var editor = 'GIT_SEQUENCE_EDITOR="node ' + Paths.tortilla.editor + ' sort"'
 
-  // Once we finish editing our step, adjust the rest of the steps accordingly
+  // Once we finish editing our step, sort the rest of the steps accordingly
   operations.splice(1, 0, {
     method: 'exec',
     command: editor + ' git rebase --edit-todo'
@@ -77,12 +77,12 @@ function editStep(operations) {
 }
 
 // Adjusts upcoming step numbers in rebase
-function adjustSteps(operations) {
+function sortSteps(operations) {
   // Grab meta-data
   var oldStep = LocalStorage.getItem('REBASE_OLD_STEP');
   var newStep = LocalStorage.getItem('REBASE_NEW_STEP');
 
-  // If delta is 0 no adjustments are needed
+  // If delta is 0 no sortments are needed
   if (oldStep == newStep) {
     LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
     return retagSteps(operations);
@@ -180,7 +180,7 @@ function retagSteps(operations) {
   });
 }
 
-// The step limit of which adjustments are needed would be determined by the step
+// The step limit of which sortments are needed would be determined by the step
 // which is greater
 function getStepLimit(oldStep, newStep) {
   oldStep = oldStep == 'root' ? '0' : oldStep;

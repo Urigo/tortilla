@@ -64,7 +64,7 @@ function createProject(projectName, options) {
 
   Fs.removeSync(registerDir);
   // Clone skeleton
-  Git.print(['clone', Paths.tortilla.skeleton, registerDir]);
+  Git.print(['clone', Paths.tortilla.skeleton, registerDir], { cwd: '/tmp' });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
   Fs.removeSync(registerPaths.git._);
