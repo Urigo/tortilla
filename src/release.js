@@ -65,11 +65,91 @@ function bumpRelease(releaseType, options) {
   console.log(formattedRelease);
 }
 
+// Creates a branch that represents a list of our releases, this way we can view any
+// diff combination in the git-host
+function createDiffReleaseBranch() {
+  // Fetch all releases
+  var releases = getAllReleases();
+  // Compose release tags
+  var releaseTags = releases
+    .map(formatRelease)
+    .map(function (releaseString) { return 'release@' + releaseString });
+
+  // The 'registers' are directories which will be used for temporary FS calculations
+  var register1Dir = '/tmp/tortilla_register1';
+  var register2Dir = '/tmp/tortilla_register2';
+  var register1Paths = Paths.resolve(register1Dir);
+  var register2Paths = Paths.resolve(register2Dir);
+
+  // Make sure register2 is empty
+  Fs.removeSync(register2Dir);
+  Fs.mkdirSync(register2Dir);
+
+  // Initialize an empty git repo in register2
+  Git(['init'], { cwd: register2Dir });
+
+  // Start building the diff-branch by stacking releases on top of each-other
+  releaseTags.forEach(function (releaseTag) {
+    // Make sure register1 is empty
+    Fs.removeSync(register1Dir);
+    Fs.mkdirSync(register1Dir);
+
+    // Copy current git dir to register1
+    Fs.copySync(Paths.git._, register1Paths.git._, {
+      filter: function (filePath) {
+        return filePath.split('/').indexOf('.tortilla') == -1;
+      }
+    });
+
+    // Checkout release
+    Git(['checkout', releaseTag], { cwd: register1Dir });
+    Git(['checkout', '.'], { cwd: register1Dir });
+
+    // Copy register1 to register2, but without the git dir so there won't be any
+    // conflicts with the commits
+    Fs.removeSync(register1Paths.git._);
+    Fs.copySync(register1Dir, register2Dir);
+
+    // Add commit for release
+    Git(['add', '.'], { cwd: register1Dir });
+    Git(['add', '-u'], { cwd: register1Dir });
+    Git(['commit', '-m', 'Release ' + register1Release], { cwd: register1Dir });
+  });
+
+  var branchName = 'diff/releases';
+
+  // Make sure register1 is empty
+  Fs.removeSync(register1Dir);
+  Fs.mkdirSync(register1Dir);
+
+  // Pull the newly created project to the branch name above
+  Git(['init', register1Dir, '--bare']);
+  Git(['checkout', '-b', branchName], { cwd: register2Dir });
+  Git(['push', register1Dir, branchName], { cwd: register2Dir });
+  Git(['branch', '-D', branchName]);
+  Git(['pull', register1Dir, branchName]);
+
+  // Clear registers
+  Fs.removeSync(register1Dir);
+  Fs.removeSync(register2Dir);
+}
+
 // Gets the current release based on the latest release tag
 // e.g. if we have the tags 'release@0.0.1', 'release@0.0.2' and 'release@0.1.0' this method
 // will return { major: 0, minor: 1, patch: 0 }
 function getCurrentRelease() {
-  var releases = Git(['tag', '-l', 'release*'])
+  // If release was yet to be released, assume this is a null release
+  return getAllReleases()[0] || {
+    major: 0,
+    minor: 0,
+    patch: 0
+  };
+}
+
+// Gets a list of all the releases represented as JSONs e.g.
+// [{ major: 0, minor: 1, patch: 0 }]
+function getAllReleases() {
+  return Git(['tag', '-l', 'release*'])
     // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
@@ -94,13 +174,6 @@ function getCurrentRelease() {
         (b.patch - a.patch)
       );
     });
-
-  // If release was yet to be released, assume this is a null release
-  return releases[0] || {
-    major: 0,
-    minor: 0,
-    patch: 0
-  };
 }
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
@@ -209,7 +282,9 @@ function deformatRelease(releaseString) {
 
 module.exports = {
   bump: bumpRelease,
+  createDiffBranch: createDiffReleaseBranch,
   current: getCurrentRelease,
+  all: getAllReleases,
   diff: diffRelease,
   format: formatRelease,
   deformat: deformatRelease
