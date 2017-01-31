@@ -10,6 +10,10 @@ var Utils = require('./utils');
   tags from the git-host, since most calculations are based on them.
  */
 
+var register1Dir = '/tmp/tortilla_register1';
+var register2Dir = '/tmp/tortilla_register2';
+
+
 // Creates a bumped release tag of the provided type
 // e.g. if the current release is @1.0.0 and we provide this function with a release type
 // of 'patch', the new release would be @1.0.1
@@ -69,7 +73,48 @@ function bumpRelease(releaseType, options) {
 
 // Creates a branch that represents a list of our releases, this way we can view any
 // diff combination in the git-host
-function createDiffReleasesBranch(releases) {
+function createDiffReleasesBranch() {
+  var destinationDir = createDiffReleasesRepo();
+  var sourceDir = destinationDir == register1Dir ? register2Dir : register1Dir;
+
+  var branchName = 'diff/releases';
+
+  // Make sure source is empty
+  Fs.emptyDirSync(sourceDir);
+
+  // Create dummy repo in source
+  Git(['init', sourceDir, '--bare']);
+  Git(['checkout', '-b', branchName], { cwd: destinationDir });
+  Git(['push', sourceDir, branchName], { cwd: destinationDir });
+
+  // Pull the newly created project to the branch name above
+  if (Git.tagExists(branchName)) Git(['branch', '-D', branchName]);
+  Git(['fetch', sourceDir, branchName]);
+  Git(['branch', branchName, 'FETCH_HEAD']);
+
+  // Clear registers
+  Fs.removeSync(register1Dir);
+  Fs.removeSync(register2Dir);
+}
+
+// Invokes 'git diff' with the given releases. An additional arguments vector which will
+// be invoked as is may be provided
+function diffRelease(sourceRelease, destinationRelease, argv) {
+  argv = argv || [];
+
+  var destinationDir = createDiffReleasesRepo([sourceRelease, destinationRelease]);
+
+  // Run 'diff' between the newly created commits
+  Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
+
+  // Clear registers
+  Fs.removeSync(register1Dir);
+  Fs.removeSync(register2Dir);
+}
+
+// Creates the releases diff repo in a temporary dir. The result will be a path for the
+// newly created repo
+function createDiffReleasesRepo(releases) {
   // Fetch all releases in reversed order, since the commits are going to be stacked
   // in the opposite order
   releases = releases || getAllReleases()
@@ -82,8 +127,8 @@ function createDiffReleasesBranch(releases) {
   });
 
   // The 'registers' are directories which will be used for temporary FS calculations
-  var destinationDir = '/tmp/tortilla_register1';
-  var sourceDir = '/tmp/tortilla_register2';
+  var destinationDir = register1Dir;
+  var sourceDir = register2Dir;
 
   // Make sure register2 is empty
   Fs.emptyDirSync(sourceDir);
@@ -92,7 +137,7 @@ function createDiffReleasesBranch(releases) {
   Git(['init'], { cwd: sourceDir });
 
   // Start building the diff-branch by stacking releases on top of each-other
-  releaseTags.reduce(function (registers, releaseTag, index) {
+  return releaseTags.reduce(function (registers, releaseTag, index) {
     var release = releases[index];
 
     sourceDir = registers[0];
@@ -127,26 +172,9 @@ function createDiffReleasesBranch(releases) {
     });
 
     return registers.reverse();
-  }, [sourceDir, destinationDir]);
-
-  var branchName = 'diff/releases';
-
-  // Make sure register1 is empty
-  Fs.emptyDirSync(sourceDir);
-
-  // Create dummy repo in register1
-  Git(['init', sourceDir, '--bare']);
-  Git(['checkout', '-b', branchName], { cwd: destinationDir });
-  Git(['push', sourceDir, branchName], { cwd: destinationDir });
-
-  // Pull the newly created project to the branch name above
-  if (Git.tagExists(branchName)) Git(['branch', '-D', branchName]);
-  Git(['fetch', sourceDir, branchName]);
-  Git(['branch', branchName, 'FETCH_HEAD']);
-
-  // Clear registers
-  Fs.removeSync(sourceDir);
-  Fs.removeSync(destinationDir);
+  }, [
+    sourceDir, destinationDir
+  ]).shift();
 }
 
 // Gets the current release based on the latest release tag
@@ -189,88 +217,6 @@ function getAllReleases() {
         (b.patch - a.patch)
       );
     });
-}
-
-// Invokes 'git diff' with the given releases. An additional arguments vector which will
-// be invoked as is may be provided
-function diffRelease(sourceRelease, destinationRelease, argv) {
-  argv = argv || [];
-
-  var sourceTag = 'release@' + sourceRelease;
-  var destinationTag = 'release@' + destinationRelease;
-
-  // Get the root commit hash for each release tag
-  var sourceRootHash = Git(['rev-list', '--max-parents=0', sourceTag]);
-  var destinationRootHash = Git(['rev-list', '--max-parents=0', destinationTag]);
-
-  // If they have the same root, there shouldn't be any problems with 'diff'
-  if (sourceRootHash == destinationRootHash) {
-    return Git.print(['diff', sourceTag, destinationTag].concat(argv));
-  }
-
-  // The 'registers' are directories which will be used for temporary FS calculations
-  var register1Dir = '/tmp/tortilla_register1';
-  var register2Dir = '/tmp/tortilla_register2';
-  var register1Paths = Paths.resolve(register1Dir);
-  var register2Paths = Paths.resolve(register2Dir);
-
-  // Make sure they are not exist before proceeding
-  Fs.removeSync(register1Dir);
-  Fs.removeSync(register2Dir);
-  Fs.mkdirSync(register1Dir);
-  Fs.mkdirSync(register2Dir);
-
-  // Initialize an empty git repo in register2
-  Git(['init'], { cwd: register2Dir });
-
-  // Put all source release files in register1
-  Fs.copySync(Paths.git._, register1Paths.git._, {
-    filter: function (filePath) {
-      return filePath.split('/').indexOf('.tortilla') == -1;
-    }
-  });
-
-  Git(['checkout', sourceTag], { cwd: register1Dir });
-  Git(['checkout', '.'], { cwd: register1Dir });
-
-  Fs.removeSync(register1Paths.git._);
-  // Copy all files from register1 to register2 and create a new commit
-  Fs.copySync(register1Dir, register2Dir);
-
-  Git(['add', '.'], { cwd: register2Dir });
-  Git(['add', '-u'], { cwd: register2Dir });
-  Git(['commit', '-m', 'Release ' + sourceRelease, '--allow-empty'], {
-    cwd: register2Dir
-  });
-
-  // Repeat the same process but for destination release
-  Fs.removeSync(register1Dir);
-  Fs.mkdirSync(register1Dir);
-
-  Fs.copySync(Paths.git._, register1Paths.git._, {
-    filter: function (filePath) {
-      return filePath.split('/').indexOf('.tortilla') == -1;
-    }
-  });
-
-  Git(['checkout', destinationTag], { cwd: register1Dir });
-  Git(['checkout', '.'], { cwd: register1Dir });
-
-  // Copy register1 git essentials to register2
-  Fs.removeSync(register1Paths.git._);
-  Fs.copySync(register2Paths.git._, register1Paths.git._);
-
-  // Add a new commit on top of the 'register1' base
-  Git(['add', '.'], { cwd: register1Dir });
-  Git(['add', '-u'], { cwd: register1Dir });
-  Git(['commit', '-m', 'Release ' + destinationRelease], { cwd: register1Dir });
-
-  // Run 'diff' between the newly created commits
-  Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: register1Dir });
-
-  // Clean registers to optimize memory usage
-  Fs.removeSync(register1Dir);
-  Fs.removeSync(register2Dir);
 }
 
 // Takes a release json and puts it into a pretty string
