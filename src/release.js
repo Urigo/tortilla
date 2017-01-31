@@ -62,18 +62,23 @@ function bumpRelease(releaseType, options) {
   else
     Git.print(['tag', 'release@' + formattedRelease, 'HEAD', '-a']);
 
+  createDiffReleaseBranch();
+
   console.log(formattedRelease);
 }
 
 // Creates a branch that represents a list of our releases, this way we can view any
 // diff combination in the git-host
 function createDiffReleaseBranch() {
-  // Fetch all releases
-  var releases = getAllReleases();
-  // Compose release tags
-  var releaseTags = releases
+  // Fetch all releases in reversed order, since the commits are going to be stacked
+  // in the opposite order
+  var releases = getAllReleases()
     .map(formatRelease)
-    .map(function (releaseString) { return 'release@' + releaseString });
+    .reverse();
+  // Compose release tags
+  var releaseTags = releases.map(function (releaseString) {
+    return 'release@' + releaseString
+  });
 
   // The 'registers' are directories which will be used for temporary FS calculations
   var register1Dir = '/tmp/tortilla_register1';
@@ -89,7 +94,9 @@ function createDiffReleaseBranch() {
   Git(['init'], { cwd: register2Dir });
 
   // Start building the diff-branch by stacking releases on top of each-other
-  releaseTags.forEach(function (releaseTag) {
+  releaseTags.forEach(function (releaseTag, index) {
+    var release = releases[index];
+
     // Make sure register1 is empty
     Fs.removeSync(register1Dir);
     Fs.mkdirSync(register1Dir);
@@ -108,12 +115,17 @@ function createDiffReleaseBranch() {
     // Copy register1 to register2, but without the git dir so there won't be any
     // conflicts with the commits
     Fs.removeSync(register1Paths.git._);
-    Fs.copySync(register1Dir, register2Dir);
+    Fs.copySync(register1Dir, register2Dir, {
+      overwrite: true,
+      dereference: true
+    });
 
     // Add commit for release
-    Git(['add', '.'], { cwd: register1Dir });
-    Git(['add', '-u'], { cwd: register1Dir });
-    Git(['commit', '-m', 'Release ' + register1Release], { cwd: register1Dir });
+    Git(['add', '.'], { cwd: register2Dir });
+    Git(['add', '-u'], { cwd: register2Dir });
+    Git(['commit', '-m', 'Release ' + release, '--allow-empty'], {
+      cwd: register2Dir
+    });
   });
 
   var branchName = 'diff/releases';
@@ -122,12 +134,15 @@ function createDiffReleaseBranch() {
   Fs.removeSync(register1Dir);
   Fs.mkdirSync(register1Dir);
 
-  // Pull the newly created project to the branch name above
+  // Create dummy repo in register1
   Git(['init', register1Dir, '--bare']);
   Git(['checkout', '-b', branchName], { cwd: register2Dir });
   Git(['push', register1Dir, branchName], { cwd: register2Dir });
-  Git(['branch', '-D', branchName]);
-  Git(['pull', register1Dir, branchName]);
+
+  // Pull the newly created project to the branch name above
+  if (Git.tagExists(branchName)) Git(['branch', '-D', branchName]);
+  Git(['fetch', register1Dir, branchName]);
+  Git(['branch', branchName, 'FETCH_HEAD']);
 
   // Clear registers
   Fs.removeSync(register1Dir);
@@ -221,11 +236,16 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
   Fs.removeSync(register1Paths.git._);
 
   // Copy all files from register1 to register2 and create a new commit
-  Fs.copySync(register1Dir, register2Dir);
+  Fs.copySync(register1Dir, register2Dir, {
+    overwrite: true,
+    dereference: true
+  });
 
   Git(['add', '.'], { cwd: register2Dir });
   Git(['add', '-u'], { cwd: register2Dir });
-  Git(['commit', '-m', 'Release ' + sourceRelease], { cwd: register2Dir });
+  Git(['commit', '-m', 'Release ' + sourceRelease, '--allow-empty'], {
+    cwd: register2Dir
+  });
 
   // Repeat the same process but for destination release
   Fs.removeSync(register1Dir);
