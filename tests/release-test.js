@@ -138,6 +138,52 @@ describe('Release', function () {
       tagExists = this.git.bind(this, ['rev-parse', 'release@2.0.1']);
       expect(tagExists).to.not.throw(Error);
     });
+
+    it('Should create a diff branch whose commits represent the releases', function () {
+      this.slow(7000);
+
+      this.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
+      this.git(['add', 'VERSION']);
+      this.tortilla(['step', 'push', '-m', 'Create version file']);
+      this.tortilla(['step', 'tag', '-m', 'First step']);
+      this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+
+      this.tortilla(['step', 'edit', '1.1']);
+      this.exec('sh', ['-c', 'echo 1.1.0 > VERSION']);
+      this.git(['add', 'VERSION']);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+      this.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
+
+      this.tortilla(['step', 'edit', '1.1']);
+      this.exec('sh', ['-c', 'echo 1.1.1 > VERSION']);
+      this.git(['add', 'VERSION']);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+      this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
+
+      this.git(['checkout', 'diff/releases']);
+
+      let commitMessage;
+
+      commitMessage = this.git(['log', '-1', '--format=%s']);
+      expect(commitMessage).to.equal('Release 1.1.1');
+
+      commitMessage = this.git(['log', '-1', '--skip=1', '--format=%s']);
+      expect(commitMessage).to.equal('Release 1.1.0');
+
+      commitMessage = this.git(['log', '-1', '--skip=2', '--format=%s']);
+      expect(commitMessage).to.equal('Release 1.0.0');
+
+      const releaseDiff = this.git(['diff', 'HEAD', 'HEAD~2'], {
+        env: {
+          TORTILLA_STDIO: 'inherit',
+          GIT_PAGER: 'cat'
+        }
+      });
+
+      expect(releaseDiff).to.be.a.diff('release-update');
+    });
   });
 
   describe('current()', function () {
