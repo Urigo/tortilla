@@ -2,6 +2,7 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var Git = require('./git');
 var Paths = require('./paths');
+var Step = require('./step');
 var Utils = require('./utils');
 
 /*
@@ -52,11 +53,30 @@ function bumpRelease(releaseType, options) {
       return tagName.match(/^step\d+$/);
     });
 
+  // Create release tag for root commit
   Git(['tag', 'root@' + formattedRelease, 'root']);
 
-  superTags.forEach(function (superTag) {
-    Git(['tag', superTag + '@' + formattedRelease, superTag]);
-  });
+  // Create a release tag for each super step
+  var superSteps = Git([
+    // Log commits
+    'log',
+    // Specifically for steps
+    '--grep', '^Step [0-9]\\+:',
+    // Formatted with their subject followed by their hash
+    '--format=%s %h'
+  ]).split('\n')
+    .filter(Boolean)
+    .forEach(function (line) {
+      // Extract data
+      var words = line.split(' ');
+      var hash = words.pop();
+      var subject = words.join(' ');
+      var descriptor = Step.descriptor(subject);
+      var tag = 'step' + descriptor.number + '@' + formattedRelease;
+
+      // Create tag
+      Git(['tag', tag, hash])
+    });
 
   // Create a tag with the provided message which will reference to HEAD
   // e.g. 'release@1.0.0'
