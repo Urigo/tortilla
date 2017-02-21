@@ -4,10 +4,9 @@ var Git = require('../git');
 var Utils = require('../utils');
 
 /*
-  Renders step diff in a pretty markdown format. For example {{{diff_step 1.1}}}
+  Renders step diff in a pretty markdown format. For example {{{ diff_step 1.1 }}}
   will render as:
 
-  [{]: <helper> (diff_step 1.1)
   #### Step 1.1
 
   ##### Changed /path/to/file.js
@@ -17,11 +16,21 @@ var Utils = require('../utils');
   -┊1┊ ┊bar
    ┊2┊2┊baz🚫↵
   ```
-  [}]: #
  */
 
-MDRenderer.registerHelper('diff_step', function(step, pattern) {
-  pattern = pattern || /.*/;
+MDRenderer.registerHelper('diff_step', function(step, options) {
+  var pattern;
+
+  // Will print diff of multiple specified files
+  // e.g. files="foo/a, bar/b"
+  if (options.hash.files)
+    pattern = new RegExp(options.hash.files
+      .replace(/\s*,\s*/g, '|')
+      .replace(/\./g, '\\.')
+    );
+  // Will print diff of all possible files
+  else
+    pattern = /.*/;
 
   var stepData = Git.recentCommit([
     '--grep=^Step ' + step + ':', '--format=%h %s'

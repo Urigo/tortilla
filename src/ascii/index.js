@@ -2,6 +2,9 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var Paths = require('../paths');
 
+/*
+  Responsible for printing ascii art files
+ */
 
 // Get string for provided ascii art name
 function getAsciiArt(artName) {

@@ -1,21 +1,22 @@
 var Fs = require('fs-extra');
+var Handlebars = require('handlebars');
 var Path = require('path');
 var Paths = require('../paths');
-var MDComponent = require('../md-parser/md-component');
+var Utils = require('../utils');
 
 /*
-  A very simple renderer which shares the same syntax as handlebar's when it comes to
-  models, partials and helpers. Templates which are rendered using md-renderer will be
-  parsable by md-parser.
+  A wrapper for Handlebars
  */
 
-var helpers = {};
-var partials = {};
+// Creating a new instance of handlebars which will then be merged with the module
+var handlebars = Handlebars.create();
+// Cache for templates which were already compiled
+var cache = {};
 
 
 // Read the provided file, render it, and overwrite it. Use with caution!
 function overwriteTemplateFile(templatePath, scope) {
-  templatePath = Path.resolve(Paths.tortilla.templates, templatePath);
+  templatePath = resolveTemplatePath(templatePath);
   var view = renderTemplateFile(templatePath, scope);
 
   return Fs.writeFileSync(templatePath, view);
@@ -24,73 +25,37 @@ function overwriteTemplateFile(templatePath, scope) {
 // Read provided file and render its template. Note that the default path would
 // be tortilla's template dir, so specifying a file name would be ok as well
 function renderTemplateFile(templatePath, scope) {
-  templatePath = Path.resolve(Paths.tortilla.templates, templatePath);
-  var template = Fs.readFileSync(templatePath, 'utf8');
+  templatePath = resolveTemplatePath(templatePath);
 
-  return renderTemplate(template, scope);
+  if (!cache[templatePath]) {
+    var templateContent = Fs.readFileSync(templatePath, 'utf8');
+    cache[templatePath] = handlebars.compile(templateContent);
+  }
+
+  var template = cache[templatePath];
+  return template(scope);
 }
 
 // Render provided template
 function renderTemplate(template, scope) {
-  scope = scope || {};
-
-  // Replace notations with values. ORDER IS CRITIC!
-  return template.replace(/\\?\{\{([^\}]+)\}\}\}?/g, function (match, content) {
-    // Escape backslashes
-    if (match[0] == '\\') return match.substr(1);
-
-    // Helper
-    if (content[0] == '{' && match[match.length - 1] == '}') {
-      var params = content.substr(1).split(' ');
-      var name = params.shift();
-      return helpers[name].apply(scope, params);
-    }
-    // Partial
-    if (content[0] == '>') {
-      var name = content.substr(1);
-      return renderTemplate(partials[name], scope);
-    }
-
-    // Model
-    return scope[content] || '';
-  });
+  return handlebars.compile(template)(scope);
 }
 
-// Register a new helper. Registered helpers will be wrapped with a
-// [{]: <helper> (name ...params) [}]: #
-function registerHelper(name, helper) {
-  helpers[name] = function() {
-    var out = helper.apply(this, arguments);
-
-    if (typeof out != 'string') throw Error([
-      'Template helper', name, 'must return a string!',
-      'Instead it returned', out
-    ].join(' '));
-
-    var params = [].slice.call(arguments);
-    return MDComponent.wrap('helper', name, params, out);
+// Returns a template path relative to tortilla with an '.md.tmpl' extension
+function resolveTemplatePath(templatePath) {
+  if (templatePath.indexOf('.md.tmpl') == -1) {
+    templatePath += '.md.tmpl';
   }
 
-  // Chainable
-  return module.exports;
-}
-
-// Register a new partial. Registered partials will be wrapped with a
-// [{]: <partial> (name) [}]: #
-function registerPartial(name, partial) {
-  partials[name] = MDComponent.wrap('partial', name, partial);
-  // Chainable
-  return module.exports;
+  return Path.resolve(Paths.tortilla.templates, templatePath);
 }
 
 
-module.exports = {
+module.exports = Utils.extend(handlebars, {
   overwriteTemplateFile: overwriteTemplateFile,
   renderTemplateFile: renderTemplateFile,
-  renderTemplate: renderTemplate,
-  registerHelper: registerHelper,
-  registerPartial: registerPartial
-};
+  renderTemplate: renderTemplate
+});
 
 // Built-in helpers and partials
 require('./diff-step-helper');

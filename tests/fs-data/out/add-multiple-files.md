@@ -1,4 +1,3 @@
-[{]: <helper> (diff_step 1.1 test-file.js)
 #### Step 1.1: Add multiple files
 
 ##### Added test-file.js
@@ -8,4 +7,3 @@
 +┊ ┊2┊bar
 +┊ ┊3┊baz🚫↵
 ```
-[}]: #

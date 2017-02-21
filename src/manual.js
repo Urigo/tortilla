@@ -2,7 +2,6 @@ var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');
-var MDComponent = require('./md-parser/md-component');
 var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
 var Step = require('./step');
@@ -100,13 +99,9 @@ function renderManual(step) {
 
 // Renders manual template into informative view
 function renderManualView(manual, scope) {
-  var header = MDRenderer.renderTemplateFile('header.md', scope)
+  var header = MDRenderer.renderTemplateFile('header', scope)
   var body = MDRenderer.renderTemplate(manual, scope);
-  var footer = MDRenderer.renderTemplateFile('footer.md', scope);
-
-  header = MDComponent.wrap('region', 'header', header);
-  body = MDComponent.wrap('region', 'body', body);
-  footer = MDComponent.wrap('region', 'footer', footer);
+  var footer = MDRenderer.renderTemplateFile('footer', scope);
 
   return [header, body, footer].join('\n');
 }

@@ -1,11 +1,11 @@
 var Fs = require('fs-extra');
+var Handlebars = require('handlebars');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
 var Ascii = require('./ascii');
 var Rebase = require('./rebase');
 var Git = require('./git');
 var LocalStorage = require('./local-storage');
-var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
@@ -73,11 +73,11 @@ function createProject(projectName, options) {
   var title = Utils.startCase(projectName);
 
   // Fill in template files
-  MDRenderer.overwriteTemplateFile(registerPaths.npm.package, {
+  overwriteTemplateFile(registerPaths.npm.package, {
     name: packageName
   });
 
-  MDRenderer.overwriteTemplateFile(registerPaths.readme, {
+  overwriteTemplateFile(registerPaths.readme, {
     title: title
   });
 
@@ -149,6 +149,11 @@ function ensureTortilla(projectDir) {
   });
 
   Ascii.print('ready');
+}
+
+function overwriteTemplateFile(path, scope) {
+  var templateContent = Fs.readFileSync(path, 'utf8');
+  return Handlebars.compile(templateContent)(scope);
 }
 
 

@@ -7,8 +7,8 @@ var Step = require('../step');
   dynamically based on the current step we're currently in.
  */
 
-MDRenderer.registerHelper('nav_step', function() {
-  var step = this.step || Step.currentSuper();
+MDRenderer.registerHelper('nav_step', function(options) {
+  var step = options.hash.step || this.step || Step.currentSuper();
   // If there is no belonging step, don't render anything
   if (!step) return '';
 
@@ -18,9 +18,9 @@ MDRenderer.registerHelper('nav_step', function() {
     // If there are no any steps yet, don't show nav bar
     if (!anySuperStep) return '';
 
-    return MDRenderer.renderTemplateFile('next-button-template.md', {
+    return MDRenderer.renderTemplateFile('next-button', {
       text: 'Begin Tutorial',
-      ref: 'manuals/views/step1.md'
+      ref: options.hash.ref || 'manuals/views/step1.md'
     });
   }
 
@@ -40,30 +40,30 @@ MDRenderer.registerHelper('nav_step', function() {
   // If there are no super steps at all
   if (superSteps.length == 0) return '';
 
-  // If this is the first super step
-  if (step == 1)
-    return MDRenderer.renderTemplateFile('nav-buttons-template.md', {
-      next_text: 'Next Step',
-      next_ref: 'step2.md',
-      prev_text: 'Intro',
-      prev_ref: '../../README.md'
-    });
-
   // The order is the other way around, this way we save ourselves the sorting
   var recentSuperStep = superSteps[0];
 
   // If this is the last step
   if (step == recentSuperStep)
-    return MDRenderer.renderTemplateFile('prev-button-template.md', {
+    return MDRenderer.renderTemplateFile('prev-button', {
       text: 'Previous Step',
-      ref: 'step' + (step - 1) + '.md'
+      ref: options.hash.ref || 'step' + (step - 1) + '.md'
+    });
+
+  // If this is the first super step
+  if (step == 1)
+    return MDRenderer.renderTemplateFile('nav-buttons', {
+      next_text: 'Next Step',
+      next_ref: options.hash.next_ref || 'step2.md',
+      prev_text: 'Intro',
+      prev_ref: options.hash.prev_ref || '../../README.md'
     });
 
   // Any other case
-  return MDRenderer.renderTemplateFile('nav-buttons-template.md', {
+  return MDRenderer.renderTemplateFile('nav-buttons', {
     next_text: 'Next Step',
-    next_ref: 'step' + (step + 1) + '.md',
+    next_ref: options.hash.next_ref || 'step' + (step + 1) + '.md',
     prev_text: 'Previous Step',
-    prev_ref: 'step' + (step - 1) + '.md'
+    prev_ref: options.hash.prev_ref || 'step' + (step - 1) + '.md'
   });
 });
