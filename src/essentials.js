@@ -143,11 +143,6 @@ function ensureTortilla(projectDir) {
   localStorage.setItem('INIT', true);
   localStorage.setItem('USE_STRICT', true);
 
-  // Retag steps
-  Utils.scopeEnv(Rebase.retagSteps.bind(Rebase), {
-    TORTILLA_CWD: projectPaths._
-  });
-
   Ascii.print('ready');
 }
 

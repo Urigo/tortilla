@@ -47,18 +47,6 @@ describe('Step', function () {
       expect(message).to.equal('Step 1.1: target');
     });
 
-    it('should remove tags', function () {
-      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'pop']);
-
-      const message = Step.recentCommit('%s');
-      expect(message).to.equal('Step 1.1: target');
-
-      const tagExists = Git.tagExists('step1');
-      expect(tagExists).to.be.falsy;
-    });
-
     it('should remove manual files', function () {
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       this.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -88,20 +76,6 @@ describe('Step', function () {
 
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 2: target');
-    });
-
-    it('should add a new tag', function () {
-      this.tortilla(['step', 'tag', '-m', 'target']);
-
-      const message = Step.recentCommit('%s');
-      expect(message).to.equal('Step 1: target');
-
-      const tagExists = Git.tagExists('step1');
-      expect(tagExists).to.be.truthy;
-
-      const tagHash = Git(['rev-parse', 'step1']);
-      const commitHash = Git(['rev-parse', 'HEAD']);
-      expect(tagHash).to.equal(commitHash);
     });
 
     it('should create a manual file', function () {
@@ -136,23 +110,6 @@ describe('Step', function () {
       ]).split('\n')[1];
 
       expect(message).to.equal('target');
-    });
-
-    it('should update hash references', function () {
-      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'reword', '1.1', '-m', 'target']);
-
-      const message = Step.recentCommit(1, '%s');
-      expect(message).to.equal('Step 1.1: target');
-
-      const rootTagHash = Git(['rev-parse', 'root']);
-      const rootCommitHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
-      expect(rootTagHash).to.equal(rootCommitHash);
-
-      const stepTagHash = Git(['rev-parse', 'step1']);
-      const stepCommitHash = Step.recentCommit('%H');
-      expect(stepTagHash).to.equal(stepCommitHash);
     });
 
     it('should reword the last step by default if no step specified', function () {
@@ -210,22 +167,6 @@ describe('Step', function () {
       const commitHash = Git.recentCommit(['--format=%H']);
       const rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
       expect(commitHash).to.equal(rootHash);
-    });
-
-    it('should update hash references', function () {
-      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'edit', '1.1']);
-
-      Git(['rebase', '--continue']);
-
-      const rootTagHash = Git(['rev-parse', 'root']);
-      const rootCommitHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
-      expect(rootTagHash).to.equal(rootCommitHash);
-
-      const stepTagHash = Git(['rev-parse', 'step1']);
-      const stepCommitHash = Step.recentCommit('%H');
-      expect(stepTagHash).to.equal(stepCommitHash);
     });
 
     it('should update step indices when pushing a step', function () {

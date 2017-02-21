@@ -85,7 +85,6 @@ function sortSteps(operations) {
   // If delta is 0 no sortments are needed
   if (oldStep == newStep) {
     LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
-    return retagSteps(operations);
   }
 
   var stepLimit = getStepLimit(oldStep, newStep);
@@ -102,14 +101,11 @@ function sortSteps(operations) {
 
     // If limit reached
     if (currSuperStep > stepLimit) {
-      // Get local storage item path
-      var storageItem = Path.resolve(Paths.storage, 'REBASE_HOOKS_DISABLED');
-
       // prepend local storage item setting operation, this would be a flag which will be
       // used in git-hooks
       operations.splice(index + offset++, 0, {
         method: 'exec',
-        command: 'echo 1 > ' + storageItem
+        command: 'node ' + Paths.tortilla.localStorage + ' set REBASE_HOOKS_DISABLED 1'
       });
 
       // Abort operations loop
@@ -129,7 +125,11 @@ function sortSteps(operations) {
     });
   });
 
-  retagSteps(operations);
+  // Remove hooks storage items so it won't affect post-rebase operations
+  operations.push({
+    method: 'exec',
+    command: 'node ' + Paths.tortilla.localStorage + ' remove HOOK_STEP'
+  });
 }
 
 // Reword the last step in the rebase file
@@ -142,8 +142,6 @@ function rewordStep(operations, message) {
     method: 'exec',
     command: 'node ' + argv.join(' ')
   });
-
-  retagSteps(operations);
 }
 
 // Render all manuals since the beginning of history to the opposite format
@@ -167,16 +165,6 @@ function renderManuals(operations) {
     });
 
     return offset;
-  });
-
-  retagSteps(operations);
-}
-
-// Reset all tags
-function retagSteps(operations) {
-  operations.push({
-    method: 'exec',
-    command: 'node ' + Paths.tortilla.rebase + ' retag'
   });
 }
 
@@ -234,10 +222,12 @@ function disassemblyOperations(rebaseFileContent) {
 // Convert operations array to rebase file content
 function assemblyOperations(operations) {
   return operations
+    // Compose lines
     .map(function (operation) {
       return Object.keys(operation)
         .map(function (k) { return operation[k] })
         .join(' ');
     })
+    // Connect lines
     .join('\n') + '\n';
 }

@@ -66,19 +66,6 @@ function popStep() {
     LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
   else
     return console.warn('Removed commit was not a step');
-
-  // Tag removal should be done by the editor after continuing rebase in case
-  // of abortion otherwise we are screwed
-  if (Git.rebasing()) return;
-
-  var isSuperStep = !!stepDescriptor.number.split('.')[1];
-  // If this is a super step, delete the tag of the popped commit
-  if (!isSuperStep) return;
-
-  var tag = 'step' + stepDescriptor.number;
-  if (Git.tagExists(tag)) return Git(['tag', '-d', tag]);
-
-  console.warn('Tag was not found');
 }
 
 // Finish the current with the provided message and tag it
@@ -97,12 +84,6 @@ function tagStep(message) {
 
   // Meta-data for step editing
   LocalStorage.setItem('REBASE_NEW_STEP', step);
-
-  // If in the middle of rebase, don't add a tag since the process can be aborted.
-  // The tag will be added later on by the git editor
-  if (!Git.rebasing()) {
-    Git.print(['tag', tag]);
-  }
 }
 
 // Edit the provided step

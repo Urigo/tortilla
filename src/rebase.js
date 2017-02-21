@@ -19,52 +19,10 @@ var Step = require('./step');
   var arg1 = argv._[1];
 
   switch (method) {
-    case 'retag': return retagSteps();
     case 'reword': return rewordRecentStep(arg1);
     case 'super-pick': return superPickStep(arg1);
   }
 })();
-
-// The re-tagger is responsible for resetting all step tags
-function retagSteps() {
-  var stepTags = Git(['tag', '-l', 'step*'])
-    .split('\n')
-    .filter(Boolean)
-    // We want to avoid version tags e.g. 'step1@1.0.0'
-    .filter(function (tagName) {
-      return tagName.match(/^step\d+$/);
-    });
-
-  // Delete all tags to prevent conflicts
-  if (Git.tagExists('root')) Git(['tag', '-d', 'root']);
-
-  stepTags.forEach(function (stepTag) {
-    Git(['tag', '-d', stepTag]);
-  });
-
-  // If any steps exist take the hash before the initial step, else take the recent hash
-  var stepsExist = Git.recentCommit(['--grep=^Step 1.1']);
-  var rootHash = stepsExist ? Step.base('1.1') : Git.recentCommit(['--format=%h']);
-
-  var stepCommits = Git(['log',
-    '--grep=^Step [0-9]\\+:',
-    '--format={ "hash": "%h", "message": "%s" }'
-  ]).split('\n')
-    .filter(Boolean)
-    .map(JSON.parse);
-
-  // Reset all tags
-  Git(['tag', 'root', rootHash]);
-
-  stepCommits.forEach(function (commit) {
-    var hash = commit.hash;
-    var message = commit.message;
-    var descriptor = Step.descriptor(commit.message);
-    var tag = 'step' + descriptor.number;
-
-    Git(['tag', tag, hash]);
-  });
-}
 
 // Responsible for editing the recent commit's message. It will also sort the step's
 // number if needed
@@ -119,7 +77,6 @@ function getNextStep(stepDescriptor) {
 
 
 module.exports = {
-  retagSteps: retagSteps,
   rewordRecentStep: rewordRecentStep,
   superPickStep: superPickStep
 };

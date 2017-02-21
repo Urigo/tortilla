@@ -43,27 +43,18 @@ function bumpRelease(releaseType, options) {
   // The formatted release e.g. '1.0.0'
   var formattedRelease = formatRelease(currentRelease);
 
-  var superTags = Git(['tag', '-l', 'step*'])
-    // Put tags into an array
-    .split('\n')
-    // If no tags found, filter the empty string
-    .filter(Boolean)
-    // We want to avoid release tags e.g. 'step1@@1.0.0'
-    .filter(function (tagName) {
-      return tagName.match(/^step\d+$/);
-    });
-
   // Create release tag for root commit
-  Git(['tag', 'root@' + formattedRelease, 'root']);
+  var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
+  Git(['tag', 'root@' + formattedRelease, rootHash]);
 
   // Create a release tag for each super step
-  var superSteps = Git([
+  Git([
     // Log commits
     'log',
     // Specifically for steps
     '--grep', '^Step [0-9]\\+:',
     // Formatted with their subject followed by their hash
-    '--format=%s %h'
+    '--format=%s %H'
   ]).split('\n')
     .filter(Boolean)
     .forEach(function (line) {

@@ -22,7 +22,7 @@ var Step = require('../step');
   var commitMessage = Fs.readFileSync(Paths.git.messages.commit, 'utf8');
   // Prepend a step prefix to the commit message
   var step = LocalStorage.getItem('HOOK_STEP') || Step.next(1);
-  var fixedcommitMessage = 'Step ' + step + ': ' + commitMessage
+  var fixedcommitMessage = 'Step ' + step + ': ' + commitMessage;
   // Clearing storage to prevent conflicts with upcoming commits
   LocalStorage.removeItem('HOOK_STEP');
 

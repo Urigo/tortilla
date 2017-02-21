@@ -1,12 +1,33 @@
 var LocalStorage = require('node-localstorage').LocalStorage;
+var Minimist = require('minimist');
 var LocalCache = require('./local-cache');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
 /*
-  A local-storage whos storage dir is git's internals dir. Comes in handy when we want
+  A local-storage whose storage dir is git's internals dir. Comes in handy when we want
   to share data between processes like git-hooks.
  */
+
+var localStorage = createLocalStorage(Paths._);
+
+
+(function () {
+  if (require.main !== module) return;
+
+  var argv = Minimist(process.argv.slice(2), {
+    string: ['_']
+  });
+
+  var method = argv._[0];
+  var key = argv._[1];
+  var value = argv._[2];
+
+  switch (method) {
+    case 'set': return localStorage.setItem(key, value);
+    case 'remove': return localStorage.removeItem(key);
+  }
+})();
 
 // Creates a new instance of local-storage
 function createLocalStorage(cwd) {
@@ -40,4 +61,4 @@ function assertTortilla(exists) {
 }
 
 
-module.exports = createLocalStorage(Paths._);
+module.exports = localStorage;
