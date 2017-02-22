@@ -51,7 +51,7 @@ function pushStep(message, options) {
 // Pop the last step
 function popStep() {
   var headHash = Git(['rev-parse', 'HEAD']);
-  var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
+  var rootHash = Git.rootHash();
 
   if (headHash == rootHash)
     throw Error('Can\'t remove root')

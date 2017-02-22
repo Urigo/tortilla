@@ -165,7 +165,7 @@ describe('Step', function () {
       expect(isRebasing).to.be.truthy;
 
       const commitHash = Git.recentCommit(['--format=%H']);
-      const rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
+      const rootHash = Git.rootHash();
       expect(commitHash).to.equal(rootHash);
     });
 

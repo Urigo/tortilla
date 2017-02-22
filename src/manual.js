@@ -11,7 +11,6 @@ var Utils = require('./utils');
   Contains manual related utilities.
  */
 
-
 (function () {
   if (require.main !== module) return;
 
@@ -121,7 +120,7 @@ function getManualViewPath(step) {
 // Gets the commit message belonging to the given step
 function getStepCommitMessage(step) {
   if (step == 'root') {
-    var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
+    var rootHash = Git.rootHash();
     return Git(['log', '-1', rootHash, '--format=%s']);
   }
 

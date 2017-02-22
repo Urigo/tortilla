@@ -62,6 +62,16 @@ function getStagedFiles(pattern) {
   return Utils.filterMatches(stagedFiles, pattern);
 }
 
+// Gets active branch name
+function getActiveBranchName() {
+  return git(['rev-parse', '--abbrev-ref', 'HEAD']);
+}
+
+// Gets the root hash of HEAD
+function getRootHash() {
+  return git(['rev-list', '--max-parents=0', 'HEAD']);
+}
+
 
 module.exports = Utils.extend(git.bind(null), git, {
   rebasing: isRebasing,
@@ -69,5 +79,7 @@ module.exports = Utils.extend(git.bind(null), git, {
   gonnaAmend: gonnaAmend,
   tagExists: tagExists,
   recentCommit: getRecentCommit,
-  stagedFiles: getStagedFiles
+  stagedFiles: getStagedFiles,
+  activeBranchName: getActiveBranchName,
+  rootHash: getRootHash
 });

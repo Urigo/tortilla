@@ -40,12 +40,17 @@ function bumpRelease(releaseType, options) {
       throw Error('Provided release type must be one of "major", "minor" or "patch"');
   }
 
-  // The formatted release e.g. '1.0.0'
+  var branch = Git.activeBranchName();
+  // The formatted release e.g. 1.0.0
   var formattedRelease = formatRelease(currentRelease);
 
-  // Create release tag for root commit
-  var rootHash = Git(['rev-list', '--max-parents=0', 'HEAD']);
-  Git(['tag', 'root@' + formattedRelease, rootHash]);
+  // Extract root data
+  var rootHash = Git.rootHash();
+  var rootTag = [branch, 'root', formattedRelease].join('@');
+
+  // Create root tag
+  // e.g. master@root@1.0.1
+  Git(['tag', rootTag, rootHash]);
 
   // Create a release tag for each super step
   Git([
@@ -63,19 +68,20 @@ function bumpRelease(releaseType, options) {
       var hash = words.pop();
       var subject = words.join(' ');
       var descriptor = Step.descriptor(subject);
-      var tag = 'step' + descriptor.number + '@' + formattedRelease;
+      var tag = [branch, 'step' + descriptor.number, formattedRelease].join('@');
 
       // Create tag
+      // e.g. master@step1@1.0.1
       Git(['tag', tag, hash])
     });
 
   // Create a tag with the provided message which will reference to HEAD
-  // e.g. 'release@1.0.0'
+  // e.g. 'master@1.0.1'
   if (options.message)
-    Git.print(['tag', 'release@' + formattedRelease, 'HEAD', '-m', options.message]);
+    Git.print(['tag', branch + '@' + formattedRelease, 'HEAD', '-m', options.message]);
   // If no message provided, open the editor
   else
-    Git.print(['tag', 'release@' + formattedRelease, 'HEAD', '-a']);
+    Git.print(['tag', branch + '@' + formattedRelease, 'HEAD', '-a']);
 
   createDiffReleasesBranch();
 
@@ -88,20 +94,23 @@ function createDiffReleasesBranch() {
   var destinationDir = createDiffReleasesRepo();
   var sourceDir = destinationDir == register1Dir ? register2Dir : register1Dir;
 
-  var branchName = 'diff/releases';
+  // e.g. master
+  var currBranch = Git.activeBranchName();
+  // e.g. diff/releases/master
+  var diffBranch = ['diff', 'releases', currBranch].join('/');
 
   // Make sure source is empty
   Fs.emptyDirSync(sourceDir);
 
   // Create dummy repo in source
   Git(['init', sourceDir, '--bare']);
-  Git(['checkout', '-b', branchName], { cwd: destinationDir });
-  Git(['push', sourceDir, branchName], { cwd: destinationDir });
+  Git(['checkout', '-b', diffBranch], { cwd: destinationDir });
+  Git(['push', sourceDir, diffBranch], { cwd: destinationDir });
 
   // Pull the newly created project to the branch name above
-  if (Git.tagExists(branchName)) Git(['branch', '-D', branchName]);
-  Git(['fetch', sourceDir, branchName]);
-  Git(['branch', branchName, 'FETCH_HEAD']);
+  if (Git.tagExists(diffBranch)) Git(['branch', '-D', diffBranch]);
+  Git(['fetch', sourceDir, diffBranch]);
+  Git(['branch', diffBranch, 'FETCH_HEAD']);
 
   // Clear registers
   Fs.removeSync(register1Dir);
@@ -113,7 +122,12 @@ function createDiffReleasesBranch() {
 function diffRelease(sourceRelease, destinationRelease, argv) {
   argv = argv || [];
 
-  var destinationDir = createDiffReleasesRepo([sourceRelease, destinationRelease]);
+  var branch = Git.activeBranchName();
+  // Compose tags
+  var sourceReleaseTag = branch + '@' + sourceRelease;
+  var destinationReleaseTag = branch + '@' + destinationRelease;
+  // Create repo
+  var destinationDir = createDiffReleasesRepo([sourceReleaseTag, destinationReleaseTag]);
 
   // Run 'diff' between the newly created commits
   Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
@@ -125,17 +139,19 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
 // newly created repo
-function createDiffReleasesRepo(releases) {
-  // Fetch all releases in reversed order, since the commits are going to be stacked
-  // in the opposite order
-  releases = releases || getAllReleases()
-    .map(formatRelease)
-    .reverse();
+function createDiffReleasesRepo(tags) {
+  if (!tags) {
+    var branch = Git.activeBranchName();
 
-  // Compose release tags
-  var releaseTags = releases.map(function (releaseString) {
-    return 'release@' + releaseString
-  });
+    // Fetch all releases in reversed order, since the commits are going to be stacked
+    // in the opposite order
+    tags = getAllReleases()
+      .map(formatRelease)
+      .reverse()
+      .map(function (releaseString) {
+        return branch + '@' + releaseString;
+      });
+  }
 
   // The 'registers' are directories which will be used for temporary FS calculations
   var destinationDir = register1Dir;
@@ -148,9 +164,7 @@ function createDiffReleasesRepo(releases) {
   Git(['init'], { cwd: sourceDir });
 
   // Start building the diff-branch by stacking releases on top of each-other
-  return releaseTags.reduce(function (registers, releaseTag, index) {
-    var release = releases[index];
-
+  return tags.reduce(function (registers, tag, index) {
     sourceDir = registers[0];
     destinationDir = registers[1];
     sourcePaths = Paths.resolve(sourceDir);
@@ -167,7 +181,7 @@ function createDiffReleasesRepo(releases) {
     });
 
     // Checkout release
-    Git(['checkout', releaseTag], { cwd: destinationDir });
+    Git(['checkout', tag], { cwd: destinationDir });
     Git(['checkout', '.'], { cwd: destinationDir });
 
     // Copy destination to source, but without the git dir so there won't be any
@@ -178,7 +192,7 @@ function createDiffReleasesRepo(releases) {
     // Add commit for release
     Git(['add', '.'], { cwd: destinationDir });
     Git(['add', '-u'], { cwd: destinationDir });
-    Git(['commit', '-m', 'Release ' + release, '--allow-empty'], {
+    Git(['commit', '-m', tag, '--allow-empty'], {
       cwd: destinationDir
     });
 
@@ -203,18 +217,21 @@ function getCurrentRelease() {
 // Gets a list of all the releases represented as JSONs e.g.
 // [{ major: 0, minor: 1, patch: 0 }]
 function getAllReleases() {
-  return Git(['tag', '-l', 'release*'])
+  var branch = Git.activeBranchName();
+
+  return Git(['tag'])
     // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
     .filter(Boolean)
     // Filter all the release tags which are proceeded by their release
     .filter(function (tagName) {
-      return tagName.match(/^release@/);
+      var pattern = new RegExp(branch + '@\\d+\\.\\d+\\.\\d+');
+      return tagName.match(pattern);
     })
     // Map all the release strings
     .map(function (tagName) {
-      return tagName.match(/^release@(.+)$/)[1];
+      return tagName.split('@').pop();
     })
     // Deformat all the releases into a json so it would be more comfortable to work with
     .map(function (releaseString) {
