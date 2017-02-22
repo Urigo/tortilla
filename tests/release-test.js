@@ -99,6 +99,37 @@ describe('Release', function () {
       expect(tagExists).to.not.throw(Error);
     });
 
+    it('should change the prefix of the release based on the active branch', function () {
+      this.slow(5000);
+
+      this.git(['checkout', '-b', 'test']);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+      this.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
+      this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
+
+      let tagExists;
+
+      tagExists = this.git.bind(this, ['rev-parse', 'test@root@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'test@step1@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'test@step2@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'test@step3@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
+
+      tagExists = this.git.bind(this, ['rev-parse', 'test@1.1.1']);
+      expect(tagExists).to.not.throw(Error);
+    });
+
     it('should be able to handle multiple bumps for the same version type', function () {
       this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
       this.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
