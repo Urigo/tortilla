@@ -195,7 +195,11 @@ describe('Release', function () {
       this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
 
       const currentVersion = this.tortilla(['release', 'current']);
-      expect(currentVersion).to.equal('1.1.1');
+
+      expect(currentVersion).to.equal([
+        '🌟 Release: 1.1.1',
+        '🌟 Branch:  master'
+      ].join('\n'));
     });
   });
 

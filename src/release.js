@@ -75,17 +75,18 @@ function bumpRelease(releaseType, options) {
       Git(['tag', tag, hash])
     });
 
+  var tag = branch + '@' + formattedRelease;
+
   // Create a tag with the provided message which will reference to HEAD
   // e.g. 'master@1.0.1'
   if (options.message)
-    Git.print(['tag', branch + '@' + formattedRelease, 'HEAD', '-m', options.message]);
+    Git.print(['tag', tag, 'HEAD', '-m', options.message]);
   // If no message provided, open the editor
   else
-    Git.print(['tag', branch + '@' + formattedRelease, 'HEAD', '-a']);
+    Git.print(['tag', tag, 'HEAD', '-a']);
 
   createDiffReleasesBranch();
-
-  console.log(formattedRelease);
+  printCurrentRelease();
 }
 
 // Creates a branch that represents a list of our releases, this way we can view any
@@ -202,6 +203,17 @@ function createDiffReleasesRepo(tags) {
   ]).shift();
 }
 
+function printCurrentRelease() {
+  var currentRelease = getCurrentRelease();
+  var formattedRelease = formatRelease(currentRelease);
+  var branch = Git.activeBranchName();
+
+  console.log();
+  console.log('🌟 Release: ' + formattedRelease);
+  console.log('🌟 Branch:  ' + branch);
+  console.log();
+}
+
 // Gets the current release based on the latest release tag
 // e.g. if we have the tags 'release@0.0.1', 'release@0.0.2' and 'release@0.1.0' this method
 // will return { major: 0, minor: 1, patch: 0 }
@@ -273,6 +285,7 @@ function deformatRelease(releaseString) {
 module.exports = {
   bump: bumpRelease,
   createDiffBranch: createDiffReleasesBranch,
+  printCurrent: printCurrentRelease,
   current: getCurrentRelease,
   all: getAllReleases,
   diff: diffRelease,

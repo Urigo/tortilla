@@ -21,9 +21,7 @@ Program
   .description('Print the current release')
   .action(function () {
     LocalStorage.assertTortilla(true);
-    var currentRelease = Release.current();
-    var formattedRelease = Release.format(currentRelease);
-    console.log(formattedRelease);
+    Release.printCurrent();
   });
 
 Program
