@@ -211,7 +211,7 @@ describe('Release', function () {
         }
       });
 
-      expect(releaseDiff).to.be.a.diff('release-update');
+      expect(releaseDiff).to.be.a.file('release-update.diff');
     });
   });
 
@@ -263,7 +263,7 @@ describe('Release', function () {
         }
       });
 
-      expect(releaseDiff).to.be.a.diff('release-update');
+      expect(releaseDiff).to.be.a.file('release-update.diff');
     });
 
     it('should concat the provided arguments vector', function () {
@@ -296,7 +296,7 @@ describe('Release', function () {
         }
       });
 
-      expect(releaseDiff).to.be.a.diff('release-update-names');
+      expect(releaseDiff).to.be.a.file('release-update-names.diff');
     });
 
     it('should be able to run "git diff" for two releases with different roots', function () {
@@ -329,7 +329,7 @@ describe('Release', function () {
         }
       });
 
-      expect(releaseDiff).to.be.a.diff('release-update');
+      expect(releaseDiff).to.be.a.file('release-update.diff');
     });
   });
 });

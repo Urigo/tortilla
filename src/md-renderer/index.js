@@ -50,6 +50,11 @@ function resolveTemplatePath(templatePath) {
     templatePath += '.md.tmpl';
   }
 
+  // User defined templates
+  var relativeTemplatePath = Path.resolve(Paths.manuals.templates, templatePath);
+  if (Utils.exists(relativeTemplatePath)) return relativeTemplatePath;
+
+  // Tortilla defined templates
   return Path.resolve(Paths.tortilla.templates, templatePath);
 }
 
@@ -83,7 +88,7 @@ function registerPartial(name, partial) {
 // components in the view later on using external softwares later on.
 // e.g. https://github.com/Urigo/angular-meteor-docs/blob/master/src/app/tutorials/
 // improve-code-resolver.ts#L24
-function wrapComponent (type, name, args, content) {
+function wrapComponent(type, name, args, content) {
   var hash = {};
 
   if (!content) {

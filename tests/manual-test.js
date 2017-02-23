@@ -10,7 +10,7 @@ describe('Manual', function () {
 
     beforeEach(function () {
       for (let step = 1; step <= 3; step++) {
-        const manualPath = 'manuals/templates/step' + step + '.md';
+        const manualPath = 'manuals/templates/step' + step + '.md.tmpl';
         const manual = 'Step ' + step + ' manual';
 
         this.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -26,24 +26,24 @@ describe('Manual', function () {
       this.tortilla(['manual', 'render', '2']);
 
       const manual = this.exec('cat', ['manuals/views/step2.md']);
-      expect(manual).to.be.a.markdown('manuals/step2');
+      expect(manual).to.be.a.file('manuals/step2.md');
     });
 
     it('should render last manual by default if non is provided', function () {
       this.tortilla(['manual', 'render']);
 
       const manual = this.exec('cat', ['manuals/views/step3.md']);
-      expect(manual).to.be.a.markdown('manuals/step3');
+      expect(manual).to.be.a.file('manuals/step3.md');
     });
 
     it('should render root manual if specified and create a symlink to it', function () {
       this.tortilla(['manual', 'render', '--root']);
 
       let manual = this.exec('cat', ['README.md']);
-      expect(manual).to.be.a.markdown('manuals/root');
+      expect(manual).to.be.a.file('manuals/root.md');
 
       manual = this.exec('cat', ['manuals/views/root.md']);
-      expect(manual).to.be.a.markdown('manuals/root');
+      expect(manual).to.be.a.file('manuals/root.md');
     });
 
     it('should not create a symlink to root manual if already exists', function () {
@@ -51,10 +51,10 @@ describe('Manual', function () {
       this.tortilla(['manual', 'render', '--root']);
 
       let manual = this.exec('cat', ['README.md']);
-      expect(manual).to.be.a.markdown('manuals/root');
+      expect(manual).to.be.a.file('manuals/root.md');
 
       manual = this.exec('cat', ['manuals/views/root.md']);
-      expect(manual).to.be.a.markdown('manuals/root');
+      expect(manual).to.be.a.file('manuals/root.md');
     });
 
     it('should render all manual files through out history', function () {

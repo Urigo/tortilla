@@ -107,8 +107,8 @@ function renderManualView(manual, scope) {
 
 // Gets the manual template belonging to the given step
 function getManualTemplatePath(step) {
-  if (step == 'root') return Path.resolve(Paths.manuals.templates, 'root.md');
-  return Path.resolve(Paths.manuals.templates, 'step' + step + '.md');
+  if (step == 'root') return Path.resolve(Paths.manuals.templates, 'root.md.tmpl');
+  return Path.resolve(Paths.manuals.templates, 'step' + step + '.md.tmpl');
 }
 
 // Gets the manual view belonging to the given step

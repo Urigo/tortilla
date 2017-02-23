@@ -35,8 +35,8 @@ var Step = require('../step');
     var stagedFiles = Git.stagedFiles(/^(?!manuals\/)/);
     if (stagedFiles.length) throw Error(errorMessage);
 
-    // '.md' files that start with 'manuals/' e.g. manuals/templates/step1.md
-    var pattern = new RegExp('^manuals/(templates|views)/(?!' + tag + '\\.md)');
+    // '.md' files that start with 'manuals/' e.g. manuals/templates/step1.md.tmpl
+    var pattern = new RegExp('^manuals/(templates|views)/(?!' + tag + '\\.md(\\.tmpl)?)');
     stagedFiles = Git.stagedFiles(pattern);
     if (stagedFiles.length) throw Error(errorMessage);
   }
