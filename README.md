@@ -83,7 +83,7 @@ Template helpers are used when writing a manual file to make our-lives a bit eas
 
 These are the available {{view models}}:
 - **step** - The number of the current step.
-- **commitMessage** - The current commit message.
+- **commit_message** - The current commit message.
 
 These are the available {{{template helpers}}}:
 - **nav_step** - A navigation bar between step manuals. Will present two buttons - "Previous step" and "Next step". This template helper may receives the following options:
@@ -113,7 +113,7 @@ In addition, a stack of all the releases is available through a [diff branches](
 
 ### Release Tags
 
-A release tag should represent the tutorial at a specific state (e.g. master branch step2) and time point (e.g. version 1.2.1). A release tag should contain the name of the branch, the step descriptor, if at all, and a [semver](http://semver.org/) version, separated with at (`@`) signs (e.g. master@step1@0.0.1, foo@0.1.0).
+A release tag should represent the tutorial at a specific state (e.g. master branch step2) and time point (e.g. version 1.2.1). A release tag should contain the name of the branch, the step descriptor, if at all, and a [semver](http://semver.org/) version, separated with at (`@`) signs (e.g. `master@step1@0.0.1`, `foo@0.1.0`).
 
 ### Diff Branches
 

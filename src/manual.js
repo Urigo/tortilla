@@ -67,7 +67,7 @@ function renderManual(step) {
 
   var manualView = renderManualView(manualTemplate, {
     step: step,
-    commitMessage: getStepCommitMessage(step)
+    commit_message: getStepCommitMessage(step)
   });
 
   // Rewrite manual

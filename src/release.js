@@ -1,6 +1,7 @@
 var Fs = require('fs-extra');
 var Path = require('path');
 var Git = require('./git');
+var Manual = require('./manual');
 var Paths = require('./paths');
 var Step = require('./step');
 var Utils = require('./utils');
@@ -20,6 +21,11 @@ var register2Dir = '/tmp/tortilla_register2';
 // of 'patch', the new release would be @1.0.1
 function bumpRelease(releaseType, options) {
   options = options || {};
+
+  // Render manuals before bumping version to make sure the views are correlated with
+  // the templates
+  Manual.render('all');
+
   var currentRelease = getCurrentRelease();
 
   // Increase release type
