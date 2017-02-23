@@ -56,6 +56,7 @@ require('./assertions');
 // Tests
 require('./step-test');
 require('./hooks-test');
+require('./md-renderer-test');
 require('./template-helpers-test');
 require('./manual-test');
 require('./release-test');

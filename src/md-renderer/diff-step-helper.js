@@ -18,7 +18,7 @@ var Utils = require('../utils');
   ```
  */
 
-MDRenderer.registerHelper('diff_step', function(step, options) {
+MDRenderer.registerHelper('diff_step', function (step, options) {
   var pattern;
 
   // Will print diff of multiple specified files

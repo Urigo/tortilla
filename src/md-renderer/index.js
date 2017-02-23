@@ -10,6 +10,9 @@ var Utils = require('../utils');
 
 // Creating a new instance of handlebars which will then be merged with the module
 var handlebars = Handlebars.create();
+// Keep original handlers since these methods are gonna be overriden
+var superRegisterHelper = handlebars.registerHelper.bind(handlebars);
+var superRegisterPartial = handlebars.registerPartial.bind(handlebars);
 // Cache for templates which were already compiled
 var cache = {};
 
@@ -50,11 +53,83 @@ function resolveTemplatePath(templatePath) {
   return Path.resolve(Paths.tortilla.templates, templatePath);
 }
 
+// Register a new helper. Registered helpers will be wrapped with a
+// [{]: <helper> (name ...args) [}]: #
+function registerHelper(name, helper) {
+  var wrappedHelper = function () {
+    var out = helper.apply(this, arguments);
+
+    if (typeof out != 'string') throw Error([
+      'Template helper', name, 'must return a string!',
+      'Instead it returned', out
+    ].join(' '));
+
+    var args = [].slice.call(arguments);
+    return wrapComponent('helper', name, args, out);
+  }
+
+  return superRegisterHelper(name, wrappedHelper);
+}
+
+// Register a new partial. Registered partials will be wrapped with a
+// [{]: <partial> (name) [}]: #
+function registerPartial(name, partial) {
+  var wrappedPartial = wrapComponent('partial', name, partial);
+
+  return superRegisterPartial(name, wrappedPartial);
+}
+
+// Returns content wrapped by component notations. Mostly useful if we want to detect
+// components in the view later on using external softwares later on.
+// e.g. https://github.com/Urigo/angular-meteor-docs/blob/master/src/app/tutorials/
+// improve-code-resolver.ts#L24
+function wrapComponent (type, name, args, content) {
+  var hash = {};
+
+  if (!content) {
+    content = args;
+    args = [];
+  }
+
+  if (args[args.length - 1] instanceof Object) {
+    hash = args.pop().hash;
+  }
+
+  // Stringify arguments
+  var params = args.map(function (param) {
+    return typeof param == 'string' ? '"' + param + '"' : param;
+  }).join(' ');
+
+  hash = stringifyHash(hash);
+
+  // Concat all stringified arguments
+  args = [name, params, hash]
+    // Get rid of empty strings
+    .filter(Boolean)
+    .join(' ');
+
+  return [
+    '[{]: <' + type + '> (' + args + ')', content, '[}]: #'
+  ].join('\n');
+}
+
+// Takes a helper hash and stringifying it
+// e.g. { foo: '1', bar: 2 } -> foo="1" bar=2
+function stringifyHash(hash) {
+  return Object.keys(hash).map(function (key) {
+    var value = hash[key];
+    if (typeof value == 'string') value = '"' + value +'"';
+    return key + '=' + value;
+  }).join(' ');
+}
+
 
 module.exports = Utils.extend(handlebars, {
   overwriteTemplateFile: overwriteTemplateFile,
   renderTemplateFile: renderTemplateFile,
-  renderTemplate: renderTemplate
+  renderTemplate: renderTemplate,
+  registerHelper: registerHelper,
+  registerPartial: registerPartial
 });
 
 // Built-in helpers and partials
