@@ -2,6 +2,7 @@ var Fs = require('fs-extra');
 var Handlebars = require('handlebars');
 var Path = require('path');
 var ReadlineSync = require('readline-sync');
+var Tmp = require('tmp');
 var Ascii = require('./ascii');
 var Rebase = require('./rebase');
 var Git = require('./git');
@@ -14,8 +15,8 @@ var Utils = require('./utils');
   initialize a project.
  */
 
-var registerDir = '/tmp/tortilla_register1';
-var registerPaths = Paths.resolve(registerDir);
+var tmpDir = Tmp.dirSync({ unsafeCleanup: true });
+var tmpPaths = Paths.resolve(tmpDir.name);
 var exec = Utils.exec;
 
 
@@ -62,44 +63,44 @@ function createProject(projectName, options) {
     if (!options.override) return;
   }
 
-  Fs.removeSync(registerDir);
+  Fs.removeSync(tmpDir.name);
   // Clone skeleton
-  Git.print(['clone', Paths.tortilla.skeleton, registerDir], { cwd: '/tmp' });
+  Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
   // Checkout desired release
-  Git.print(['checkout', '0.0.1-alpha.1'], { cwd: registerDir });
+  Git.print(['checkout', '0.0.1-alpha.1'], { cwd: tmpDir.name });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
-  Fs.removeSync(registerPaths.git._);
+  Fs.removeSync(tmpPaths.git._);
 
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);
 
   // Fill in template files
-  overwriteTemplateFile(registerPaths.npm.package, {
+  overwriteTemplateFile(tmpPaths.npm.package, {
     name: packageName
   });
 
-  overwriteTemplateFile(registerPaths.readme, {
+  overwriteTemplateFile(tmpPaths.readme, {
     title: title
   });
 
   // Git chores
-  Git(['init'], { cwd: registerDir });
-  Git(['add', '.'], { cwd: registerDir });
-  Git(['commit', '-m', title], { cwd: registerDir });
+  Git(['init'], { cwd: tmpDir.name });
+  Git(['add', '.'], { cwd: tmpDir.name });
+  Git(['commit', '-m', title], { cwd: tmpDir.name });
 
   if (options.message)
-    Git.print(['commit', '--amend', '-m', options.message], { cwd: registerDir });
+    Git.print(['commit', '--amend', '-m', options.message], { cwd: tmpDir.name });
   else
-    Git.print(['commit', '--amend'], { cwd: registerDir });
+    Git.print(['commit', '--amend'], { cwd: tmpDir.name });
 
   // Initializing
-  ensureTortilla(registerPaths);
+  ensureTortilla(tmpPaths);
 
   // Copy from temp to output
   Fs.removeSync(options.output);
-  Fs.copySync(registerDir, options.output);
-  Fs.removeSync(registerDir);
+  Fs.copySync(tmpDir.name, options.output);
+  tmpDir.removeCallback();
 }
 
 // Make sure that tortilla essentials are initialized on an existing project.

@@ -1,15 +1,21 @@
 const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
+const Tmp = require('tmp');
 const Utils = require('../src/utils');
 
 
 before(function () {
   // Consts
-  // TODO: Add a random post-fix
-  this.plainDir = '/tmp/tortilla_plain';
-  this.testDir = '/tmp/tortilla_test';
-  this.repoDir = '/tmp/tortilla.git';
+  this.plainDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+  this.testDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+  this.repoDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+
+  // Setup
+  // Set environment from which Tortilla calculations are gonna be made from
+  process.env.TORTILLA_CWD = this.testDir;
+  // Print test dir so it can be observed in case of failure
+  console.log('Test Dir: ' + this.testDir);
 
   // Initializing test tortilla project
   ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [

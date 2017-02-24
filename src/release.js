@@ -1,5 +1,6 @@
 var Fs = require('fs-extra');
 var Path = require('path');
+var Tmp = require('tmp');
 var Git = require('./git');
 var Manual = require('./manual');
 var Paths = require('./paths');
@@ -12,8 +13,8 @@ var Utils = require('./utils');
   tags from the git-host, since most calculations are based on them.
  */
 
-var register1Dir = '/tmp/tortilla_register1';
-var register2Dir = '/tmp/tortilla_register2';
+var tmp1Dir = Tmp.dirSync({ unsafeCleanup: true });
+var tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
 
 
 // Creates a bumped release tag of the provided type
@@ -99,7 +100,7 @@ function bumpRelease(releaseType, options) {
 // diff combination in the git-host
 function createDiffReleasesBranch() {
   var destinationDir = createDiffReleasesRepo();
-  var sourceDir = destinationDir == register1Dir ? register2Dir : register1Dir;
+  var sourceDir = destinationDir == tmp1Dir.name ? tmp2Dir.name : tmp1Dir.name;
 
   // e.g. master
   var currBranch = Git.activeBranchName();
@@ -120,8 +121,8 @@ function createDiffReleasesBranch() {
   Git(['branch', diffBranch, 'FETCH_HEAD']);
 
   // Clear registers
-  Fs.removeSync(register1Dir);
-  Fs.removeSync(register2Dir);
+  tmp1Dir.removeCallback();
+  tmp2Dir.removeCallback();
 }
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
@@ -140,8 +141,8 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
   Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
 
   // Clear registers
-  Fs.removeSync(register1Dir);
-  Fs.removeSync(register2Dir);
+  tmp1Dir.removeCallback();
+  tmp2Dir.removeCallback();
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
@@ -161,8 +162,8 @@ function createDiffReleasesRepo(tags) {
   }
 
   // The 'registers' are directories which will be used for temporary FS calculations
-  var destinationDir = register1Dir;
-  var sourceDir = register2Dir;
+  var destinationDir = tmp1Dir.name;
+  var sourceDir = tmp2Dir.name;
 
   // Make sure register2 is empty
   Fs.emptyDirSync(sourceDir);
