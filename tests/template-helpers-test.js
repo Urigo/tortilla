@@ -56,7 +56,7 @@ describe('Template Helpers', function() {
   });
 
   describe('nav_step', function () {
-    this.slow(500);
+    this.slow(1000);
 
     beforeEach(function () {
       this.tortilla(['step', 'tag', '-m', 'dummy']);

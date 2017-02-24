@@ -58,4 +58,14 @@ describe('MDRenderer', function () {
       ].join('\n'));
     });
   });
+
+  describe('renderTemplateFile()', function () {
+    it('should use user defined templates', function () {
+      const templatePath = this.testDir + '/header.md.tmpl';
+      this.exec('sh', ['-c', `echo "{{test}}" > ${templatePath}`]);
+
+      const view = MDRenderer.renderTemplateFile(templatePath, { test: 'CUSTOM HEADER' });
+      expect(view).to.equal('CUSTOM HEADER\n');
+    });
+  });
 });

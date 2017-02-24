@@ -47,6 +47,8 @@ describe('Manual', function () {
     });
 
     it('should not create a symlink to root manual if already exists', function () {
+      this.slow(7000);
+
       this.tortilla(['manual', 'render', '--root']);
       this.tortilla(['manual', 'render', '--root']);
 

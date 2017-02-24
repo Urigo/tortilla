@@ -7,6 +7,7 @@ const expect = Chai.expect;
 describe('Release', function () {
   describe('bump()', function () {
     this.slow(15000);
+    this.timeout(20000);
 
     it('should bump a major version', function () {
       this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
@@ -98,8 +99,6 @@ describe('Release', function () {
     });
 
     it('should change the prefix of the release based on the active branch', function () {
-      this.slow(5000);
-
       this.git(['checkout', '-b', 'test']);
 
       this.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -169,8 +168,6 @@ describe('Release', function () {
     });
 
     it('should create a diff branch whose commits represent the releases', function () {
-      this.slow(7000);
-
       this.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
       this.git(['add', 'VERSION']);
       this.tortilla(['step', 'push', '-m', 'Create version file']);
@@ -234,6 +231,7 @@ describe('Release', function () {
 
   describe('diff()', function () {
     this.slow(15000);
+    this.timeout(20000);
 
     it('should run "git diff" between provided releases', function () {
       this.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);

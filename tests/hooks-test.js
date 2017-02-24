@@ -5,7 +5,7 @@ const expect = Chai.expect;
 
 
 describe('Hooks', function () {
-  this.slow(1000);
+  this.slow(2000);
 
   it('should disallow new commits to be added', function () {
     const commit = this.git.bind(this, [

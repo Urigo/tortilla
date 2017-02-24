@@ -65,10 +65,10 @@ As for the project structure itself, the only thing you should be aware of is th
 
     manuals
     ├─ templates
-    │  ├ root.md
-    │  ├ step1.md
-    │  ├ step2.md
-    │  └ step3.md
+    │  ├ root.md.tmpl
+    │  ├ step1.md.tmpl
+    │  ├ step2.md.tmpl
+    │  └ step3.md.tmpl
     └─ views
        ├ root.md
        ├ step1.md

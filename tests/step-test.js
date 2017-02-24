@@ -8,7 +8,7 @@ const expect = Chai.expect;
 
 describe('Step', function () {
   describe('push()', function () {
-    this.slow(2000);
+    this.slow(3000);
 
     it('should push a new step to the top of the stack', function () {
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
@@ -90,7 +90,7 @@ describe('Step', function () {
   });
 
   describe('reword()', function () {
-    this.slow(2500);
+    this.slow(3000);
 
     it('should reword the provided step', function () {
       this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
@@ -298,7 +298,7 @@ describe('Step', function () {
   });
 
   describe('sort()', function () {
-    this.slow(7000);
+    this.slow(10000);
 
     it('should sort all step indexes from the given step', function () {
       this.tortilla(['step', 'tag', '-m', 'dummy']);
