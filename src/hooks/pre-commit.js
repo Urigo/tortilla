@@ -28,17 +28,18 @@ var Step = require('../step');
   // If this is a super step only the appropriate manual file can be modified
   if (isSuperStep) {
     var tag = 'step' + stepDescriptor.number;
-    var manualFile = tag + '.md';
-    var errorMessage = '\'' + manualFile + '\' is the only file that can be modified';
+    var manualTemplatePath = 'manuals/templates/' + tag + '.md.tmpl';
+    var manualViewPath = 'manuals/views/' + tag + '.md';
 
-    // Files that don't start with 'manuals/'
-    var stagedFiles = Git.stagedFiles(/^(?!manuals\/)/);
-    if (stagedFiles.length) throw Error(errorMessage);
+    var stagedFiles = Git.stagedFiles().filter(function (stagedFile) {
+      return [manualTemplatePath, manualViewPath].indexOf(stagedFile) != -1;
+    });
 
-    // '.md' files that start with 'manuals/' e.g. manuals/templates/step1.md.tmpl
-    var pattern = new RegExp('^manuals/(templates|views)/(?!' + tag + '\\.md(\\.tmpl)?)');
-    stagedFiles = Git.stagedFiles(pattern);
-    if (stagedFiles.length) throw Error(errorMessage);
+    if (!stagedFiles.length) throw Error([
+      'Staged files must be one of:',
+      '• ' + manualTemplatePath + ' (manual template)',
+      '• ' + manualViewPath + ' (manual view)'
+    ].join('\n'));
   }
   // Else, if this is not root commit prohibit manual files modifications
   else if (stepDescriptor) {

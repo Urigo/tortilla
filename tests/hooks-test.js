@@ -140,8 +140,8 @@ describe('Hooks', function () {
 
     this.tortilla(['step', 'tag', '-m', 'dummy']);
     this.tortilla(['step', 'edit', '1']);
-    this.exec('sh', ['-c', 'echo test > manuals/templates/step1.md']);
-    this.git(['add', 'manuals/templates/step1.md']);
+    this.exec('sh', ['-c', 'echo test > manuals/templates/step1.md.tmpl']);
+    this.git(['add', 'manuals/templates/step1.md.tmpl']);
 
     expect(commit).to.not.throw(Error);
   });
