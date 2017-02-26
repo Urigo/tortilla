@@ -84,7 +84,7 @@ function sortSteps(operations) {
 
   // If delta is 0 no sortments are needed
   if (oldStep == newStep) {
-    LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+    return LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
   }
 
   var stepLimit = getStepLimit(oldStep, newStep);
