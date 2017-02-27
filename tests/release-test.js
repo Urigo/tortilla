@@ -188,18 +188,18 @@ describe('Release', function () {
       this.git(['rebase', '--continue']);
       this.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
 
-      this.git(['checkout', 'diff/releases/master']);
+      this.git(['checkout', 'master-history']);
 
       let commitMessage;
 
       commitMessage = this.git(['log', '-1', '--format=%s']);
-      expect(commitMessage).to.equal('master@1.1.1');
+      expect(commitMessage).to.equal('master@1.1.1: patch version test');
 
       commitMessage = this.git(['log', '-1', '--skip=1', '--format=%s']);
-      expect(commitMessage).to.equal('master@1.1.0');
+      expect(commitMessage).to.equal('master@1.1.0: minor version test');
 
       commitMessage = this.git(['log', '-1', '--skip=2', '--format=%s']);
-      expect(commitMessage).to.equal('master@1.0.0');
+      expect(commitMessage).to.equal('master@1.0.0: major version test');
 
       const releaseDiff = this.git(['diff', 'HEAD', 'HEAD~2'], {
         env: {

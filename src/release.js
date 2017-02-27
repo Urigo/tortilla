@@ -104,21 +104,21 @@ function createDiffReleasesBranch() {
 
   // e.g. master
   var currBranch = Git.activeBranchName();
-  // e.g. diff/releases/master
-  var diffBranch = ['diff', 'releases', currBranch].join('/');
+  // e.g. master-history
+  var historyBranch = currBranch + '-history';
 
   // Make sure source is empty
   Fs.emptyDirSync(sourceDir);
 
   // Create dummy repo in source
   Git(['init', sourceDir, '--bare']);
-  Git(['checkout', '-b', diffBranch], { cwd: destinationDir });
-  Git(['push', sourceDir, diffBranch], { cwd: destinationDir });
+  Git(['checkout', '-b', historyBranch], { cwd: destinationDir });
+  Git(['push', sourceDir, historyBranch], { cwd: destinationDir });
 
   // Pull the newly created project to the branch name above
-  if (Git.tagExists(diffBranch)) Git(['branch', '-D', diffBranch]);
-  Git(['fetch', sourceDir, diffBranch]);
-  Git(['branch', diffBranch, 'FETCH_HEAD']);
+  if (Git.tagExists(historyBranch)) Git(['branch', '-D', historyBranch]);
+  Git(['fetch', sourceDir, historyBranch]);
+  Git(['branch', historyBranch, 'FETCH_HEAD']);
 
   // Clear registers
   tmp1Dir.removeCallback();
@@ -135,7 +135,7 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
   var sourceReleaseTag = branch + '@' + sourceRelease;
   var destinationReleaseTag = branch + '@' + destinationRelease;
   // Create repo
-  var destinationDir = createDiffReleasesRepo([sourceReleaseTag, destinationReleaseTag]);
+  var destinationDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
 
   // Run 'diff' between the newly created commits
   Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
@@ -147,8 +147,10 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
 // newly created repo
-function createDiffReleasesRepo(tags) {
-  if (!tags) {
+function createDiffReleasesRepo() {
+  var tags = [].slice.call(arguments);
+
+  if (tags.length == 0) {
     var branch = Git.activeBranchName();
 
     // Fetch all releases in reversed order, since the commits are going to be stacked
@@ -200,7 +202,13 @@ function createDiffReleasesRepo(tags) {
     // Add commit for release
     Git(['add', '.'], { cwd: destinationDir });
     Git(['add', '-u'], { cwd: destinationDir });
-    Git(['commit', '-m', tag, '--allow-empty'], {
+
+    // Extracting tag message
+    var tagLine = Git(['tag', '-l', tag, '-n99']);
+    var tagMessage = tagLine.replace(/([^\s]+)\s+((?:.|\n)+)/, '$1: $2');
+
+    // Creating a new commit with the tag's message
+    Git(['commit', '-m', tagMessage, '--allow-empty'], {
       cwd: destinationDir
     });
 
@@ -222,7 +230,7 @@ function printCurrentRelease() {
 }
 
 // Gets the current release based on the latest release tag
-// e.g. if we have the tags 'release@0.0.1', 'release@0.0.2' and 'release@0.1.0' this method
+// e.g. if we have the tags 'master@0.0.1', 'master@0.0.2' and 'master@0.1.0' this method
 // will return { major: 0, minor: 1, patch: 0 }
 function getCurrentRelease() {
   // If release was yet to be released, assume this is a null release

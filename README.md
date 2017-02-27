@@ -75,7 +75,7 @@ As for the project structure itself, the only thing you should be aware of is th
        ├ step2.md
        └ step3.md
 
-Templates are used for development, they are easy to edit and work with since they provide you with some handy [template helpers](#template-helpers). On the other hand, we have the views, which are not as comfortable to work with, and are very comfortable to look at, and will most likely be used by the viewers. For more information regards manual files, read the [manuals](#manuals) section.
+Templates are used for development, they are easy to edit and work with since they provide you with some handy [template helpers](#template-helpers). On the other hand, we have the views, which are not as comfortable to work with, and are very comfortable to look at, and will most likely be used by the viewers. The message of the current step's commit will be used as its belonging manual's title (header), and a navigation bar will be rendered automatically at the button of each manual (footer). The header and the footer can be overridden by defining custom templates called `header.md.tmpl` and `footer.md.tmpl` in the root commit.
 
 ### Template Helpers
 
@@ -106,22 +106,22 @@ A Tortilla project may contain [release tags](#release-tags) which represent dif
     foo@step1@0.0.1
     foo@0.0.1
 
-In addition, a stack of all the releases is available through a [diff branches](#diff-branches):
+In addition, a stack of all the releases is available through a [history branches](#history-branches):
 
-    diff/releases/master
-    diff/releases/foo
+    master-history
+    foo-history
 
 ### Release Tags
 
 A release tag should represent the tutorial at a specific state (e.g. master branch step2) and time point (e.g. version 1.2.1). A release tag should contain the name of the branch, the step descriptor, if at all, and a [semver](http://semver.org/) version, separated with at (`@`) signs (e.g. `master@step1@0.0.1`, `foo@0.1.0`).
 
-### Diff Branches
+### History Branches
 
-The diff is specific for a certain branch. Its name should start with `diff/releases/` followed by the branch name (e.g. `diff/releases/master`). Each commit in that branch represents all the changes made in a specific release, making the comparison between all diff releases much much easier (even if they have different roots!). Here's an example of a commits list in a diff branch named `diff/releases/master`:
+The history is specific for a certain branch. Its name should end with `history` preceded by the branch name (e.g. `master-history`). Each commit in that branch represents all the changes made in a specific release, making the comparison between releases much easier (even if they have different roots!). Here's an example of a commits list in a history branch named `master-history`:
 
-    master@1.0.0
-    master@0.0.2
-    master@0.0.1
+    master@1.0.0: Add favorites page
+    master@0.0.2: Update step 2
+    master@0.0.1: Initial tutorial creation
 
 ## How to Start
 
@@ -195,7 +195,7 @@ Renders and rebases specified step's manual. If you would like to render the roo
 
     $ tortilla release bump "release type" --message="release message"
 
-Whenever making changes in the tutorial using Tortilla, the commits are being overridden, a behavior we're not always interested in, since sometimes we would like to reference or view previous releases of the tutorial. The `release` command solves this problem by creating [release tags](#release-tags) which are used as snap shot for the current tutorial state. The first argument of this command is the release type and must be one of `major`, `minor` or `patch`. The `message` argument is optional, and should provide a short description message for the release. If no message is provided, a text editor will be opened, where you can type the change-log of the release. The change-log will be attached to the `root` tag. Once a version has been released, a new [diff branch](#diff-branches) will be created.
+Whenever making changes in the tutorial using Tortilla, the commits are being overridden, a behavior we're not always interested in, since sometimes we would like to reference or view previous releases of the tutorial. The `release` command solves this problem by creating [release tags](#release-tags) which are used as snap shot for the current tutorial state. The first argument of this command is the release type and must be one of `major`, `minor` or `patch`. The `message` argument is optional, and should provide a short description message for the release. If no message is provided, a text editor will be opened, where you can type the change-log of the release. The change-log will be attached to the `root` tag. Once a version has been released, a new [history branch](#history-branches) will be created.
 
 ### Get Release
 
