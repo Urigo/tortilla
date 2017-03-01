@@ -8,6 +8,7 @@ var Utils = require('./utils');
 
 var git = Utils.git;
 
+
 // Tells if rebasing or not
 function isRebasing() {
   return Utils.exists(Paths.git.rebaseMerge) || Utils.exists(Paths.git.rebaseApply);
