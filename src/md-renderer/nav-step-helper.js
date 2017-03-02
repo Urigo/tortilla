@@ -18,7 +18,7 @@ MDRenderer.registerHelper('nav_step', function(options) {
     // If there are no any steps yet, don't show nav bar
     if (!anySuperStep) return '';
 
-    return MDRenderer.renderTemplateFile('next-button', {
+    return renderNextButton({
       text: 'Begin Tutorial',
       ref: options.hash.ref || 'manuals/views/step1.md'
     });
@@ -45,14 +45,14 @@ MDRenderer.registerHelper('nav_step', function(options) {
 
   // If this is the last step
   if (step == recentSuperStep)
-    return MDRenderer.renderTemplateFile('prev-button', {
+    return renderPrevButton({
       text: 'Previous Step',
       ref: options.hash.ref || 'step' + (step - 1) + '.md'
     });
 
   // If this is the first super step
   if (step == 1)
-    return MDRenderer.renderTemplateFile('nav-buttons', {
+    return renderNavButtons({
       next_text: 'Next Step',
       next_ref: options.hash.next_ref || 'step2.md',
       prev_text: 'Intro',
@@ -60,10 +60,47 @@ MDRenderer.registerHelper('nav_step', function(options) {
     });
 
   // Any other case
-  return MDRenderer.renderTemplateFile('nav-buttons', {
+  return renderNavButtons({
     next_text: 'Next Step',
     next_ref: options.hash.next_ref || 'step' + (step + 1) + '.md',
     prev_text: 'Previous Step',
     prev_ref: options.hash.prev_ref || 'step' + (step - 1) + '.md'
   });
 });
+
+// Render 'next button' template
+function renderNextButton(scope) {
+  // ║ NEXT STEP ⟹
+  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
+    return '<b>║</b> <a href="' + scope.ref +
+      '">' + scope.text.toUpperCase() + '</a> ⟹';
+  }
+
+  return MDRenderer.renderTemplateFile('next-button',scope);
+}
+
+// Render 'previous button' template
+function renderPrevButton(scope) {
+  // ⟸ PREVIOUS STEP ║
+  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
+    return '⟸ <a href="' + scope.ref + '">' +
+      scope.text.toUpperCase() + '</a> <b>║</b>';
+  }
+
+  return MDRenderer.renderTemplateFile('prev-button', scope);
+}
+
+// Render 'navigation buttons' template
+function renderNavButtons(scope) {
+  // ⟸ PREVIOUS STEP ║ NEXT STEP ⟹
+  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
+    var prevButton = '⟸ <a href="' + scope.prev_ref + '">' +
+      scope.prev_text.toUpperCase() + '</a>';
+    var nextButton = '<a href="' + scope.next_ref + '">' +
+      scope.next_text.toUpperCase() + '</a> ⟹';
+
+    return prevButton + ' <b>║</b> ' + nextButton;
+  }
+
+  return MDRenderer.renderTemplateFile('nav-buttons', scope);
+}
