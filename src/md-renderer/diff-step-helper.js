@@ -33,9 +33,6 @@ var Utils = require('../utils');
   very simple stuff
  */
 
-var diffDataPattern = /^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/;
-
-
 MDRenderer.registerHelper('diff_step', function (step, options) {
   var pattern;
 
@@ -91,21 +88,9 @@ function transformMedium(files) {
   })
   .map(function (file) {
     file.chunks.forEach(function (chunk) {
-      // Diff data (e.g. @@ -1,3 +1,3 @@) will be shown with an italic font
-      chunk.content = chunk.content.repalce(diffDataPattern, '<i>$&</i>');
-
       chunk.changes = chunk.changes.filter(function (change) {
         // Get rid of deletion changes
         return change.type != 'del';
-      })
-      .map(function (change) {
-        if (change.type == 'add') {
-          // Addition changes will appear in bold
-          change.content = change.content.substr(0, 1) +
-            '<b>' + change.content.substr(1) + '</b>';
-        }
-
-        return change;
       });
     });
 
@@ -133,8 +118,6 @@ function getMdDiff(file) {
 
 // Gets diff in a markdown format for a single chunk
 function getMdChunk(chunk) {
-  // Grab chunk data since it's followed by irrelevant content
-  var chunkData = chunk.content.match(diffDataPattern)[0];
   var padLength = getPadLength(chunk.changes);
 
   var mdChanges = chunk.changes
@@ -143,10 +126,18 @@ function getMdChunk(chunk) {
     // Replace EOF flag with a pretty format and append it to the recent line
     .replace(/\n\\ No newline at end of file/g, '🚫↵');
 
+  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
+    mdChanges = mdChanges.replace(/^\+.+$/mg, '<b>$&</b>');
+  }
+
+  // Grab chunk data since it's followed by irrelevant content
+  var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
   // The opening and closing of the wrap
   var open, close;
 
   if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
+    // Italic font
+    chunkData = '<i>' + chunkData + '</i>';
     // Wrap with <pre> tag
     open = '<pre>';
     close = '</pre>';
