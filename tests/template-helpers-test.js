@@ -56,12 +56,11 @@ describe('Template Helpers', function() {
 
     describe('render target set to Medium', function () {
       before(function () {
-        this.oldRenderTarget = process.env.TORTILLA_RENDER_TARGET;
         process.env.TORTILLA_RENDER_TARGET = 'medium';
       });
 
       after(function () {
-        process.env.TORTILLA_RENDER_TARGET = this.oldRenderTarget;
+        delete process.env.TORTILLA_RENDER_TARGET;
       });
 
       it('should render an added file', function () {
@@ -156,12 +155,11 @@ describe('Template Helpers', function() {
 
     describe('render target set to Medium', function () {
       before(function () {
-        this.oldRenderTarget = process.env.TORTILLA_RENDER_TARGET;
         process.env.TORTILLA_RENDER_TARGET = 'medium';
       });
 
       after(function () {
-        process.env.TORTILLA_RENDER_TARGET = this.oldRenderTarget;
+        delete process.env.TORTILLA_RENDER_TARGET;
       });
 
       it('should render a button referencing to the first step when editing the root commit', function () {

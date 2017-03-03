@@ -77,12 +77,11 @@ describe('Manual', function () {
 
     describe('render target set to Medium', function () {
       before(function () {
-        this.oldRenderTarget = process.env.TORTILLA_RENDER_TARGET;
         process.env.TORTILLA_RENDER_TARGET = 'medium';
       });
 
       after(function () {
-        process.env.TORTILLA_RENDER_TARGET = this.oldRenderTarget;
+        delete process.env.TORTILLA_RENDER_TARGET;
       });
 
       it('should render a specified manual file to production format', function () {

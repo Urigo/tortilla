@@ -38,7 +38,7 @@ function resolveAll(cwd) {
   if (!cwd)
     throw TypeError('A project path must be provided');
 
-  if (cache[cwd]) return cache[cwd];
+  if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) return cache[cwd];
 
   var gitHeads = {
     _: resolve(cwd, '.git/HEAD'),

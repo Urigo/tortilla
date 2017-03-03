@@ -30,7 +30,7 @@ function overwriteTemplateFile(templatePath, scope) {
 function renderTemplateFile(templatePath, scope) {
   templatePath = resolveTemplatePath(templatePath);
 
-  if (!cache[templatePath]) {
+  if (process.env.TORTILLA_CACHE_DISABLED || !cache[templatePath]) {
     var templateContent = Fs.readFileSync(templatePath, 'utf8');
     cache[templatePath] = handlebars.compile(templateContent);
   }
