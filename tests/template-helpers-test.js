@@ -5,7 +5,7 @@ const MDRenderer = require('../src/md-renderer');
 const expect = Chai.expect;
 
 
-describe.only('Template Helpers', function() {
+describe('Template Helpers', function() {
   describe('diff_step', function() {
     this.slow(150);
 
@@ -99,6 +99,13 @@ describe.only('Template Helpers', function() {
 
         const view = MDRenderer.renderTemplate('{{{diff_step 1.3}}}');
         expect(view).to.be.a.file('medium/step-not-found.md');
+      });
+
+      it('it should escape expressions', function () {
+        this.applyTestPatch('change-view');
+
+        const view = MDRenderer.renderTemplate('{{{diff_step 1.2}}}');
+        expect(view).to.be.a.file('medium/escaped-diff.md');
       });
     });
   });

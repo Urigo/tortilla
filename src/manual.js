@@ -73,6 +73,13 @@ function renderManual(step) {
   // Rewrite manual
   var manualViewPath = getManualViewPath(step);
   Fs.ensureDir(Paths.manuals.views);
+
+  // In case a custom render target is specified, ensure its dir exists
+  if (process.env.TORTILLA_RENDER_TARGET) {
+    var customTargetDir = Path.resolve(Paths.manuals.views, process.env.TORTILLA_RENDER_TARGET);
+    Fs.ensureDir(customTargetDir);
+  }
+
   Fs.writeFileSync(manualViewPath, manualView);
 
   // Amend changes
@@ -113,8 +120,17 @@ function getManualTemplatePath(step) {
 
 // Gets the manual view belonging to the given step
 function getManualViewPath(step) {
-  if (step == 'root') return Paths.readme;
-  return Path.resolve(Paths.manuals.views, 'step' + step + '.md');
+  // The sub-dir of our views in case a custom render target is specified
+  var subDir = process.env.TORTILLA_RENDER_TARGET || '';
+  var tagName = step == 'root' ? 'root' : 'step' + step;
+  var fileName = tagName + '.md';
+
+  // If sub-dir exists, return its path e.g. manuals/view/medium
+  if (subDir) return Path.resolve(Paths.manuals.views, subDir, fileName);
+  // If we're trying to render root step, return README.md
+  if (tagName == 'root') return Paths.readme;
+  // Resolve normally e.g. manuals/views/step1.md
+  return Path.resolve(Paths.manuals.views, fileName);
 }
 
 // Gets the commit message belonging to the given step

@@ -1,3 +1,4 @@
+var Handlebars = require('handlebars');
 var ParseDiff = require('parse-diff');
 var MDRenderer = require('.');
 var Git = require('../git');
@@ -126,16 +127,16 @@ function getMdChunk(chunk) {
     // Replace EOF flag with a pretty format and append it to the recent line
     .replace(/\n\\ No newline at end of file/g, '🚫↵');
 
-  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
-    mdChanges = mdChanges.replace(/^\+.+$/mg, '<b>$&</b>');
-  }
-
   // Grab chunk data since it's followed by irrelevant content
   var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
   // The opening and closing of the wrap
   var open, close;
 
   if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
+    // Escape html characters so they won't be rendered
+    mdChanges = Handlebars.escapeExpression(mdChanges);
+    // Turn additions bold
+    mdChanges = mdChanges.replace(/^\+.+$/mg, '<b>$&</b>');
     // Italic font
     chunkData = '<i>' + chunkData + '</i>';
     // Wrap with <pre> tag

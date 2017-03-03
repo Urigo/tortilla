@@ -74,5 +74,53 @@ describe('Manual', function () {
       manual = this.exec('cat', ['manuals/views/step3.md']);
       expect(manual).to.be.a.file('manuals/step3.md');
     });
+
+    describe('render target set to Medium', function () {
+      before(function () {
+        this.oldRenderTarget = process.env.TORTILLA_RENDER_TARGET;
+        process.env.TORTILLA_RENDER_TARGET = 'medium';
+      });
+
+      after(function () {
+        process.env.TORTILLA_RENDER_TARGET = this.oldRenderTarget;
+      });
+
+      it('should render a specified manual file to production format', function () {
+        this.tortilla(['manual', 'render', '2']);
+
+        const manual = this.exec('cat', ['manuals/views/medium/step2.md']);
+        expect(manual).to.be.a.file('manuals/medium/step2.md');
+      });
+
+      it('should render last manual by default if non is provided', function () {
+        this.tortilla(['manual', 'render']);
+
+        const manual = this.exec('cat', ['manuals/views/medium/step3.md']);
+        expect(manual).to.be.a.file('manuals/medium/step3.md');
+      });
+
+      it('should render root manual if specified', function () {
+        this.tortilla(['manual', 'render', '--root']);
+
+        const manual = this.exec('cat', ['manuals/views/medium/root.md']);
+        expect(manual).to.be.a.file('manuals/medium/root.md');
+      });
+
+      it('should render all manual files through out history', function () {
+        this.tortilla(['manual', 'render', '--all']);
+
+        let manual = this.exec('cat', ['manuals/views/medium/root.md']);
+        expect(manual).to.be.a.file('manuals/medium/root.md');
+
+        manual = this.exec('cat', ['manuals/views/medium/step1.md']);
+        expect(manual).to.be.a.file('manuals/medium/step1.md');
+
+        manual = this.exec('cat', ['manuals/views/medium/step2.md']);
+        expect(manual).to.be.a.file('manuals/medium/step2.md');
+
+        manual = this.exec('cat', ['manuals/views/medium/step3.md']);
+        expect(manual).to.be.a.file('manuals/medium/step3.md');
+      });
+    });
   });
 });
