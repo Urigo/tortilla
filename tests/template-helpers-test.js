@@ -78,14 +78,6 @@ describe('Template Helpers', function() {
         expect(view).to.be.a.file('medium/change-file.md');
       });
 
-      it('should not render a deleted file', function () {
-        this.applyTestPatch('add-file');
-        this.applyTestPatch('delete-file');
-
-        const view = MDRenderer.renderTemplate('{{{diff_step 1.2}}}');
-        expect(view).to.be.a.file('medium/delete-file.md');
-      });
-
       it('should render only the file matching the pattern', function () {
         this.applyTestPatch('add-multiple-files');
 

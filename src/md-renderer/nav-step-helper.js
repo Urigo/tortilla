@@ -18,7 +18,7 @@ MDRenderer.registerHelper('nav_step', function(options) {
     // If there are no any steps yet, don't show nav bar
     if (!anySuperStep) return '';
 
-    return renderNextButton({
+    return MDRenderer.renderTemplateFile('next-button', {
       text: 'Begin Tutorial',
       ref: options.hash.ref || 'manuals/views/step1.md'
     });
@@ -45,14 +45,14 @@ MDRenderer.registerHelper('nav_step', function(options) {
 
   // If this is the last step
   if (step == recentSuperStep)
-    return renderPrevButton({
+    return MDRenderer.renderTemplateFile('prev-button', {
       text: 'Previous Step',
       ref: options.hash.ref || 'step' + (step - 1) + '.md'
     });
 
   // If this is the first super step
   if (step == 1)
-    return renderNavButtons({
+    return MDRenderer.renderTemplateFile('nav-buttons', {
       next_text: 'Next Step',
       next_ref: options.hash.next_ref || 'step2.md',
       prev_text: 'Intro',
@@ -60,7 +60,7 @@ MDRenderer.registerHelper('nav_step', function(options) {
     });
 
   // Any other case
-  return renderNavButtons({
+  return MDRenderer.renderTemplateFile('nav-buttons', {
     next_text: 'Next Step',
     next_ref: options.hash.next_ref || 'step' + (step + 1) + '.md',
     prev_text: 'Previous Step',
@@ -68,39 +68,43 @@ MDRenderer.registerHelper('nav_step', function(options) {
   });
 });
 
-// Render 'next button' template
-function renderNextButton(scope) {
-  // ║ NEXT STEP ⟹
-  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
-    return '<b>║</b> <a href="' + scope.ref +
-      '">' + scope.text.toUpperCase() + '</a> ⟹';
-  }
+MDRenderer.registerTransformation('medium', 'nav_step', function (view) {
+  var isPrev = !!view.match('\\|:-');
+  var isNext = !!view.match('-:\\|');
 
-  return MDRenderer.renderTemplateFile('next-button',scope);
-}
-
-// Render 'previous button' template
-function renderPrevButton(scope) {
-  // ⟸ PREVIOUS STEP ║
-  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
-    return '⟸ <a href="' + scope.ref + '">' +
-      scope.text.toUpperCase() + '</a> <b>║</b>';
-  }
-
-  return MDRenderer.renderTemplateFile('prev-button', scope);
-}
-
-// Render 'navigation buttons' template
-function renderNavButtons(scope) {
   // ⟸ PREVIOUS STEP ║ NEXT STEP ⟹
-  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
-    var prevButton = '⟸ <a href="' + scope.prev_ref + '">' +
-      scope.prev_text.toUpperCase() + '</a>';
-    var nextButton = '<a href="' + scope.next_ref + '">' +
-      scope.next_text.toUpperCase() + '</a> ⟹';
+  if (isPrev && isNext) {
+    var prevMatches = view.match(/\[< ([^\]]+)\]\(([^\)]+)\)/);
+    var prevText = prevMatches[1];
+    var prevRef = prevMatches[2];
+
+    var nextMatches = view.match(/\[([^\]]+) >\]\(([^\)]+)\)/);
+    var nextText = nextMatches[1];
+    var nextRef = nextMatches[2];
+
+    var prevButton = '⟸ <a href="' + prevRef + '">' + prevText.toUpperCase() + '</a>';
+    var nextButton = '<a href="' + nextRef + '">' + nextText.toUpperCase() + '</a> ⟹';
 
     return prevButton + ' <b>║</b> ' + nextButton;
   }
 
-  return MDRenderer.renderTemplateFile('nav-buttons', scope);
-}
+  // ⟸ PREVIOUS STEP ║
+  if (isPrev) {
+    var matches = view.match(/\[< ([^\]]+)\]\(([^\)]+)\)/);
+    var text = matches[1];
+    var ref = matches[2];
+
+    return '⟸ <a href="' + ref + '">' + text.toUpperCase() + '</a> <b>║</b>';
+  }
+
+  // ║ NEXT STEP ⟹
+  if (isNext) {
+    var matches = view.match(/\[([^\]]+) >\]\(([^\)]+)\)/);
+    var text = matches[1];
+    var ref = matches[2];
+
+    return '<b>║</b> <a href="' + ref + '">' + text.toUpperCase() + '</a> ⟹';
+  }
+
+  return view;
+});

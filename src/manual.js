@@ -75,8 +75,9 @@ function renderManual(step) {
   Fs.ensureDir(Paths.manuals.views);
 
   // In case a custom render target is specified, ensure its dir exists
-  if (process.env.TORTILLA_RENDER_TARGET) {
-    var customTargetDir = Path.resolve(Paths.manuals.views, process.env.TORTILLA_RENDER_TARGET);
+  var target = process.env.TORTILLA_RENDER_TARGET;
+  if (target) {
+    var customTargetDir = Path.resolve(Paths.manuals.views, target);
     Fs.ensureDir(customTargetDir);
   }
 

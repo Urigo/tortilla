@@ -13,6 +13,8 @@ var handlebars = Handlebars.create();
 // Keep original handlers since these methods are gonna be overriden
 var superRegisterHelper = handlebars.registerHelper.bind(handlebars);
 var superRegisterPartial = handlebars.registerPartial.bind(handlebars);
+// Used to store registered transformations
+var transformations = {};
 // Cache for templates which were already compiled
 var cache = {};
 
@@ -69,8 +71,14 @@ function registerHelper(name, helper) {
       'Instead it returned', out
     ].join(' '));
 
+    var target = process.env.TORTILLA_RENDER_TARGET;
     var args = [].slice.call(arguments);
-    return wrapComponent('helper', name, args, out);
+
+    // Transform helper output
+    if (target) out = transformations[target][name].apply(null, [out].concat(args));
+    out = wrapComponent('helper', name, args, out);
+
+    return out;
   }
 
   return superRegisterHelper(name, wrappedHelper);
@@ -79,9 +87,18 @@ function registerHelper(name, helper) {
 // Register a new partial. Registered partials will be wrapped with a
 // [{]: <partial> (name) [}]: #
 function registerPartial(name, partial) {
-  var wrappedPartial = wrapComponent('partial', name, partial);
+  partial = wrapComponent('partial', name, partial);
 
-  return superRegisterPartial(name, wrappedPartial);
+  return superRegisterPartial(name, partial);
+}
+
+// Register a new transformation which will take effect on rendered helpers. This is
+// useful when setting the TORTILLA_RENDER_TARGET variable, so we can make additional
+// adjustments for custom targets. For now this is NOT part of the official API and
+// is used only for development purposes
+function registerTransformation(targetName, helperName, transformation) {
+  if (!transformations[targetName]) transformations[targetName] = {};
+  transformations[targetName][helperName] = transformation;
 }
 
 // Returns content wrapped by component notations. Mostly useful if we want to detect
@@ -134,7 +151,8 @@ module.exports = Utils.extend(handlebars, {
   renderTemplateFile: renderTemplateFile,
   renderTemplate: renderTemplate,
   registerHelper: registerHelper,
-  registerPartial: registerPartial
+  registerPartial: registerPartial,
+  registerTransformation: registerTransformation
 });
 
 // Built-in helpers and partials

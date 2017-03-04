@@ -70,34 +70,12 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
     return file.from.match(pattern) || file.to.match(pattern);
   });
 
-  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
-    files = transformMedium(files);
-  }
-
   var mdDiffs = files
     .map(getMdDiff)
     .join('\n\n');
 
   return stepTitle + '\n\n' + mdDiffs;
 });
-
-// Transform files if we're rendering for Medium
-function transformMedium(files) {
-  return files.filter(function (file) {
-    // Get rid of deleted files
-    return !file.deleted;
-  })
-  .map(function (file) {
-    file.chunks.forEach(function (chunk) {
-      chunk.changes = chunk.changes.filter(function (change) {
-        // Get rid of deletion changes
-        return change.type != 'del';
-      });
-    });
-
-    return file;
-  });
-}
 
 // Gets all diff chunks in a markdown format for a single file
 function getMdDiff(file) {
@@ -119,6 +97,8 @@ function getMdDiff(file) {
 
 // Gets diff in a markdown format for a single chunk
 function getMdChunk(chunk) {
+  // Grab chunk data since it's followed by irrelevant content
+  var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
   var padLength = getPadLength(chunk.changes);
 
   var mdChanges = chunk.changes
@@ -127,29 +107,8 @@ function getMdChunk(chunk) {
     // Replace EOF flag with a pretty format and append it to the recent line
     .replace(/\n\\ No newline at end of file/g, '🚫↵');
 
-  // Grab chunk data since it's followed by irrelevant content
-  var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
-  // The opening and closing of the wrap
-  var open, close;
-
-  if (process.env.TORTILLA_RENDER_TARGET == 'medium') {
-    // Escape html characters so they won't be rendered
-    mdChanges = Handlebars.escapeExpression(mdChanges);
-    // Turn additions bold
-    mdChanges = mdChanges.replace(/^\+.+$/mg, '<b>$&</b>');
-    // Italic font
-    chunkData = '<i>' + chunkData + '</i>';
-    // Wrap with <pre> tag
-    open = '<pre>';
-    close = '</pre>';
-  }
-  else {
-    // Wrap with 'diff' code block
-    open = '```diff';
-    close = '```';
-  }
-
-  return [open, chunkData, mdChanges, close].join('\n');
+  // Wrap changes with markdown 'diff'
+  return ['```diff', chunkData, mdChanges, '```'].join('\n');
 }
 
 // Gets line in a markdown format for a single change
@@ -198,3 +157,43 @@ function getPadLength(changes) {
 
   return maxLineNumber.toString().length;
 }
+
+MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
+  var titles = [];
+  var diffs = [];
+
+  view
+    // Split at the beginning of diff scope
+    .split('```diff\n')
+    // Get odd splits
+    .forEach(function (split, index) {
+      if (index % 2)
+        diffs.push(split);
+      else
+        titles.push(split);
+    })
+
+  diffs = diffs.map(function (split) {
+    // Get actual content
+    var diffContent = split.split('\n```')[0];
+
+    diffContent = Handlebars.escapeExpression(diffContent)
+      // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
+      .replace(/^@.+$/mg, '<i>$&</i>')
+      // Remove removals
+      .replace(/\n\-.+/g, '')
+      // Bold additions
+      .replace(/^(\+.+)$/mg, '<b>$&</b>')
+
+    // Wrap with <pre> tag
+    return '<pre>\n' + diffContent + '\n</pre>';
+  });
+
+  // Join titles along with their code diffs
+  return titles
+    .map(function (split, index) {
+      var diff = diffs[index] || '';
+      return split + diff;
+    })
+    .join('\n\n');
+});
