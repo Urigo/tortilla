@@ -162,6 +162,9 @@ MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
   var titles = [];
   var diffs = [];
 
+  // Add line break after title
+  view = view.replace(/(#### .+)\n\n/, '$1\n<br>\n');
+
   view
     // Split at the beginning of diff scope
     .split('```diff\n')
