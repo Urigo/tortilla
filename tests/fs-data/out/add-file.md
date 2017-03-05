@@ -1,5 +1,5 @@
 [{]: <helper> (diff_step 1.1)
-#### Step 1.1: Add file
+#### [Step 1.1: Add file](xxx)
 
 ##### Added test-file.js
 ```diff

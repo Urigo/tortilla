@@ -1,5 +1,5 @@
 [{]: <helper> (diff_step 1.2)
-#### Step 1.2: Change view
+#### [Step 1.2: Change view](xxx)
 <br>
 ##### Changed test-view.html
 <pre>
