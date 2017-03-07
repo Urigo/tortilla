@@ -114,4 +114,22 @@ describe('MDRenderer', function () {
       });
     });
   });
+
+  describe('resolve()', function () {
+    it('should resolve path relatively to the current rendered view file path and git host', function () {
+      MDRenderer.registerHelper('test_helper', function () {
+        return MDRenderer.resolve('../templates/step1.md');
+      });
+
+      const view = MDRenderer.renderTemplate('{{{test_helper}}}', {}, {
+        viewPath: 'manuals/views/step1.md'
+      });
+
+      expect(view).to.equal([
+        '[{]: <helper> (test_helper)',
+        'https://github.com/Urigo/tortilla/tree/master@0.0.0/manuals/templates/step1.md',
+        '[}]: #'
+      ].join('\n'));
+    });
+  });
 });
