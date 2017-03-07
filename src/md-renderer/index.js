@@ -1,7 +1,9 @@
 var Fs = require('fs-extra');
 var Handlebars = require('handlebars');
 var Path = require('path');
+var Git = require('../git');
 var Paths = require('../paths');
+var Release = require('../release');
 var Utils = require('../utils');
 
 /*
@@ -29,7 +31,7 @@ function overwriteTemplateFile(templatePath, scope) {
 
 // Read provided file and render its template. Note that the default path would
 // be tortilla's template dir, so specifying a file name would be ok as well
-function renderTemplateFile(templatePath, scope) {
+function renderTemplateFile(templatePath, scope, options) {
   templatePath = resolveTemplatePath(templatePath);
 
   if (process.env.TORTILLA_CACHE_DISABLED || !cache[templatePath]) {
@@ -38,12 +40,30 @@ function renderTemplateFile(templatePath, scope) {
   }
 
   var template = cache[templatePath];
-  return template(scope);
+  return renderTemplate(template, scope, options);
 }
 
 // Render provided template
-function renderTemplate(template, scope) {
-  return handlebars.compile(template)(scope);
+function renderTemplate(template, scope, options) {
+  // Template can either be a string or a compiled template object
+  if (typeof template == 'string') template = handlebars.compile(template);
+
+  options = options || {};
+  var viewPath = options.viewPath || '';
+  // Relative path of view dir
+  // e.g. manuals/views
+  var viewDir = Path.relative(Paths._, Path.dirname(viewPath));
+
+  try {
+    // Set the view file for the resolve utility. If no view path was provided, the
+    // resolve function below still won't work
+    handlebars.resolve = resolvePath.bind(null, viewDir);
+    return template(scope);
+  }
+  finally {
+    // Either if an error was thrown or not, unbind it
+    handlebars.resolve = resolvePath.bind(null, null);
+  }
 }
 
 // Returns a template path relative to tortilla with an '.md.tmpl' extension
@@ -145,6 +165,42 @@ function stringifyHash(hash) {
   }).join(' ');
 }
 
+// Takes a bunch of paths and resolved them relatively to the current rendered view
+function resolvePath(/* reserved path, user defined path */) {
+  var paths = [].slice.call(arguments);
+
+  // A default path that the host's markdown renderer will know how to resolve by its own
+  var defaultPath = paths.slice(1).join('/');
+
+  // If function is unbound, return default path
+  if (!paths[0]) return defaultPath;
+
+  var repository = require(Paths.npm.package).repository;
+
+  // If no repository was defined, or
+  // repository type is not git, or
+  // no repository url is defined, return default path
+  if (repository == null ||
+      repository.type != 'git' ||
+      repository.url == null) {
+    return defaultPath;
+  }
+
+  // Compose branch path for current release tree
+  // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
+  var releaseTag = Git.activeBranchName() + '@' + Release.format(Release.current());
+  var repositoryUrl = repository.url.replace('.git', '');
+  var branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
+  var protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
+  var branchPath = '/' + branchUrl.substr(protocol.length);
+
+  // Resolve full path
+  // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
+  // /manuals/views/step1.md
+  paths.unshift(branchPath);
+  return protocol + Path.resolve.apply(Path, paths).substr(1);
+}
+
 
 module.exports = Utils.extend(handlebars, {
   overwriteTemplateFile: overwriteTemplateFile,
@@ -152,7 +208,9 @@ module.exports = Utils.extend(handlebars, {
   renderTemplate: renderTemplate,
   registerHelper: registerHelper,
   registerPartial: registerPartial,
-  registerTransformation: registerTransformation
+  registerTransformation: registerTransformation,
+  // Should be bound by the `renderTemplate` method
+  resolve: resolvePath.bind(null, null)
 });
 
 // Built-in helpers and partials

@@ -68,6 +68,8 @@ function renderManual(step) {
   var manualView = renderManualView(manualTemplate, {
     step: step,
     commit_message: getStepCommitMessage(step)
+  }, {
+    viewPath: manualViewPath
   });
 
   // Rewrite manual
@@ -105,10 +107,10 @@ function renderManual(step) {
 }
 
 // Renders manual template into informative view
-function renderManualView(manual, scope) {
-  var header = MDRenderer.renderTemplateFile('header', scope)
-  var body = MDRenderer.renderTemplate(manual, scope);
-  var footer = MDRenderer.renderTemplateFile('footer', scope);
+function renderManualView(manual, scope, options) {
+  var header = MDRenderer.renderTemplateFile('header', scope, options)
+  var body = MDRenderer.renderTemplate(manual, scope, options);
+  var footer = MDRenderer.renderTemplateFile('footer', scope, options);
 
   return [header, body, footer].join('\n');
 }

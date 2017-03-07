@@ -20,7 +20,7 @@ MDRenderer.registerHelper('nav_step', function(options) {
 
     return MDRenderer.renderTemplateFile('next-button', {
       text: 'Begin Tutorial',
-      ref: options.hash.ref || 'manuals/views/step1.md'
+      ref: options.hash.ref || MDRenderer.resolve('manuals/views/step1.md')
     });
   }
 
@@ -47,24 +47,24 @@ MDRenderer.registerHelper('nav_step', function(options) {
   if (step == recentSuperStep)
     return MDRenderer.renderTemplateFile('prev-button', {
       text: 'Previous Step',
-      ref: options.hash.ref || 'step' + (step - 1) + '.md'
+      ref: options.hash.ref || MDRenderer.resolve('step' + (step - 1) + '.md')
     });
 
   // If this is the first super step
   if (step == 1)
     return MDRenderer.renderTemplateFile('nav-buttons', {
       next_text: 'Next Step',
-      next_ref: options.hash.next_ref || 'step2.md',
+      next_ref: options.hash.next_ref || MDRenderer.resolve('step2.md'),
       prev_text: 'Intro',
-      prev_ref: options.hash.prev_ref || '../../README.md'
+      prev_ref: options.hash.prev_ref || MDRenderer.resolve('../../README.md')
     });
 
   // Any other case
   return MDRenderer.renderTemplateFile('nav-buttons', {
     next_text: 'Next Step',
-    next_ref: options.hash.next_ref || 'step' + (step + 1) + '.md',
+    next_ref: options.hash.next_ref || MDRenderer.resolve('step' + (step + 1) + '.md'),
     prev_text: 'Previous Step',
-    prev_ref: options.hash.prev_ref || 'step' + (step - 1) + '.md'
+    prev_ref: options.hash.prev_ref || MDRenderer.resolve('step' + (step - 1) + '.md')
   });
 });
 
