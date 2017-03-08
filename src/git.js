@@ -1,4 +1,5 @@
 var Path = require('path');
+var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
@@ -65,6 +66,11 @@ function getStagedFiles(pattern) {
 
 // Gets active branch name
 function getActiveBranchName() {
+  // If rebasing, return stored branch name
+  if (isRebasing()) {
+    return LocalStorage.getItem('REBASE_BRANCH');
+  }
+
   return git(['rev-parse', '--abbrev-ref', 'HEAD']);
 }
 

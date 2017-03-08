@@ -1,6 +1,7 @@
 var Fs = require('fs-extra');
 var Path = require('path');
 var Minimist = require('minimist');
+var Git = require('./git');
 var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Step = require('./step');
@@ -31,6 +32,8 @@ var Step = require('./step');
 
   // Set flag just in case recent rebase was aborted
   LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
+  // Set current branch name so it can be retrieved during rebase
+  LocalStorage.setItem('REBASE_BRANCH', Git(['rev-parse', '--abbrev-ref', 'HEAD']));
 
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
