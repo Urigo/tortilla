@@ -163,8 +163,10 @@ MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
   return view
     // Add line break after title
     .replace(/(#### .+)\n\n/, '$1\n<br>\n')
-    .replace(/```diff\n((?:.|\n)+)\n```/g, function (match, content) {
-      content = Handlebars.escapeExpression(content)
+    .split(/```diff\n|\n```(?!diff)/).map(function (chunk, index) {
+      if (index % 2 == 0) return chunk;
+
+      var content = Handlebars.escapeExpression(chunk)
         // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
         .replace(/^@.+$/m, '<i>$&</i>')
         // Remove removals
@@ -174,5 +176,6 @@ MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
 
       // Wrap with <pre> tag
       return '<pre>\n' + content + '\n</pre>';
-    });
+    })
+    .join('');
 });
