@@ -160,44 +160,19 @@ function getPadLength(changes) {
 }
 
 MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
-  var titles = [];
-  var diffs = [];
+  return view
+    // Add line break after title
+    .replace(/(#### .+)\n\n/, '$1\n<br>\n')
+    .replace(/```diff\n((?:.|\n)+)\n```/g, function (match, content) {
+      content = Handlebars.escapeExpression(content)
+        // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
+        .replace(/^@.+$/m, '<i>$&</i>')
+        // Remove removals
+        .replace(/\n\-.+/g, '')
+        // Bold additions
+        .replace(/^(\+.+)$/mg, '<b>$&</b>');
 
-  // Add line break after title
-  view = view.replace(/(#### .+)\n\n/, '$1\n<br>\n');
-
-  view
-    // Split at the beginning of diff scope
-    .split('```diff\n')
-    // Get odd splits
-    .forEach(function (split, index) {
-      if (index % 2)
-        diffs.push(split);
-      else
-        titles.push(split);
-    })
-
-  diffs = diffs.map(function (split) {
-    // Get actual content
-    var diffContent = split.split('\n```')[0];
-
-    diffContent = Handlebars.escapeExpression(diffContent)
-      // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
-      .replace(/^@.+$/mg, '<i>$&</i>')
-      // Remove removals
-      .replace(/\n\-.+/g, '')
-      // Bold additions
-      .replace(/^(\+.+)$/mg, '<b>$&</b>')
-
-    // Wrap with <pre> tag
-    return '<pre>\n' + diffContent + '\n</pre>';
-  });
-
-  // Join titles along with their code diffs
-  return titles
-    .map(function (split, index) {
-      var diff = diffs[index] || '';
-      return split + diff;
-    })
-    .join('\n\n');
+      // Wrap with <pre> tag
+      return '<pre>\n' + content + '\n</pre>';
+    });
 });
