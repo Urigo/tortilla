@@ -151,7 +151,9 @@ function ensureTortilla(projectDir) {
 
 function overwriteTemplateFile(path, scope) {
   var templateContent = Fs.readFileSync(path, 'utf8');
-  return Handlebars.compile(templateContent)(scope);
+  var viewContent = Handlebars.compile(templateContent)(scope);
+
+  Fs.writeFileSync(path, viewContent);
 }
 
 

@@ -47,11 +47,13 @@ function renderTemplateFile(templatePath, scope) {
 function renderTemplate(template, scope) {
   // Template can either be a string or a compiled template object
   if (typeof template == 'string') template = handlebars.compile(template);
+  scope = scope || {};
 
-  var viewPath = scope.view_path || '';
-  // Relative path of view dir
-  // e.g. manuals/views
-  var viewDir = Path.relative(Paths._, Path.dirname(viewPath));
+  if (scope.view_path) {
+    // Relative path of view dir
+    // e.g. manuals/views
+    var viewDir = Path.relative(Paths._, Path.dirname(scope.view_path));
+  }
 
   try {
     // Set the view file for the resolve utility. If no view path was provided, the
@@ -94,7 +96,8 @@ function registerHelper(name, helper) {
     var args = [].slice.call(arguments);
 
     // Transform helper output
-    if (target) out = transformations[target][name].apply(null, [out].concat(args));
+    var transformation = transformations[target] && transformations[target][name];
+    if (transformation) out = transformation.apply(null, [out].concat(args));
     out = wrapComponent('helper', name, args, out);
 
     return out;
@@ -127,7 +130,7 @@ function registerTransformation(targetName, helperName, transformation) {
 function wrapComponent(type, name, args, content) {
   var hash = {};
 
-  if (!content) {
+  if (typeof content != 'string') {
     content = args;
     args = [];
   }
@@ -172,7 +175,7 @@ function resolvePath(/* reserved path, user defined path */) {
   var defaultPath = paths.slice(1).join('/');
 
   // If function is unbound, return default path
-  if (!paths[0]) return defaultPath;
+  if (typeof paths[0] != 'string') return defaultPath;
 
   var repository = require(Paths.npm.package).repository;
 
@@ -215,3 +218,4 @@ module.exports = Utils.extend(handlebars, {
 // Built-in helpers and partials
 require('./diff-step-helper');
 require('./nav-step-helper');
+require('./resolve-path-helper');
