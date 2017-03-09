@@ -61,9 +61,11 @@ function renderManual(step) {
     TORTILLA_STDIO: 'ignore'
   });
 
-  // Fetch the current manual
+  // Fetch the current manual and other useful models
   var manualTemplatePath = getManualTemplatePath(step);
   var manualTemplate = Fs.readFileSync(manualTemplatePath, 'utf8');
+  var manualViewPath = getManualViewPath(step);
+  var commitMessage = getStepCommitMessage(step);
 
   var manualView = renderManualView(manualTemplate, {
     step: step,
@@ -73,7 +75,6 @@ function renderManual(step) {
   });
 
   // Rewrite manual
-  var manualViewPath = getManualViewPath(step);
   Fs.ensureDir(Paths.manuals.views);
 
   // In case a custom render target is specified, ensure its dir exists
