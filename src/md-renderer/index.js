@@ -31,7 +31,7 @@ function overwriteTemplateFile(templatePath, scope) {
 
 // Read provided file and render its template. Note that the default path would
 // be tortilla's template dir, so specifying a file name would be ok as well
-function renderTemplateFile(templatePath, scope, options) {
+function renderTemplateFile(templatePath, scope) {
   templatePath = resolveTemplatePath(templatePath);
 
   if (process.env.TORTILLA_CACHE_DISABLED || !cache[templatePath]) {
@@ -40,16 +40,15 @@ function renderTemplateFile(templatePath, scope, options) {
   }
 
   var template = cache[templatePath];
-  return renderTemplate(template, scope, options);
+  return renderTemplate(template, scope);
 }
 
 // Render provided template
-function renderTemplate(template, scope, options) {
+function renderTemplate(template, scope) {
   // Template can either be a string or a compiled template object
   if (typeof template == 'string') template = handlebars.compile(template);
 
-  options = options || {};
-  var viewPath = options.viewPath || '';
+  var viewPath = scope.view_path || '';
   // Relative path of view dir
   // e.g. manuals/views
   var viewDir = Path.relative(Paths._, Path.dirname(viewPath));

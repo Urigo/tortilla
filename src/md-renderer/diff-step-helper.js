@@ -60,7 +60,7 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
 
   var stepHash = stepData[0];
   var stepMessage = stepData.slice(1).join(' ');
-  var commitReference = MDRenderer.resolve('../../../../commit/', stepHash);
+  var commitReference = MDRenderer.resolve('../../../../commit', stepHash);
 
   var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);

@@ -121,8 +121,8 @@ describe('MDRenderer', function () {
         return MDRenderer.resolve('../templates/step1.md');
       });
 
-      const view = MDRenderer.renderTemplate('{{{test_helper}}}', {}, {
-        viewPath: 'manuals/views/step1.md'
+      const view = MDRenderer.renderTemplate('{{{test_helper}}}', {
+        view_path: 'manuals/views/step1.md'
       });
 
       expect(view).to.equal([
