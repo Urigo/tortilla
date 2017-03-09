@@ -2,6 +2,7 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var Tmp = require('tmp');
 var Git = require('./git');
+var LocalStorage = require('./local-storage');
 var Manual = require('./manual');
 var Paths = require('./paths');
 var Step = require('./step');
@@ -23,10 +24,6 @@ var tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
 function bumpRelease(releaseType, options) {
   options = options || {};
 
-  // Render manuals before bumping version to make sure the views are correlated with
-  // the templates
-  Manual.render('all');
-
   var currentRelease = getCurrentRelease();
 
   // Increase release type
@@ -45,6 +42,17 @@ function bumpRelease(releaseType, options) {
       break;
     default:
       throw Error('Provided release type must be one of "major", "minor" or "patch"');
+  }
+
+  try {
+    // Store potential release so it can be used during rendering
+    LocalStorage.setItem('POTENTIAL_RELEASE', JSON.stringify(currentRelease));
+    // Render manuals before bumping version to make sure the views are correlated with
+    // the templates
+    Manual.render('all');
+  }
+  finally {
+    LocalStorage.removeItem('POTENTIAL_RELEASE');
   }
 
   var branch = Git.activeBranchName();
@@ -233,6 +241,11 @@ function printCurrentRelease() {
 // e.g. if we have the tags 'master@0.0.1', 'master@0.0.2' and 'master@0.1.0' this method
 // will return { major: 0, minor: 1, patch: 0 }
 function getCurrentRelease() {
+  // Return potential release, if defined
+  var potentialRelease = LocalStorage.getItem('POTENTIAL_RELEASE');
+
+  if (potentialRelease) return JSON.parse(potentialRelease);
+
   // If release was yet to be released, assume this is a null release
   return getAllReleases()[0] || {
     major: 0,
