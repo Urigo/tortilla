@@ -223,7 +223,7 @@ describe('Release', function () {
 
       var packString = JSON.stringify(pack, null, 2).replace(/"/g, '\\"');
       this.exec('sh', ['-c', `echo "${packString}" > package.json`]);
-      this.exec('sh', ['-c', `echo "{{{resolve_path}}}" > manuals/templates/root.md.tmpl`]);
+      this.exec('sh', ['-c', `echo "{{{_resolve_path}}}" > manuals/templates/root.md.tmpl`]);
 
       this.git(['add', '.']);
       this.git(['commit', '--amend'], {

@@ -5,7 +5,7 @@ var MDRenderer = require('..');
   for testing purposes only.
  */
 
-MDRenderer.registerHelper('resolve_path', function () {
+MDRenderer.registerHelper('_resolve_path', function () {
   var paths = [].filter.call(arguments, function (arg) {
     return typeof arg == 'string';
   });
