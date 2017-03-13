@@ -2,7 +2,7 @@ var MDRenderer = require('.');
 var Git = require('../git');
 var Step = require('../step');
 
-/*
+/**
   Provides a navigation bar between steps. The navigation bar should be rendered
   dynamically based on the current step we're currently in.
  */

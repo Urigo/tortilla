@@ -1,7 +1,7 @@
 var Path = require('path');
 var Utils = require('./utils');
 
-/*
+/**
   It is important to use absolute paths and not relative paths since some helpers
   are distributed over several processes whose execution path is not always the same,
   therefore this module was created.

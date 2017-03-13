@@ -1,7 +1,7 @@
 var ChildProcess = require('child_process');
 var Fs = require('fs-extra');
 
-/*
+/**
   Contains general utilities.
  */
 

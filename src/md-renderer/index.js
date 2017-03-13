@@ -6,8 +6,8 @@ var Paths = require('../paths');
 var Release = require('../release');
 var Utils = require('../utils');
 
-/*
-  A wrapper for Handlebars
+/**
+  A wrapper for Handlebars with several additions which are essential for Tortilla
  */
 
 // Creating a new instance of handlebars which will then be merged with the module

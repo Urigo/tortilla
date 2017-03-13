@@ -10,7 +10,7 @@ var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
-/*
+/**
   Contains some essential utilities that should usually run once to create a project or
   initialize a project.
  */

@@ -4,7 +4,7 @@ var MDRenderer = require('.');
 var Git = require('../git');
 var Utils = require('../utils');
 
-/*
+/**
   Renders step diff in a pretty markdown format. For example {{{ diff_step 1.1 }}}
   will render as:
 

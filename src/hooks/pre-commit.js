@@ -2,7 +2,7 @@ var Git = require('../git');
 var LocalStorage = require('../local-storage');
 var Step = require('../step');
 
-/*
+/**
   Pre-commit git hook launches right before we commit changes. If an error was thrown
   the commit process will be aborted with the provided error message.
  */

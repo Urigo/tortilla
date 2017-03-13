@@ -3,7 +3,7 @@ var Git = require('./git');
 var LocalStorage = require('./local-storage');
 var Step = require('./step');
 
-/*
+/**
   The rebase module is responsible for performing tasks done by the editor using an
   interactive rebase.
  */

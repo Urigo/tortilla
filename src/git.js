@@ -3,7 +3,7 @@ var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
-/*
+/**
   Contains general git utilities.
  */
 

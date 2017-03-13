@@ -6,9 +6,9 @@ var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Step = require('./step');
 
-/*
+/**
   This is the editor for interactive rebases and amended commits. Instead of opening
-  an editing software like nano or vim, this module will edit the file by specified
+  an editing software like 'nano' or 'vim', this module will edit the file by specified
   methods we choose.
  */
 

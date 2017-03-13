@@ -1,7 +1,8 @@
 var MDRenderer = require('.');
 
-/*
-  A template helper which invokes MDRenderer.resolve()
+/**
+  A template helper which invokes MDRenderer.resolve(). This is currently being used
+  for testing purposes only.
  */
 
 MDRenderer.registerHelper('resolve_path', function () {

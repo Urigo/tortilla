@@ -8,7 +8,7 @@ var Paths = require('./paths');
 var Step = require('./step');
 var Utils = require('./utils');
 
-/*
+/**
   The 'release' module contains different utilities and methods which are responsible
   for release management. Before invoking any method, be sure to fetch **all** the step
   tags from the git-host, since most calculations are based on them.

@@ -7,7 +7,7 @@ var Paths = require('./paths');
 var Step = require('./step');
 var Utils = require('./utils');
 
-/*
+/**
   Contains manual related utilities.
  */
 
