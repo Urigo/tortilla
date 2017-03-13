@@ -1,4 +1,4 @@
-var MDRenderer = require('.');
+var MDRenderer = require('..');
 
 /**
   A template helper which invokes MDRenderer.resolve(). This is currently being used

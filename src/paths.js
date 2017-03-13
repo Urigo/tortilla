@@ -14,6 +14,10 @@ var ascii = resolveTree(resolve(__dirname, 'ascii'), {
   views: resolve(__dirname, 'ascii/views')
 });
 
+var mdRenderer = resolveTree(resolve(__dirname, 'md-renderer'), {
+  helpers: resolve(__dirname, 'md-renderer/helpers')
+});
+
 var tortilla = resolveTree(resolve(__dirname, '..'), {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),

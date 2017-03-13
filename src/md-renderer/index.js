@@ -216,6 +216,6 @@ module.exports = Utils.extend(handlebars, {
 });
 
 // Built-in helpers and partials
-require('./diff-step-helper');
-require('./nav-step-helper');
-require('./resolve-path-helper');
+require('./helpers/diff-step');
+require('./helpers/nav-step');
+require('./helpers/resolve-path');

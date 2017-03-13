@@ -1,6 +1,6 @@
-var MDRenderer = require('.');
-var Git = require('../git');
-var Step = require('../step');
+var MDRenderer = require('..');
+var Git = require('../../git');
+var Step = require('../../step');
 
 /**
   Provides a navigation bar between steps. The navigation bar should be rendered
