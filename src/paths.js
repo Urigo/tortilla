@@ -15,7 +15,8 @@ var ascii = resolveTree(resolve(__dirname, 'ascii'), {
 });
 
 var mdRenderer = resolveTree(resolve(__dirname, 'md-renderer'), {
-  helpers: resolve(__dirname, 'md-renderer/helpers')
+  helpers: resolve(__dirname, 'md-renderer/helpers'),
+  templates: resolve(__dirname, 'md-renderer/templates')
 });
 
 var tortilla = resolveTree(resolve(__dirname, '..'), {
@@ -33,10 +34,10 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
   mdParser: resolve(__dirname, 'md-parser'),
-  mdRenderer: resolve(__dirname, 'md-renderer'),
   templates: resolve(__dirname, 'templates'),
   skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
-  ascii: ascii
+  ascii: ascii,
+  mdRenderer: mdRenderer
 });
 
 function resolveTree(root, branches) {

@@ -78,7 +78,7 @@ function resolveTemplatePath(templatePath) {
   if (Utils.exists(relativeTemplatePath)) return relativeTemplatePath;
 
   // Tortilla defined templates
-  return Path.resolve(Paths.tortilla.templates, templatePath);
+  return Path.resolve(Paths.tortilla.mdRenderer.templates, templatePath);
 }
 
 // Register a new helper. Registered helpers will be wrapped with a
