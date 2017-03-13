@@ -67,7 +67,7 @@ function createProject(projectName, options) {
   // Clone skeleton
   Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
   // Checkout desired release
-  Git.print(['checkout', '0.0.1-alpha.1'], { cwd: tmpDir.name });
+  Git.print(['checkout', '0.0.1-alpha.2'], { cwd: tmpDir.name });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
   Fs.removeSync(tmpPaths.git.resolve());

@@ -122,12 +122,12 @@ describe('MDRenderer', function () {
       });
 
       const view = MDRenderer.renderTemplate('{{{test_helper}}}', {
-        view_path: 'manuals/views/step1.md'
+        view_path: '.tortilla/manuals/views/step1.md'
       });
 
       expect(view).to.equal([
         '[{]: <helper> (test_helper)',
-        'https://github.com/Urigo/tortilla/tree/master@0.0.0/manuals/templates/step1.md',
+        'https://github.com/Urigo/tortilla/tree/master@0.0.0/.tortilla/manuals/templates/step1.md',
         '[}]: #'
       ].join('\n'));
     });

@@ -185,8 +185,8 @@ function createDiffReleasesRepo() {
   return tags.reduce(function (registers, tag, index) {
     sourceDir = registers[0];
     destinationDir = registers[1];
-    sourcePaths = Paths.resolveAll(sourceDir);
-    destinationPaths = Paths.resolveAll(destinationDir);
+    sourcePaths = Paths.resolveProject(sourceDir);
+    destinationPaths = Paths.resolveProject(destinationDir);
 
     // Make sure destination is empty
     Fs.emptyDirSync(destinationDir);

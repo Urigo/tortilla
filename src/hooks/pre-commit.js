@@ -28,8 +28,8 @@ var Step = require('../step');
   // If this is a super step only the appropriate manual file can be modified
   if (isSuperStep) {
     var tag = 'step' + stepDescriptor.number;
-    var manualTemplatePath = 'manuals/templates/' + tag + '.md.tmpl';
-    var manualViewPath = 'manuals/views/' + tag + '.md';
+    var manualTemplatePath = '.tortilla/manuals/templates/' + tag + '.md.tmpl';
+    var manualViewPath = '.tortilla/manuals/views/' + tag + '.md';
 
     var stagedFiles = Git.stagedFiles().filter(function (stagedFile) {
       return [manualTemplatePath, manualViewPath].indexOf(stagedFile) != -1;
@@ -43,7 +43,7 @@ var Step = require('../step');
   }
   // Else, if this is not root commit prohibit manual files modifications
   else if (stepDescriptor) {
-    var stagedFiles = Git.stagedFiles(/^manuals\//);
+    var stagedFiles = Git.stagedFiles(/^\.tortilla\/manuals\//);
 
     if (stagedFiles.length) throw Error(
       'Step manual files can\'t be modified'
@@ -54,6 +54,6 @@ var Step = require('../step');
 
   if (stagedFiles.length) throw Error([
     'README.md can\'t be modified.',
-    'Run `$ tortilla step edit --root` and edit \'manuals/templates/root.md\' file instead',
+    'Run `$ tortilla step edit --root` and edit \'.tortilla/manuals/templates/root.md\' file instead',
   ].join('\n'));
 })();

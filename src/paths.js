@@ -40,6 +40,8 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   mdRenderer: mdRenderer
 });
 
+// Makes the root path available in the branches object using a 'resolve()' method
+// e.g. ('foo', { bar: 'bar' }) -> { resolve() -> 'foo', bar: 'bar' }
 function resolveTree(root, branches) {
   branches = branches || {};
 
@@ -92,9 +94,9 @@ function resolveProject(cwd) {
     modules: resolve(cwd, 'node_modules')
   };
 
-  var manuals = resolveTree(resolve(cwd, 'manuals'), {
-    templates: resolve(cwd, 'manuals/templates'),
-    views: resolve(cwd, 'manuals/views')
+  var manuals = resolveTree(resolve(cwd, '.tortilla/manuals'), {
+    templates: resolve(cwd, '.tortilla/manuals/templates'),
+    views: resolve(cwd, '.tortilla/manuals/views')
   });
 
   return cache[cwd] = resolveTree(cwd, {
