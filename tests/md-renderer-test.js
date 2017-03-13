@@ -17,7 +17,7 @@ describe('MDRenderer', function () {
         ].join('\n');
       });
 
-      const template = '{{{test_helper 123 "str" num=123 str="str"}}}'
+      const template = '{{{test_helper 123 "str" num=123 str="str"}}}';
 
       const view = MDRenderer.renderTemplate(template, {
         fooModel: 'foo',
@@ -66,6 +66,70 @@ describe('MDRenderer', function () {
 
       const view = MDRenderer.renderTemplateFile(templatePath, { test: 'CUSTOM HEADER' });
       expect(view).to.equal('CUSTOM HEADER\n');
+    });
+  });
+
+  describe('registerTransformation()', function () {
+    it('should set a template helper transformation when set to a specific render target', function () {
+      MDRenderer.registerHelper('test_helper', function (num, str, options) {
+        return [
+          this.fooModel + ' ' + num,
+          this.barModel + ' ' + str,
+          this.bazModel + ' ' + options.hash.num,
+          this.quxModel + ' ' + options.hash.str
+        ].join('\n');
+      });
+
+      MDRenderer.registerTransformation('test', 'test_helper', function (view) {
+        return view.replace(/foo|bar|baz|qux/g, (match) => {
+          switch (match) {
+            case 'foo': return 'qux';
+            case 'bar': return 'baz';
+            case 'baz': return 'bar';
+            case 'qux': return 'foo';
+          }
+        });
+      });
+
+      const template = '{{{test_helper 123 "str" num=123 str="str"}}}';
+
+      this.scopeEnv(() => {
+        const view = MDRenderer.renderTemplate(template, {
+          fooModel: 'foo',
+          barModel: 'bar',
+          bazModel: 'baz',
+          quxModel: 'qux'
+        });
+
+        expect(view).to.equal([
+          '[{]: <helper> (test_helper 123 "str" str="str" num=123)',
+          'qux 123',
+          'baz str',
+          'bar 123',
+          'foo str',
+          '[}]: #'
+        ].join('\n'));
+      }, {
+        TORTILLA_RENDER_TARGET: 'test'
+      });
+    });
+  });
+
+  describe('resolve()', function () {
+    it('should resolve path relatively to the current rendered view file path and git host', function () {
+      MDRenderer.registerHelper('test_helper', function () {
+        return MDRenderer.resolve('../templates/step1.md');
+      });
+
+      const view = MDRenderer.renderTemplate('{{{test_helper}}}', {
+        view_path: '.tortilla/manuals/views/step1.md'
+      });
+
+      expect(view).to.equal([
+        '[{]: <helper> (test_helper)',
+        'https://github.com/Urigo/tortilla/tree/master@0.0.0/.tortilla/manuals/templates/step1.md',
+        '[}]: #'
+      ].join('\n'));
     });
   });
 });

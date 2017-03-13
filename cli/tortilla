@@ -4,7 +4,7 @@ var Pack = require('../package.json');
 var Essentials = require('../src/essentials');
 var LocalStorage = require('../src/local-storage');
 
-/*
+/**
   CLI entry point.
  */
 

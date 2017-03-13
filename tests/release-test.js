@@ -210,6 +210,34 @@ describe('Release', function () {
 
       expect(releaseDiff).to.be.a.file('release-update.diff');
     });
+
+    it('should re-render all manuals using an updated release tag', function () {
+      this.tortilla(['step', 'edit', '--root']);
+
+      var pack = JSON.parse(this.exec('cat', ['package.json']));
+
+      pack.repository = {
+        type: 'git',
+        url: 'https://github.com/test/repo.git'
+      };
+
+      var packString = JSON.stringify(pack, null, 2).replace(/"/g, '\\"');
+      this.exec('sh', ['-c', `echo "${packString}" > package.json`]);
+      this.exec('sh', ['-c', `echo "{{{_resolve_path}}}" > .tortilla/manuals/templates/root.md.tmpl`]);
+
+      this.git(['add', '.']);
+      this.git(['commit', '--amend'], {
+        env: {
+          GIT_EDITOR: true
+        }
+      });
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+
+      const manual = this.exec('cat', ['README.md']);
+      expect(manual).to.be.a.file('release-path.md');
+    });
   });
 
   describe('current()', function () {

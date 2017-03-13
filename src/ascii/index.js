@@ -2,14 +2,14 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var Paths = require('../paths');
 
-/*
+/**
   Responsible for printing ascii art files
  */
 
 // Get string for provided ascii art name
 function getAsciiArt(artName) {
   var artFile = artName + '.txt';
-  var artPath = Path.resolve(Paths.tortilla.ascii, artFile);
+  var artPath = Path.resolve(Paths.tortilla.ascii.views, artFile);
   return Fs.readFileSync(artPath).toString();
 }
 

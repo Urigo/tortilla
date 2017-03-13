@@ -1,9 +1,10 @@
+var Handlebars = require('handlebars');
 var ParseDiff = require('parse-diff');
-var MDRenderer = require('.');
-var Git = require('../git');
-var Utils = require('../utils');
+var MDRenderer = require('..');
+var Git = require('../../git');
+var Utils = require('../../utils');
 
-/*
+/**
   Renders step diff in a pretty markdown format. For example {{{ diff_step 1.1 }}}
   will render as:
 
@@ -16,6 +17,21 @@ var Utils = require('../utils');
   -┊1┊ ┊bar
    ┊2┊2┊baz🚫↵
   ```
+
+  We can also render this helper to be suitable for use in Medium (https://medium.com/)
+  by setting the environment variable TORTILLA_RENDER_TARGET to 'medium':
+
+  #### Step 1.1
+
+  ##### Changed /path/to/file.js
+  <pre>
+  <i>@@ -1,3 +1,3 @@</i>
+  <b>+┊ ┊1┊foo</b>
+   ┊2┊2┊baz🚫↵
+  </pre>
+
+  Note: Removals won't be shown to reduce complexity, since medium can render only
+  very simple stuff
  */
 
 MDRenderer.registerHelper('diff_step', function (step, options) {
@@ -44,8 +60,9 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
 
   var stepHash = stepData[0];
   var stepMessage = stepData.slice(1).join(' ');
+  var commitReference = MDRenderer.resolve('../../../../commit', stepHash);
 
-  var stepTitle = '#### ' + stepMessage;
+  var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);
 
   // Convert diff string to json format
@@ -141,3 +158,24 @@ function getPadLength(changes) {
 
   return maxLineNumber.toString().length;
 }
+
+MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
+  return view
+    // Add line break after title
+    .replace(/(#### .+)\n\n/, '$1\n<br>\n')
+    .split(/```diff\n|\n```(?!diff)/).map(function (chunk, index) {
+      if (index % 2 == 0) return chunk;
+
+      var content = Handlebars.escapeExpression(chunk)
+        // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
+        .replace(/^@.+$/m, '<i>$&</i>')
+        // Remove removals
+        .replace(/\n\-.+/g, '')
+        // Bold additions
+        .replace(/^(\+.+)$/mg, '<b>$&</b>');
+
+      // Wrap with <pre> tag
+      return '<pre>\n' + content + '\n</pre>';
+    })
+    .join('');
+});

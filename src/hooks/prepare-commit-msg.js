@@ -4,7 +4,7 @@ var LocalStorage = require('../local-storage');
 var Paths = require('../paths');
 var Step = require('../step');
 
-/*
+/**
   Prepare-commit-message git hook launches right before we write our commit message.
   If an error was thrown the commit process will be aborted with the provided error
   message.

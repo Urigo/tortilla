@@ -1,12 +1,11 @@
 [{]: <helper> (diff_step 1.2)
 #### [Step 1.2: Change file](xxx)
-
+<br>
 ##### Changed test-file.js
-```diff
-@@ -1,3 +1,3 @@
+<pre>
+<i>@@ -1,3 +1,3 @@</i>
  ┊1┊1┊foo
--┊2┊ ┊bar
-+┊ ┊2┊qux
+<b>+┊ ┊2┊qux</b>
  ┊3┊3┊baz🚫↵
-```
+</pre>
 [}]: #

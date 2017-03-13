@@ -1,11 +1,11 @@
 [{]: <helper> (diff_step 1.1 files="test-file.js")
 #### [Step 1.1: Add multiple files](xxx)
-
+<br>
 ##### Added test-file.js
-```diff
-@@ -0,0 +1,3 @@
-+┊ ┊1┊foo
-+┊ ┊2┊bar
-+┊ ┊3┊baz🚫↵
-```
+<pre>
+<i>@@ -0,0 +1,3 @@</i>
+<b>+┊ ┊1┊foo</b>
+<b>+┊ ┊2┊bar</b>
+<b>+┊ ┊3┊baz🚫↵</b>
+</pre>
 [}]: #

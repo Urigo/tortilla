@@ -10,13 +10,13 @@ var LocalStorage = require('./local-storage');
 var Paths = require('./paths');
 var Utils = require('./utils');
 
-/*
+/**
   Contains some essential utilities that should usually run once to create a project or
   initialize a project.
  */
 
 var tmpDir = Tmp.dirSync({ unsafeCleanup: true });
-var tmpPaths = Paths.resolve(tmpDir.name);
+var tmpPaths = Paths.resolveProject(tmpDir.name);
 var exec = Utils.exec;
 
 
@@ -50,7 +50,7 @@ function createProject(projectName, options) {
   projectName = projectName || 'tortilla-project';
 
   options = Utils.extend({
-    output: Path.resolve(Paths._, projectName)
+    output: Paths.resolveProject(projectName)
   }, options);
 
   // In case dir already exists verify the user's decision
@@ -67,10 +67,10 @@ function createProject(projectName, options) {
   // Clone skeleton
   Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
   // Checkout desired release
-  Git.print(['checkout', '0.0.1-alpha.1'], { cwd: tmpDir.name });
+  Git.print(['checkout', '0.0.1-alpha.2'], { cwd: tmpDir.name });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
-  Fs.removeSync(tmpPaths.git._);
+  Fs.removeSync(tmpPaths.git.resolve());
 
   var packageName = Utils.kebabCase(projectName);
   var title = Utils.startCase(projectName);
@@ -108,7 +108,7 @@ function createProject(projectName, options) {
 function ensureTortilla(projectDir) {
   projectDir = projectDir || Utils.cwd();
 
-  var projectPaths = projectDir.resolve ? projectDir : Paths.resolve(projectDir);
+  var projectPaths = projectDir.resolve ? projectDir : Paths.resolveProject(projectDir);
   var localStorage = LocalStorage.create(projectPaths);
 
   // If tortilla is already initialized don't do anything
@@ -151,7 +151,9 @@ function ensureTortilla(projectDir) {
 
 function overwriteTemplateFile(path, scope) {
   var templateContent = Fs.readFileSync(path, 'utf8');
-  return Handlebars.compile(templateContent)(scope);
+  var viewContent = Handlebars.compile(templateContent)(scope);
+
+  Fs.writeFileSync(path, viewContent);
 }
 
 

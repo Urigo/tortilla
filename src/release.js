@@ -2,12 +2,13 @@ var Fs = require('fs-extra');
 var Path = require('path');
 var Tmp = require('tmp');
 var Git = require('./git');
+var LocalStorage = require('./local-storage');
 var Manual = require('./manual');
 var Paths = require('./paths');
 var Step = require('./step');
 var Utils = require('./utils');
 
-/*
+/**
   The 'release' module contains different utilities and methods which are responsible
   for release management. Before invoking any method, be sure to fetch **all** the step
   tags from the git-host, since most calculations are based on them.
@@ -22,10 +23,6 @@ var tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
 // of 'patch', the new release would be @1.0.1
 function bumpRelease(releaseType, options) {
   options = options || {};
-
-  // Render manuals before bumping version to make sure the views are correlated with
-  // the templates
-  Manual.render('all');
 
   var currentRelease = getCurrentRelease();
 
@@ -45,6 +42,17 @@ function bumpRelease(releaseType, options) {
       break;
     default:
       throw Error('Provided release type must be one of "major", "minor" or "patch"');
+  }
+
+  try {
+    // Store potential release so it can be used during rendering
+    LocalStorage.setItem('POTENTIAL_RELEASE', JSON.stringify(currentRelease));
+    // Render manuals before bumping version to make sure the views are correlated with
+    // the templates
+    Manual.render('all');
+  }
+  finally {
+    LocalStorage.removeItem('POTENTIAL_RELEASE');
   }
 
   var branch = Git.activeBranchName();
@@ -177,14 +185,14 @@ function createDiffReleasesRepo() {
   return tags.reduce(function (registers, tag, index) {
     sourceDir = registers[0];
     destinationDir = registers[1];
-    sourcePaths = Paths.resolve(sourceDir);
-    destinationPaths = Paths.resolve(destinationDir);
+    sourcePaths = Paths.resolveProject(sourceDir);
+    destinationPaths = Paths.resolveProject(destinationDir);
 
     // Make sure destination is empty
     Fs.emptyDirSync(destinationDir);
 
     // Copy current git dir to destination
-    Fs.copySync(Paths.git._, destinationPaths.git._, {
+    Fs.copySync(Paths.git.resolve(), destinationPaths.git.resolve(), {
       filter: function (filePath) {
         return filePath.split('/').indexOf('.tortilla') == -1;
       }
@@ -196,8 +204,8 @@ function createDiffReleasesRepo() {
 
     // Copy destination to source, but without the git dir so there won't be any
     // conflicts with the commits
-    Fs.removeSync(destinationPaths.git._);
-    Fs.copySync(sourcePaths.git._, destinationPaths.git._);
+    Fs.removeSync(destinationPaths.git.resolve());
+    Fs.copySync(sourcePaths.git.resolve(), destinationPaths.git.resolve());
 
     // Add commit for release
     Git(['add', '.'], { cwd: destinationDir });
@@ -233,6 +241,11 @@ function printCurrentRelease() {
 // e.g. if we have the tags 'master@0.0.1', 'master@0.0.2' and 'master@0.1.0' this method
 // will return { major: 0, minor: 1, patch: 0 }
 function getCurrentRelease() {
+  // Return potential release, if defined
+  var potentialRelease = LocalStorage.getItem('POTENTIAL_RELEASE');
+
+  if (potentialRelease) return JSON.parse(potentialRelease);
+
   // If release was yet to be released, assume this is a null release
   return getAllReleases()[0] || {
     major: 0,

@@ -1,4 +1,4 @@
-/*
+/**
   Shares the same API as a native browser's localStorage but uses in-memory cache
   instead of fs.
  */
