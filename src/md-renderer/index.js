@@ -52,7 +52,7 @@ function renderTemplate(template, scope) {
   if (scope.view_path) {
     // Relative path of view dir
     // e.g. manuals/views
-    var viewDir = Path.relative(Paths._, Path.dirname(scope.view_path));
+    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.view_path));
   }
 
   try {

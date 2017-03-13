@@ -27,7 +27,7 @@ var Utils = require('./utils');
     which have just been bumed.
  */
 
-var localStorage = createLocalStorage(Paths._);
+var localStorage = createLocalStorage(Paths.resolve());
 
 
 (function () {
@@ -49,10 +49,10 @@ var localStorage = createLocalStorage(Paths._);
 
 // Creates a new instance of local-storage
 function createLocalStorage(cwd) {
-  var paths = cwd.resolve ? cwd : Paths.resolve(cwd);
+  var paths = cwd.resolve ? cwd : Paths.resolveProject(cwd);
 
   // If git dir exists use it as a local-storage dir
-  if (Utils.exists(paths.git._))
+  if (Utils.exists(paths.git.resolve()))
     localStorage = new LocalStorage(paths.storage);
   // Else, create local cache
   else

@@ -10,8 +10,7 @@ var Utils = require('./utils');
 var cache = {};
 var resolve = Path.resolve.bind(Path);
 
-var tortilla = {
-  _: resolve(__dirname, '..'),
+var tortilla = resolveTree(resolve(__dirname, '..'), {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
@@ -30,22 +29,31 @@ var tortilla = {
   mdRenderer: resolve(__dirname, 'md-renderer'),
   templates: resolve(__dirname, 'templates'),
   skeleton: 'git@github.com:Urigo/tortilla-skeleton.git'
-};
+});
 
+function resolveTree(root, branches) {
+  branches = branches || {};
+
+  return Object.keys(branches).reduce(function (tree, name) {
+    tree[name] = branches[name];
+    return tree;
+  }, {
+    resolve: Path.resolve.bind(Path, root)
+  });
+}
 
 // Resolves a bunch of paths to a given tortilla project path
-function resolveAll(cwd) {
+function resolveProject(cwd) {
   if (!cwd)
     throw TypeError('A project path must be provided');
 
   if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) return cache[cwd];
 
-  var gitHeads = {
-    _: resolve(cwd, '.git/HEAD'),
+  var gitHeads = resolveTree(resolve(cwd, '.git/HEAD'), {
     cherryPick: resolve(cwd, '.git/CHERRY_PICK_HEAD'),
     orig: resolve(cwd, '.git/ORIG_HEAD'),
     revert: resolve(cwd, '.git/REVERT_HEAD')
-  };
+  });
 
   var gitMessages = {
     commit: resolve(cwd, '.git/COMMIT_EDITMSG'),
@@ -53,15 +61,13 @@ function resolveAll(cwd) {
     squash: resolve(cwd, '.git/SQUASH_MSG')
   };
 
-  var gitRefs = {
-    _: resolve(cwd, '.git/refs'),
+  var gitRefs = resolveTree(resolve(cwd, '.git/refs'), {
     heads: resolve(cwd, '.git/refs/heads'),
     remotes: resolve(cwd, '.git/refs/remotes'),
     tags: resolve(cwd, '.git/refs/tags')
-  };
+  });
 
-  var git = {
-    _: resolve(cwd, '.git'),
+  var git = resolveTree(resolve(cwd, '.git'), {
     ignore: resolve(cwd, '.gitignore'),
     hooks: resolve(cwd, '.git/hooks'),
     rebaseApply: resolve(cwd, '.git/rebase-apply'),
@@ -69,7 +75,7 @@ function resolveAll(cwd) {
     heads: gitHeads,
     messages: gitMessages,
     refs: gitRefs
-  };
+  });
 
   var npm = {
     ignore: resolve(cwd, '.npmignore'),
@@ -77,23 +83,22 @@ function resolveAll(cwd) {
     modules: resolve(cwd, 'node_modules')
   };
 
-  var manuals = {
-    _: resolve(cwd, 'manuals'),
+  var manuals = resolveTree(resolve(cwd, 'manuals'), {
     templates: resolve(cwd, 'manuals/templates'),
     views: resolve(cwd, 'manuals/views')
-  };
+  });
 
-  return cache[cwd] = {
-    _: resolve(cwd),
+  return cache[cwd] = resolveTree(cwd, {
     readme: resolve(cwd, 'README.md'),
     storage: resolve(cwd, '.git/.tortilla'),
     manuals: manuals,
     tortilla: tortilla,
     git: git,
     npm: npm,
-    resolve: resolveAll
-  };
+    resolveTree: resolveTree,
+    resolveProject: resolveProject
+  });
 }
 
 
-module.exports = resolveAll(Utils.cwd());
+module.exports = resolveProject(Utils.cwd());

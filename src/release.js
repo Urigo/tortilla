@@ -185,14 +185,14 @@ function createDiffReleasesRepo() {
   return tags.reduce(function (registers, tag, index) {
     sourceDir = registers[0];
     destinationDir = registers[1];
-    sourcePaths = Paths.resolve(sourceDir);
-    destinationPaths = Paths.resolve(destinationDir);
+    sourcePaths = Paths.resolveAll(sourceDir);
+    destinationPaths = Paths.resolveAll(destinationDir);
 
     // Make sure destination is empty
     Fs.emptyDirSync(destinationDir);
 
     // Copy current git dir to destination
-    Fs.copySync(Paths.git._, destinationPaths.git._, {
+    Fs.copySync(Paths.git.resolve(), destinationPaths.git.resolve(), {
       filter: function (filePath) {
         return filePath.split('/').indexOf('.tortilla') == -1;
       }
@@ -204,8 +204,8 @@ function createDiffReleasesRepo() {
 
     // Copy destination to source, but without the git dir so there won't be any
     // conflicts with the commits
-    Fs.removeSync(destinationPaths.git._);
-    Fs.copySync(sourcePaths.git._, destinationPaths.git._);
+    Fs.removeSync(destinationPaths.git.resolve());
+    Fs.copySync(sourcePaths.git.resolve(), destinationPaths.git.resolve());
 
     // Add commit for release
     Git(['add', '.'], { cwd: destinationDir });
