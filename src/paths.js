@@ -10,6 +10,10 @@ var Utils = require('./utils');
 var cache = {};
 var resolve = Path.resolve.bind(Path);
 
+var ascii = resolveTree(resolve(__dirname, 'ascii'), {
+  views: resolve(__dirname, 'ascii/views')
+});
+
 var tortilla = resolveTree(resolve(__dirname, '..'), {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
@@ -23,12 +27,12 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   release: resolve(__dirname, 'release.js'),
   step: resolve(__dirname, 'step.js'),
   utils: resolve(__dirname, 'utils.js'),
-  ascii: resolve(__dirname, 'ascii'),
   hooks: resolve(__dirname, 'hooks'),
   mdParser: resolve(__dirname, 'md-parser'),
   mdRenderer: resolve(__dirname, 'md-renderer'),
   templates: resolve(__dirname, 'templates'),
-  skeleton: 'git@github.com:Urigo/tortilla-skeleton.git'
+  skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
+  ascii: ascii
 });
 
 function resolveTree(root, branches) {

@@ -9,7 +9,7 @@ var Paths = require('../paths');
 // Get string for provided ascii art name
 function getAsciiArt(artName) {
   var artFile = artName + '.txt';
-  var artPath = Path.resolve(Paths.tortilla.ascii, artFile);
+  var artPath = Path.resolve(Paths.tortilla.ascii.views, artFile);
   return Fs.readFileSync(artPath).toString();
 }
 
