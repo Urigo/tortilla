@@ -17,7 +17,7 @@ Program
 
 Program
   .command('set <mode>')
-  .description('Enable or disable strict mode')
+  .description('Sets strict mode')
   .action(function (mode) {
     LocalStorage.assertTortilla(true);
     mode = JSON.parse(mode);
@@ -33,7 +33,9 @@ Program
 function printStrictMode(mode) {
   if (mode == null) mode = !!LocalStorage.getItem('USE_STRICT');
   var strictStatus = mode ? 'enabled' : 'disabled';
+  console.log();
   console.log('Strict mode is ' + strictStatus);
+  console.log();
 }
 
 Program.parse(process.argv);

@@ -168,15 +168,15 @@ See:
 
 **command:** `tortilla create [name]`
 
-Creates a new Tortilla project with the provided name
+Creates a new Tortilla project with the provided name.
 
 - *option:* `-o, --output [path]` - The output path of the newly created project.
 - *option:* `-m, --message [message]` - The created project's initial commit's message.
-- *option:* `--override` - Automatically override project directory if already exists.
+- *option:* `--override` - Override project directory if already exists.
 
 **command:** `tortilla init [name]`
 
-Initializes Tortilla essentials in the provided project
+Initializes Tortilla essentials in the provided project.
 
 ### tortilla-manual CLI
 
@@ -195,7 +195,7 @@ For more information see the [releases](#releases) section.
 
 **command:** `tortilla release bump <type>`
 
-Bumps the current release of the tutorial. This will create some new release tags accordingly and will update the associated history branch.
+Bumps the current release of the tutorial. This will create some new release tags accordingly and will update the associated history branch. The provided type represents a [semver version type](http://semver.org/) (major, minor and patch) we would like to bump.
 
 - *option:* `-m, --message [message]` - A message describing the newly created release. If not provided, and editor will be opened instead where we can type a full document.
 
