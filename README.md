@@ -29,7 +29,12 @@ If you're not familiar with Tortilla I recommend you to go through the this `REA
 
 ## Tutorial Structure
 
-### Commits
+See:
+- [steps](#steps)
+- [manuals](#manuals)
+- [releases](#releases)
+
+### Steps
 
 Each commit should represent a single step in the tutorial, using the following message template:
 
@@ -47,23 +52,23 @@ Here's a list of commits for example:
     Step 1.1: Create a basic Webpack config
     How to create a todo list
 
-As you can see, some of the commits represent a [sub-step](#sub-step) (e.g. step 1.1, 1.2) and some of them represent a [super-step](#super-step) (e.g. step 1, 2); Together they form a whole single step. Note that the only exception is the root commit whose message can be whatever you feel like, but the rest of the commits **must** follow these rules, otherwise you will encounter some unexpected behaviors.
+As you can see, some of the commits represent a [sub-step](#sub-step) (e.g. step 1.1, 1.2) and some of them represent a [super-step](#super-step) (e.g. step 1, 2); Together they form a whole single step. Note that the only exception is the root commit whose message can be whatever you'd like (will most likely be something which describes the tutorial), but the rest of the commits **must** follow these rules, otherwise you will encounter some unexpected behaviors.
 
 > Credit goes to **[@stubailo](http://www.github.com/stubailo)** who originally came up with the commit templates concept.
 
-### Sub Step
+#### Sub Step
 
 A sub-step is a small portion of the whole step. Each sub-step should usually represent a small change which should be followed by an explanation in the tutorial. Sub-steps should be sorted by their chronological order; Sub-steps which assemble the same step should have the same super index, and a consecutive sub index separated by a period (e.g. 1.1, 1.2).
 
-### Super Step
+#### Super Step
 
 A super-step should **always** come at the end of each step, and should be represented with a single index (e.g. 1, 2). The super-step should add a manual file which goes through the implementation of the associated step. The manual file is a simple markdown file which should be located under the `steps` directory and its name should be `step(index).md`. For more information about manual files, see the [manuals](#manuals) section.
 
-## Manuals
+### Manuals
 
-As for the project structure itself, the only thing you should be aware of is the `manuals` directory, which contains a `templates` directory and a `views` directory. Here's an example structure for a `manuals` directory:
+As for the project structure itself, the only thing you should be aware of is the `.tortilla/manuals` directory, which contains a `templates` directory and a `views` directory. Here's an example structure for a `.tortilla/manuals` directory:
 
-    manuals
+    .tortilla/manuals
     ├─ templates
     │  ├ root.md.tmpl
     │  ├ step1.md.tmpl
@@ -77,20 +82,23 @@ As for the project structure itself, the only thing you should be aware of is th
 
 Templates are used for development, they are easy to edit and work with since they provide you with some handy [template helpers](#template-helpers). On the other hand, we have the views, which are not as comfortable to work with, and are very comfortable to look at, and will most likely be used by the viewers. The message of the current step's commit will be used as its belonging manual's title (header), and a navigation bar will be rendered automatically at the button of each manual (footer). The header and the footer can be overridden by defining custom templates called `header.md.tmpl` and `footer.md.tmpl` in the root commit.
 
-### Template Helpers
+#### Template Helpers
 
 Template helpers are used when writing a manual file to make our-lives a bit easier when it comes to formatting complex views. The templates are rendered using [Handlebars](http://handlebarsjs.com/), so I recommend you to go through its syntax so you can be familiar with it.
 
-These are the available {{view models}}:
-- **step** - The number of the current step.
-- **commit_message** - The current commit message.
+**Available {{view models}}**
 
-These are the available {{{template helpers}}}:
-- **nav_step** - A navigation bar between step manuals. Will present two buttons - "Previous step" and "Next step". This template helper may receives the following options:
-  - **prev_ref** - The reference which we will be redirected to once pressed on "Previous step" button.
-  - **next_ref** - The reference which we will be redirected to once pressed on "Next step" button.
-- **diff_step <step>** - Will run `git diff` for the specified step's commit. This template helper may receives the following options:
-  - **files** - A list of specific file paths separated by a comma (`,`) that we would like to present in our diff. The rest of the files in the diff will be ignored.
+- *step* - The number of the current step.
+- *commit_message* - The current commit message.
+
+**Available {{{template helpers}}}**
+
+- *nav_step* - A navigation bar between step manuals. Will present two buttons - "Previous step" and "Next step". This template helper may receives the following options:
+  - *prev_ref* - The reference which we will be redirected to once pressed on "Previous step" button.
+  - *next_ref* - The reference which we will be redirected to once pressed on "Next step" button.
+
+- *diff_step <step>* - Will run `git diff` for the specified step's commit. This template helper may receives the following options:
+  - *files* - A list of specific file paths separated by a comma (`,`) that we would like to present in our diff. The rest of the files in the diff will be ignored.
 
 ## Releases
 
@@ -106,14 +114,14 @@ A Tortilla project may contain [release tags](#release-tags) which represent dif
     foo@step1@0.0.1
     foo@0.0.1
 
-In addition, a stack of all the releases is available through a [history branches](#history-branches):
+In addition, a stack of all the releases is available through [history branches](#history-branches):
 
     master-history
     foo-history
 
 ### Release Tags
 
-A release tag should represent the tutorial at a specific state (e.g. master branch step2) and time point (e.g. version 1.2.1). A release tag should contain the name of the branch, the step descriptor, if at all, and a [semver](http://semver.org/) version, separated with at (`@`) signs (e.g. `master@step1@0.0.1`, `foo@0.1.0`).
+A release tag should represent the tutorial at a specific state (e.g. step 2 of master branch) and time point (e.g. version 1.2.1). A release tag should contain the name of the branch, the step descriptor, if at all, and a [semver](http://semver.org/) version, separated with at (`@`) signs (e.g. `master@step1@0.0.1`, `foo@0.1.0`).
 
 ### History Branches
 
@@ -123,7 +131,7 @@ The history is specific for a certain branch. Its name should end with `history`
     master@0.0.2: Update step 2
     master@0.0.1: Initial tutorial creation
 
-## How to Start
+## Quick Startup
 
 First you will need to install Tortilla's CLI tool:
 
@@ -131,95 +139,117 @@ First you will need to install Tortilla's CLI tool:
 
 Once you have it installed you can go ahead and create a new Tortilla project:
 
-    $ tortilla create "project name" --message="commit message" --output="output path"
+    $ tortilla create my-tutorial -m "How to create my app"
 
-This command will initialize a new Tortilla project in the provided path (Defaults to the current path). The project will be initialized with the provided project name (Defaults to `tortilla-project`) and the provided message as the initial commit message (Will open an editor if no message is provided). If the output path already exists a prompt verifying your decision will show up. To automatically skip it you can provide an optional `--override` option.
+This command will initialize a new Tortilla project called `my-tutorial` with an initial commit message of `How to create my app`.
 
-Anytime you clone a Tortilla project from a git-host you will need to re-initialize it so Tortilla can work properly:
+After uploading this project and cloning it, be sure to initialize Tortilla so it can work properly:
 
-    $ tortilla init "project path"
-
-An optional project path can be provided when initializing Tortilla (Defaults to current dir). As for now this command has no restrictions and can be used on any project, but is not guaranteed to work as expected, so use with caution.
+    $ git clone git@github.com:John/my-tutorial.git
+    $ tortilla init my-tutorial
 
 A manual page for the usage of Tortilla's CLI tool can be brought any time by typing the following:
 
     $ tortilla --help
 
-## Git Helpers
+For further information, I'd recommend you going through the [CLI](#CLI) section.
 
-You've probably noticed that the rules for a valid tutorial project are very strict. This is where the git-helpers kicks in. Instead of having a rough time managing the steps list, here are some kick-ass helpers which will make your life way easier:
+## CLI
 
-### Push Step
+See:
 
-    $ tortilla step push --message="step message"
+- [tortilla](#tortilla-cli)
+  - [tortilla-manual](#tortilla-manual-cli)
+  - [tortilla-release](#tortilla-release-cli)
+  - [tortilla-step](#tortilla-step-cli)
+  - [tortilla-strict](#tortilla-strict-cli)
 
-Push a new step to the top of the stack with the provided message (Will open an editor if no message is provided). If you would like to add a new step in the middle of the stack, first use the [step editing](#edit-step) helper, and then push a new step to the top of the stack.
+### tortilla CLI
 
-### Pop Step
+**command:** `tortilla create [name]`
 
-    $ tortilla step pop
+Creates a new Tortilla project with the provided name
 
-Pop the last step from the top of the stack. If you would like to remove a step from the middle of the stack, first use the [step editing](#edit-step) helper, and then pop the step from the top of the stack.
+- *option:* `-o, --output [path]` - The output path of the newly created project.
+- *option:* `-m, --message [message]` - The created project's initial commit's message.
+- *option:* `--override` - Automatically override project directory if already exists.
 
-### Tag Step
+**command:** `tortilla init [name]`
 
-    $ tortilla step tag --message="step message"
+Initializes Tortilla essentials in the provided project
 
-Add a new super-step and finish the current step with the provided message (Will open an editor if no message is provided). This will initialize an empty manual markdown file. If you would like to edit the manual file, simply use the [step editing](#edit-step) helper and amend your changes to the recent commit.
+### tortilla-manual CLI
 
-### Edit Step
+For more information see the [manuals](#manuals) section.
 
-    $ tortilla step edit "step index"
+**command:** `tortilla render manual [step]`
 
-Edit the provided step. This will get you into rebase mode, so once you've finished editing your step, just type `git rebase --continue` and let git do its magic. You can add, remove and tag new steps during editing without worrying about the upcoming commits, this helper is smart enough to adjust their content and messages based on your actions. An optional `--root` option can be provided if you would like to edit the root. If no step is specified, the last step will be edited by default.
+Renders specified manual view.
 
-### Sort Step
+- *option:* `--root` - Render root manual (`README.md`).
+- *option:* `--all` - Render all manuals.
 
-    $ tortilla step sort "step index"
+### tortilla-release CLI
 
-Sort all the step indexes in the given super step, e.g. assuming we have step `2.1`, `2.4` and `2.3` and we would like to sort them, we will simply run this command with a step index of `2`. This is useful when cherry-picking from other repositories or branches and the steps are not in the right order. If provided with `--root`, all steps in the commits list will be sorted. If no step was provided, it will sort the last super step by default.
+For more information see the [releases](#releases) section.
 
-### Reword Step
+**command:** `tortilla release bump <type>`
 
-    $ tortilla step reword "step index" --message="step message"
+Bumps the current release of the tutorial. This will create some new release tags accordingly and will update the associated history branch.
 
-Replace the provided step's message with the provided message (Will open an editor if no message is provided). An optional `--root` option can be provided if you would like to reword the root. If no step is specified, the last step will be reworded by default.
+- *option:* `-m, --message [message]` - A message describing the newly created release. If not provided, and editor will be opened instead where we can type a full document.
 
-### Render Manual
+**command:** `tortilla release current`
 
-    $ tortilla manual render "step index"
+Prints the current release.
 
-Renders and rebases specified step's manual. If you would like to render the root manual you can provide a `--root`. If you would like to render all manuals since the beginning of history you can provide a `--all` option. If no step is specified, the last manual will be rendered by default.
+**command:** `tortilla release diff <sourceRelease> <destinationRelease>`
 
-### Bump Release
+Runs `git diff` between 2 specified releases. This will also be able to run the operation between 2 different releases which are completely different from their root! You can also provide this command with some additional native [git-diff options](https://git-scm.com/docs/git-diff#_options).
 
-    $ tortilla release bump "release type" --message="release message"
+### tortilla-step CLI
 
-Whenever making changes in the tutorial using Tortilla, the commits are being overridden, a behavior we're not always interested in, since sometimes we would like to reference or view previous releases of the tutorial. The `release` command solves this problem by creating [release tags](#release-tags) which are used as snap shot for the current tutorial state. The first argument of this command is the release type and must be one of `major`, `minor` or `patch`. The `message` argument is optional, and should provide a short description message for the release. If no message is provided, a text editor will be opened, where you can type the change-log of the release. The change-log will be attached to the `root` tag. Once a version has been released, a new [history branch](#history-branches) will be created.
+For more information see the [steps](#steps) section.
 
-### Get Release
+**command:** `tortilla step push`
 
-    $ tortilla release current
+Pushes a new step. Staged files will be committed along with this step.
 
-Gets the current tutorial release based on the latest matching [release tag](#release-tags).
+- *option:* `-m, --message [message]` - A message describing the newly created step.
 
-### Diff Release
+**command:** `tortilla step pop`
 
-    $ tortilla release diff "source release" "destination release"
+Pops the most recent step. This will completely discard the step's changes.
 
-Runs `git diff` between `source release` and `destination release`. An additional arguments vector might be appended which will be invoked as is when running `git diff`.
+**command:** `tortilla step tag`
 
-### Get Strict Mode
+Mark this step as finished and move on to the next one. This will increase the index of the [super-step](#super-steps) and zero the index of the [sub-step](#sub-steps).
 
-    $ tortilla strict get
+- *option:* `-m, --message [message]` - A message describing the newly created step.
 
-Gets the current status of strict mode. By default, a newly initialized Tortilla project will be set to be in strict mode, which will restrict you doing from running git operations out side git's scope.
+**command:** `tortilla step edit [step]`
 
-### Set Strict Mode
+Edits the specified step. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
 
-    $ tortilla strict set "mode status"
+- *option:* `--root` - Edit the root step (initial commit).
 
-Sets the status of strict mode. Any falsy or truthy value will do. Once strict mode is set, an approval message will be printed to terminal.
+**command:** `tortilla step reword [step]`
+
+Rename the specified step's commit message.
+
+- *option:* `-m, --message [message]` - The new message of the reworded step. If not provided, and editor will be opened instead where we can type a full document.
+
+### tortilla-strict CLI
+
+Strict mode determines whether Tortilla's git-hook validations are enabled or disabled. It's highly recommended to leave it on, since you might accidentally digress from Tortilla's strict project rules.
+
+**command:** `tortilla strict get`
+
+Prints whether strict mode is enabled or disabled.
+
+**command:** `tortilla strict set <mode>`
+
+Sets strict mode. Provided mode must be either a truthy value (e.g. `1`, `true`) or a falsy value (`0`, `false`).
 
 ## License
 
