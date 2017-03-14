@@ -9,8 +9,8 @@ var Step = require('../src/step');
 
 Program
   .command('push')
-  .description('Push a new step')
-  .option('-m, --message [message]', 'The step\'s message')
+  .description('Pushes a new step')
+  .option('-m, --message [message]', 'A message describing the newly created step')
   .option('--allow-empty', 'Allow an empty step to be pushed')
   .action(function (options) {
     LocalStorage.assertTortilla(true);
@@ -19,7 +19,7 @@ Program
 
 Program
   .command('pop')
-  .description('Pop recent step and delete its tag')
+  .description('Pops the most recent step')
   .action(function () {
     LocalStorage.assertTortilla(true);
     Step.pop();
@@ -27,8 +27,8 @@ Program
 
 Program
   .command('tag')
-  .description('Create a super step, tag it and start a new set')
-  .option('-m, --message [message]', 'The step\'s message')
+  .description('Mark this step as finished and move on to the next one')
+  .option('-m, --message [message]', 'A message describing the newly created step')
   .action(function (options) {
     LocalStorage.assertTortilla(true);
     Step.tag(options.message);
@@ -36,8 +36,8 @@ Program
 
 Program
   .command('edit [step]')
-  .description('Edit [step] and sort upcoming steps\' indexes')
-  .option('--root [root]', 'Edit the root commit')
+  .description('Edits the specified step')
+  .option('--root [root]', 'Edit the root step (initial commit)')
   .action(function (step, options) {
     LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
@@ -46,7 +46,7 @@ Program
 
 Program
   .command('sort [step]')
-  .description('Adjust all step indexes from given [step]')
+  .description('Adjust all step indexes from a given step index')
   .option('--root [root]', 'Adjust from root commit')
   .action(function (step, options) {
     LocalStorage.assertTortilla(true);
@@ -56,9 +56,9 @@ Program
 
 Program
   .command('reword [step]')
-  .description('Reword [step] message without affecting its index')
-  .option('--root', 'Reword the root commit')
-  .option('-m, --message [message]', 'The step\'s message')
+  .description('Rename the specified step\'s commit message')
+  .option('-m, --message [message]', 'The new message of the reworded step')
+  .option('--root', 'Reword the root step (initial commit)')
   .action(function (step, options) {
     LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');

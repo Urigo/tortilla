@@ -9,8 +9,8 @@ var Release = require('../src/release');
 
 Program
   .command('bump <type>')
-  .description('Bump the provided release <type>')
-  .option('-m, --message [message]', 'A [message] describing the new release')
+  .description('Bumps the current release of the tutorial')
+  .option('-m, --message [message]', 'A message describing the newly created release')
   .action(function (type, options) {
     LocalStorage.assertTortilla(true);
     Release.bump(type, options);
@@ -18,7 +18,7 @@ Program
 
 Program
   .command('current')
-  .description('Print the current release')
+  .description('Prints the current release')
   .action(function () {
     LocalStorage.assertTortilla(true);
     Release.printCurrent();
@@ -26,7 +26,7 @@ Program
 
 Program
   .command('diff <sourceRelease> <destinationRelease>')
-  .description('Run "git diff" between <sourceRelease> and <destinationRelease>')
+  .description('Runs `git diff` between 2 specified releases')
   .allowUnknownOption(true)
   .action(function (sourceRelease, destinationRelease) {
     LocalStorage.assertTortilla(true);
