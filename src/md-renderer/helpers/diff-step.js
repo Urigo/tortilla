@@ -36,7 +36,7 @@ var Utils = require('../../utils');
   very simple stuff
  */
 
-var t = Translator.t.bind(Translator);
+var t = Translator.translate.bind(Translator);
 
 
 MDRenderer.registerHelper('diff_step', function (step, options) {
@@ -70,6 +70,11 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
   var commitReference = MDRenderer.resolve('../../../../commit', stepHash);
 
   var stepDescriptor = Step.descriptor(stepMessage);
+
+  stepDescriptor.message = t('step.message.' + stepDescriptor.number, {
+    defaultValue: stepDescriptor.message
+  });
+
   var stepTitle = '#### [' + t('step.diff.message', stepDescriptor) +
     '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);

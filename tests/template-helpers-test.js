@@ -6,7 +6,7 @@ const expect = Chai.expect;
 
 
 describe('Template Helpers', function() {
-  describe('diff_step', function() {
+  describe.only('diff_step', function() {
     this.slow(150);
 
     it('should render an added file', function () {

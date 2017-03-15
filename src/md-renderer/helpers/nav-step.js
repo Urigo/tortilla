@@ -8,7 +8,7 @@ var Translator = require('../../translator');
   dynamically based on the current step we're currently in.
  */
 
-var t = Translator.t.bind(Translator);
+var t = Translator.translate.bind(Translator);
 
 
 MDRenderer.registerHelper('nav_step', function(options) {
