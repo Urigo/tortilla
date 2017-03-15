@@ -248,6 +248,49 @@ function splitWords(str) {
     .split(/[^a-zA-Z0-9]+/);
 }
 
+// Wraps source descriptors and defines them on destination. The modifiers object
+// contains the wrappers for the new descriptors, and has 3 properties:
+// - value - A value wrapper, if function
+// - get - A getter wrapper
+// - set - A setter wrapper
+// All 3 wrappers are called with 3 arguments: handler, propertyName, args
+function delegateProperties(destination, source, modifiers) {
+  Object.getOwnPropertyNames(source).forEach(function (propertyName) {
+    var propertyDescriptor = Object.getOwnPropertyDescriptor(source, propertyName);
+
+    if (typeof propertyDescriptor.value == 'function' && modifiers.value) {
+      var superValue = propertyDescriptor.value;
+
+      propertyDescriptor.value = function () {
+        var args = [].slice.call(arguments);
+
+        return modifiers.value.call(this, superValue, propertyName, args);
+      };
+    }
+    else {
+      if (propertyDescriptor.get && modifiers.get) {
+        var superGetter = propertyDescriptor.get;
+
+        propertyDescriptor.get = function () {
+          return modifiers.get.call(this, superGetter, propertyName);
+        };
+      }
+
+      if (propertyDescriptor.set && modifiers.set) {
+        var superGetter = propertyDescriptor.set;
+
+        propertyDescriptor.set = function (value) {
+          return modifiers.value.call(this, superGetter, propertyName, value);
+        };
+      }
+    }
+
+    Object.defineProperty(destination, propertyName, propertyDescriptor);
+  });
+
+  return destination;
+}
+
 
 module.exports = {
   cwd: cwd,
@@ -266,5 +309,6 @@ module.exports = {
   startCase: toStartCase,
   lowerFirst: lowerFirst,
   upperFirst: upperFirst,
-  words: splitWords
+  words: splitWords,
+  delegateProperties: delegateProperties
 };

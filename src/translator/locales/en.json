@@ -1,0 +1,19 @@
+{
+  "tutorial": {
+    "_": "tutorial",
+    "begin": "begin tutorial",
+    "intro": "intro"
+  },
+  "step": {
+    "_": "step",
+    "next": "next step",
+    "prev": "previous step",
+    "not_found": "not found"
+  },
+  "file": {
+    "_": "file",
+    "added": "added",
+    "deleted": "deleted",
+    "changed": "changed"
+  }
+}
