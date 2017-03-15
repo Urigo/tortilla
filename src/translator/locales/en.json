@@ -1,19 +1,25 @@
 {
   "tutorial": {
-    "_": "tutorial",
-    "begin": "begin tutorial",
-    "intro": "intro"
+    "nav": {
+      "begin": "Begin Tutorial",
+      "intro": "Intro"
+    }
   },
   "step": {
-    "_": "step",
-    "next": "next step",
-    "prev": "previous step",
-    "not_found": "not found"
+    "diff": {
+      "message": "Step {{number}}: {{message}}",
+      "not_found": "Step {{number}}: NOT FOUND!"
+    },
+    "nav": {
+      "next": "Next Step",
+      "prev": "Previous Step"
+    }
   },
   "file": {
-    "_": "file",
-    "added": "added",
-    "deleted": "deleted",
-    "changed": "changed"
+    "diff": {
+      "added": "Added {{path}}",
+      "deleted": "Deleted {{path}}",
+      "changed": "Changed {{path}}"
+    }
   }
 }

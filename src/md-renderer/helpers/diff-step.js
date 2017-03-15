@@ -2,6 +2,8 @@ var Handlebars = require('handlebars');
 var ParseDiff = require('parse-diff');
 var MDRenderer = require('..');
 var Git = require('../../git');
+var Step = require('../../step');
+var Translator = require('../../translator');
 var Utils = require('../../utils');
 
 /**
@@ -34,6 +36,9 @@ var Utils = require('../../utils');
   very simple stuff
  */
 
+var t = Translator.t.bind(Translator);
+
+
 MDRenderer.registerHelper('diff_step', function (step, options) {
   var pattern;
 
@@ -56,13 +61,17 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
   // In case step doesn't exist just render the error message.
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
-  if (!stepData.length) return '#### Step ' + step + ': NOT FOUND!';
+  if (!stepData.length) {
+    return '#### ' + t('step.diff.not_found', { number: step });
+  }
 
   var stepHash = stepData[0];
   var stepMessage = stepData.slice(1).join(' ');
   var commitReference = MDRenderer.resolve('../../../../commit', stepHash);
 
-  var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
+  var stepDescriptor = Step.descriptor(stepMessage);
+  var stepTitle = '#### [' + t('step.diff.message', stepDescriptor) +
+    '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);
 
   // Convert diff string to json format
@@ -83,11 +92,11 @@ function getMdDiff(file) {
   var fileTitle;
 
   if (file.new)
-    fileTitle = '##### Added ' + file.to;
+    fileTitle = '##### ' + t('file.diff.added', { path: file.to });
   else if (file.deleted)
-    fileTitle = '##### Deleted ' + file.from;
+    fileTitle = '##### ' + t('file.diff.deleted', { path: file.from });
   else
-    fileTitle = '##### Changed ' + file.from;
+    fileTitle = '##### ' + t('file.diff.changed', { path: file.from });
 
   var mdChunks = file.chunks
     .map(getMdChunk)

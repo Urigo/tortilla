@@ -65,4 +65,5 @@ Object.defineProperty(Translation.prototype, 'constructor', {
   });
 });
 
+
 module.exports = Translation;

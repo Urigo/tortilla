@@ -8,6 +8,12 @@ function LocalCache() {
 }
 
 LocalCache.prototype = Object.create(Object.prototype, {
+  constructor: {
+    writable: true,
+    configurable: true,
+    value: LocalCache
+  },
+
   getItem: {
     writable: true,
     configurable: true,
@@ -53,16 +59,11 @@ LocalCache.prototype = Object.create(Object.prototype, {
   },
 
   length: {
+    configurable: true,
     get: function () {
       return Object.keys(this._cache).length;
     }
   }
-});
-
-Object.defineProperty(LocalCache.prototype, 'constructor', {
-  writable: true,
-  configurable: true,
-  value: LocalCache
 });
 
 
