@@ -62,7 +62,7 @@ Renderer.registerHelper('diffStep', function (step, options) {
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
   if (!stepData.length) {
-    return '#### ' + t('step.diff.notFound', { number: step });
+    return '#### ' + t('step.commit.missing', { number: step });
   }
 
   var stepHash = stepData[0];
@@ -71,11 +71,11 @@ Renderer.registerHelper('diffStep', function (step, options) {
 
   var stepDescriptor = Step.descriptor(stepMessage);
 
-  stepDescriptor.message = t('step.message.' + stepDescriptor.number, {
+  stepDescriptor.message = t('step.commit.message.' + stepDescriptor.number, {
     defaultValue: stepDescriptor.message
   });
 
-  var stepTitle = '#### [' + t('step.diff.message', stepDescriptor) +
+  var stepTitle = '#### [' + t('step.commit.message', stepDescriptor) +
     '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);
 
@@ -99,11 +99,11 @@ function getMdDiff(file) {
   var fileTitle;
 
   if (file.new)
-    fileTitle = '##### ' + t('file.diff.added', { path: file.to });
+    fileTitle = '##### ' + t('diff.added', { path: file.to });
   else if (file.deleted)
-    fileTitle = '##### ' + t('file.diff.deleted', { path: file.from });
+    fileTitle = '##### ' + t('diff.deleted', { path: file.from });
   else
-    fileTitle = '##### ' + t('file.diff.changed', { path: file.from });
+    fileTitle = '##### ' + t('diff.changed', { path: file.from });
 
   var mdChunks = file.chunks
     .map(getMdChunk)

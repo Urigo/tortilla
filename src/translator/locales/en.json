@@ -1,25 +1,22 @@
 {
-  "tutorial": {
-    "nav": {
-      "begin": "Begin Tutorial",
-      "intro": "Intro"
-    }
+  "_": {
+    "step": "step"
+  },
+  "nav": {
+    "begin": "Begin Tutorial",
+    "into": "Intro",
+    "next": "Next Step",
+    "prev": "Previous Step"
   },
   "step": {
-    "diff": {
+    "commit": {
       "message": "Step {{number}}: {{message}}",
-      "notFound": "Step {{number}}: NOT FOUND!"
-    },
-    "nav": {
-      "next": "Next Step",
-      "prev": "Previous Step"
+      "missing": "Step {{number}}: NOT FOUND!"
     }
   },
-  "file": {
-    "diff": {
-      "added": "Added {{path}}",
-      "deleted": "Deleted {{path}}",
-      "changed": "Changed {{path}}"
-    }
+  "diff": {
+    "added": "Added {{path}}",
+    "changed": "Changed {{path}}",
+    "deleted": "Deleted {{path}}"
   }
 }

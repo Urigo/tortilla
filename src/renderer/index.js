@@ -232,3 +232,5 @@ module.exports = Utils.extend(handlebars, {
 require('./helpers/diff-step');
 require('./helpers/nav-step');
 require('./helpers/resolve-path');
+require('./helpers/step-message');
+require('./helpers/translate');

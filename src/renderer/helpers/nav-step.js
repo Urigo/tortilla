@@ -24,7 +24,7 @@ Renderer.registerHelper('navStep', function(options) {
 
     return Renderer.renderTemplateFile('nav-step', {
       nextOnly: true,
-      text: t('tutorial.nav.begin'),
+      text: t('nav.begin'),
       ref: options.hash.ref || Renderer.resolve('manuals/views/step1.md')
     });
   }
@@ -52,7 +52,7 @@ Renderer.registerHelper('navStep', function(options) {
   if (step == recentSuperStep)
     return Renderer.renderTemplateFile('nav-step', {
       prevOnly: true,
-      text: t('step.nav.prev'),
+      text: t('nav.prev'),
       ref: options.hash.ref || Renderer.resolve('step' + (step - 1) + '.md')
     });
 
@@ -60,18 +60,18 @@ Renderer.registerHelper('navStep', function(options) {
   if (step == 1)
     return Renderer.renderTemplateFile('nav-step', {
       bidirectional: true,
-      nextText: t('step.nav.next'),
+      nextText: t('nav.next'),
       nextRef: options.hash.nextRef || Renderer.resolve('step2.md'),
-      prevText: t('tutorial.nav.intro'),
+      prevText: t('nav.intro'),
       prevRef: options.hash.prevRef || Renderer.resolve('../../README.md')
     });
 
   // Any other case
   return Renderer.renderTemplateFile('nav-step', {
     bidirectional: true,
-    nextText: t('step.nav.next'),
+    nextText: t('nav.next'),
     nextRef: options.hash.nextRef || Renderer.resolve('step' + (step + 1) + '.md'),
-    prevText: t('step.nav.prev'),
+    prevText: t('nav.prev'),
     prevRef: options.hash.prevRef || Renderer.resolve('step' + (step - 1) + '.md')
   });
 }, {

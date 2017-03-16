@@ -38,7 +38,6 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   step: resolve(__dirname, 'step.js'),
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
-  mdParser: resolve(__dirname, 'md-parser'),
   skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
   ascii: ascii,
   renderer: renderer,

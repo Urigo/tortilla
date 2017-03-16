@@ -47,7 +47,7 @@ function getTranslationResource(locale) {
 function translate() {
   var result = superTranslate.apply(null, arguments);
 
-  return new Translation(result);
+  return result && new Translation(result);
 }
 
 
