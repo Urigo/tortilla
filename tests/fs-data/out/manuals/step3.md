@@ -2,7 +2,7 @@
 
 Step 3 manual
 
-[{]: <helper> (nav_step)
+[{]: <helper> (navStep)
 | [< Previous Step](step2.md) |
 |:----------------------|
 [}]: #

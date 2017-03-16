@@ -49,10 +49,10 @@ function renderTemplate(template, scope) {
   if (typeof template == 'string') template = handlebars.compile(template);
   scope = scope || {};
 
-  if (scope.view_path) {
+  if (scope.viewPath) {
     // Relative path of view dir
     // e.g. manuals/views
-    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.view_path));
+    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.viewPath));
   }
 
   try {
@@ -67,10 +67,10 @@ function renderTemplate(template, scope) {
   }
 }
 
-// Returns a template path relative to tortilla with an '.md.tmpl' extension
+// Returns a template path relative to tortilla with an '.tmpl' extension
 function resolveTemplatePath(templatePath) {
-  if (templatePath.indexOf('.md.tmpl') == -1) {
-    templatePath += '.md.tmpl';
+  if (templatePath.indexOf('.tmpl') == -1) {
+    templatePath += '.tmpl';
   }
 
   // User defined templates
@@ -78,12 +78,14 @@ function resolveTemplatePath(templatePath) {
   if (Utils.exists(relativeTemplatePath)) return relativeTemplatePath;
 
   // Tortilla defined templates
-  return Path.resolve(Paths.tortilla.mdRenderer.templates, templatePath);
+  return Path.resolve(Paths.tortilla.renderer.templates, templatePath);
 }
 
 // Register a new helper. Registered helpers will be wrapped with a
 // [{]: <helper> (name ...args) [}]: #
-function registerHelper(name, helper) {
+function registerHelper(name, helper, options) {
+  options = options || {};
+
   var wrappedHelper = function () {
     var out = helper.apply(this, arguments);
 
@@ -97,19 +99,30 @@ function registerHelper(name, helper) {
 
     // Transform helper output
     var transformation = transformations[target] && transformations[target][name];
-    if (transformation) out = transformation.apply(null, [out].concat(args));
-    out = wrapComponent('helper', name, args, out);
+    if (transformation) {
+      out = transformation.apply(null, [out].concat(args));
+    }
+
+    // Wrap helper output
+    if (options.mdWrap) {
+      out = mdWrapComponent('helper', name, args, out);
+    }
 
     return out;
   }
 
-  return superRegisterHelper(name, wrappedHelper);
+  superRegisterHelper(name, wrappedHelper);
 }
 
 // Register a new partial. Registered partials will be wrapped with a
 // [{]: <partial> (name) [}]: #
-function registerPartial(name, partial) {
-  partial = wrapComponent('partial', name, partial);
+function registerPartial(name, partial, options) {
+  options = options || {};
+
+  // Wrap partial template
+  if (options.mdWrap) {
+    partial = mdWrapComponent('partial', name, partial);
+  }
 
   return superRegisterPartial(name, partial);
 }
@@ -127,7 +140,7 @@ function registerTransformation(targetName, helperName, transformation) {
 // components in the view later on using external softwares later on.
 // e.g. https://github.com/Urigo/angular-meteor-docs/blob/master/src/app/tutorials/
 // improve-code-resolver.ts#L24
-function wrapComponent(type, name, args, content) {
+function mdWrapComponent(type, name, args, content) {
   var hash = {};
 
   if (typeof content != 'string') {

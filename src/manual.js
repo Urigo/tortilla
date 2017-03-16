@@ -2,8 +2,8 @@ var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');
-var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
+var Renderer = require('./renderer');
 var Step = require('./step');
 var Utils = require('./utils');
 
@@ -69,9 +69,9 @@ function renderManual(step) {
 
   var manualView = renderManualView(manualTemplate, {
     step: step,
-    commit_message: commitMessage,
-    template_path: manualTemplatePath,
-    view_path: manualViewPath
+    commitMessage: commitMessage,
+    templatePath: manualTemplatePath,
+    viewPath: manualViewPath
   });
 
   // Rewrite manual
@@ -109,17 +109,17 @@ function renderManual(step) {
 
 // Renders manual template into informative view
 function renderManualView(manual, scope) {
-  var header = MDRenderer.renderTemplateFile('header', scope)
-  var body = MDRenderer.renderTemplate(manual, scope);
-  var footer = MDRenderer.renderTemplateFile('footer', scope);
+  var header = Renderer.renderTemplateFile('header', scope)
+  var body = Renderer.renderTemplate(manual, scope);
+  var footer = Renderer.renderTemplateFile('footer', scope);
 
   return [header, body, footer].join('\n');
 }
 
 // Gets the manual template belonging to the given step
 function getManualTemplatePath(step) {
-  if (step == 'root') return Path.resolve(Paths.manuals.templates, 'root.md.tmpl');
-  return Path.resolve(Paths.manuals.templates, 'step' + step + '.md.tmpl');
+  if (step == 'root') return Path.resolve(Paths.manuals.templates, 'root.tmpl');
+  return Path.resolve(Paths.manuals.templates, 'step' + step + '.tmpl');
 }
 
 // Gets the manual view belonging to the given step

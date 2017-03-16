@@ -8,7 +8,7 @@
   "step": {
     "diff": {
       "message": "Step {{number}}: {{message}}",
-      "not_found": "Step {{number}}: NOT FOUND!"
+      "notFound": "Step {{number}}: NOT FOUND!"
     },
     "nav": {
       "next": "Next Step",

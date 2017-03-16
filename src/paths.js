@@ -14,9 +14,9 @@ var ascii = resolveTree(resolve(__dirname, 'ascii'), {
   views: resolve(__dirname, 'ascii/views')
 });
 
-var mdRenderer = resolveTree(resolve(__dirname, 'md-renderer'), {
-  helpers: resolve(__dirname, 'md-renderer/helpers'),
-  templates: resolve(__dirname, 'md-renderer/templates')
+var renderer = resolveTree(resolve(__dirname, 'renderer'), {
+  helpers: resolve(__dirname, 'renderer/helpers'),
+  templates: resolve(__dirname, 'renderer/templates')
 });
 
 var translator = resolveTree(resolve(__dirname, 'translator'), {
@@ -41,7 +41,7 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   mdParser: resolve(__dirname, 'md-parser'),
   skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
   ascii: ascii,
-  mdRenderer: mdRenderer,
+  renderer: renderer,
   translator: translator
 });
 

@@ -1,4 +1,4 @@
-[{]: <helper> (nav_step)
+[{]: <helper> (navStep)
 | [< Previous Step](step2.md) |
 |:----------------------|
 [}]: #

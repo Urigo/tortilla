@@ -2,7 +2,7 @@
 
 Step 1 manual
 
-[{]: <helper> (nav_step)
+[{]: <helper> (navStep)
 | [< Intro](../../README.md) | [Next Step >](step2.md) |
 |:--------------------------------|--------------------------------:|
 [}]: #

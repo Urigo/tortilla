@@ -1,13 +1,13 @@
+var Renderer = require('..');
 var Handlebars = require('handlebars');
 var ParseDiff = require('parse-diff');
-var MDRenderer = require('..');
 var Git = require('../../git');
 var Step = require('../../step');
 var Translator = require('../../translator');
 var Utils = require('../../utils');
 
 /**
-  Renders step diff in a pretty markdown format. For example {{{ diff_step 1.1 }}}
+  Renders step diff in a pretty markdown format. For example {{{ diffStep 1.1 }}}
   will render as:
 
   #### Step 1.1
@@ -39,7 +39,7 @@ var Utils = require('../../utils');
 var t = Translator.translate.bind(Translator);
 
 
-MDRenderer.registerHelper('diff_step', function (step, options) {
+Renderer.registerHelper('diffStep', function (step, options) {
   var pattern;
 
   // Will print diff of multiple specified files
@@ -62,12 +62,12 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
   if (!stepData.length) {
-    return '#### ' + t('step.diff.not_found', { number: step });
+    return '#### ' + t('step.diff.notFound', { number: step });
   }
 
   var stepHash = stepData[0];
   var stepMessage = stepData.slice(1).join(' ');
-  var commitReference = MDRenderer.resolve('../../../../commit', stepHash);
+  var commitReference = Renderer.resolve('../../../../commit', stepHash);
 
   var stepDescriptor = Step.descriptor(stepMessage);
 
@@ -90,6 +90,8 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
     .join('\n\n');
 
   return stepTitle + '\n\n' + mdDiffs;
+}, {
+  mdWrap: true
 });
 
 // Gets all diff chunks in a markdown format for a single file
@@ -173,7 +175,7 @@ function getPadLength(changes) {
   return maxLineNumber.toString().length;
 }
 
-MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
+Renderer.registerTransformation('medium', 'diffStep', function (view) {
   return view
     // Add line break after title
     .replace(/(#### .+)\n\n/, '$1\n<br>\n')

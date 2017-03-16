@@ -28,7 +28,7 @@ var Step = require('../step');
   // If this is a super step only the appropriate manual file can be modified
   if (isSuperStep) {
     var tag = 'step' + stepDescriptor.number;
-    var manualTemplatePath = '.tortilla/manuals/templates/' + tag + '.md.tmpl';
+    var manualTemplatePath = '.tortilla/manuals/templates/' + tag + '.tmpl';
     var manualViewPath = '.tortilla/manuals/views/' + tag + '.md';
 
     var stagedFiles = Git.stagedFiles().filter(function (stagedFile) {
