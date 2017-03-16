@@ -1,25 +1,22 @@
 {
-  "tutorial": {
-    "nav": {
-      "begin": "התחל במדריך",
-      "intro": "בחזרה לפתיח"
-    }
+  "_": {
+    "step": "צעד"
+  },
+  "nav": {
+    "begin": "התחל במדריך",
+    "intro": "בחזרה לפתיח",
+    "next": "עבור לצעד הבא",
+    "prev": "עבור לצעד הקודם"
   },
   "step": {
-    "diff": {
+    "commit": {
       "message": "צעד {{number}}: {{message}}",
-      "notFound": "צעד {{number}}: לא נמצא!"
-    },
-    "nav": {
-      "next": "המשך לצעד הבא",
-      "prev": "חזור לצעד הקודם"
+      "missing": "צעד {{number}}: לא נמצא!"
     }
   },
-  "file": {
-    "diff": {
-      "added": "הוספנו את {{path}}",
-      "deleted": "מחקנו את {{path}}",
-      "changed": "שינינו את {{path}}"
-    }
+  "diff": {
+    "added": "הוספנו את {{path}}",
+    "changed": "שינינו את {{path}}",
+    "deleted": "מחקנו את {{path}}"
   }
 }

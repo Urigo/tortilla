@@ -4,7 +4,7 @@
   },
   "nav": {
     "begin": "Begin Tutorial",
-    "into": "Intro",
+    "intro": "Intro",
     "next": "Next Step",
     "prev": "Previous Step"
   },
