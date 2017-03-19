@@ -50,8 +50,24 @@ function translate() {
   return result && new Translation(result);
 }
 
+// Any translation would be done using the provided locale
+function scopeLanguage(language, fn) {
+  if (!language) return fn();
+
+  var oldLanguage = i18n.translator.language;
+
+  try {
+    i18n.translator.language = language;
+    fn();
+  }
+  finally {
+    i18n.translator.language = oldLanguage;
+  }
+}
+
 
 // Shallow cloning i18n so it won't be changed
 module.exports = Utils.extend({}, i18n, {
-  translate: translate
+  translate: translate,
+  scopeLanguage: scopeLanguage
 });

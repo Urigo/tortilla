@@ -5,6 +5,7 @@ var Git = require('./git');
 var Paths = require('./paths');
 var Renderer = require('./renderer');
 var Step = require('./step');
+var Translator = require('./translator');
 var Utils = require('./utils');
 
 /**
@@ -80,7 +81,8 @@ function renderManual(step) {
       step: step,
       commitMessage: commitMessage,
       templatePath: manualTemplatePath,
-      viewPath: manualViewPath
+      viewPath: manualViewPath,
+      language: locale
     });
 
     // Rewrite manual
@@ -93,6 +95,7 @@ function renderManual(step) {
       Fs.ensureDir(customTargetDir);
     }
 
+    Fs.ensureDirSync(Path.dirname(manualViewPath));
     Fs.writeFileSync(manualViewPath, manualView);
 
     // Amend changes
@@ -123,9 +126,13 @@ function renderManual(step) {
 
 // Renders manual template into informative view
 function renderManualView(manual, scope) {
-  var header = Renderer.renderTemplateFile('header', scope)
-  var body = Renderer.renderTemplate(manual, scope);
-  var footer = Renderer.renderTemplateFile('footer', scope);
+  var header, body, footer;
+
+  Translator.scopeLanguage(scope.language, function () {
+    header = Renderer.renderTemplateFile('header', scope)
+    body = Renderer.renderTemplate(manual, scope);
+    footer = Renderer.renderTemplateFile('footer', scope);
+  });
 
   return [header, body, footer].join('\n');
 }
@@ -151,7 +158,7 @@ function getManualViewPath(step, locale) {
   // If sub-dir exists, return its path e.g. manuals/view/medium
   if (subDir) return Path.resolve(Paths.manuals.views, subDir, locale, fileName);
   // If we're trying to render root step, return README.md
-  if (step == 'root') return Paths.readme;
+  if (step == 'root' && !locale) return Paths.readme;
   // Resolve normally e.g. manuals/views/step1.md
   return Path.resolve(Paths.manuals.views, locale, fileName);
 }
