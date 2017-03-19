@@ -69,14 +69,12 @@ Renderer.registerHelper('diffStep', function (step, options) {
   var stepMessage = stepData.slice(1).join(' ');
   var commitReference = Renderer.resolve('../../../../commit', stepHash);
 
-  var stepDescriptor = Step.descriptor(stepMessage);
-
-  stepDescriptor.message = t('step.commit.message.' + stepDescriptor.number, {
-    defaultValue: stepDescriptor.message
+  // Translate step message, if at all
+  stepMessage = Renderer.renderTemplate('{{{stepMessage}}}', {
+    commitMessage: stepMessage
   });
 
-  var stepTitle = '#### [' + t('step.commit.message', stepDescriptor) +
-    '](' + commitReference + ')';
+  var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);
 
   // Convert diff string to json format
