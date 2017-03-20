@@ -1,7 +1,7 @@
 [{]: <helper> (diffStep 1.2)
-#### [Step 1.2: Rename file](../../../../commit/XXX)
+#### [צעד 1.2: שינוי שם קובץ](../../../../commit/XXX)
 
-##### Added new-test-file.js
+##### הוספנו את new-test-file.js
 ```diff
 @@ -0,0 +1,3 @@
 +┊ ┊1┊foo
@@ -9,7 +9,7 @@
 +┊ ┊3┊baz🚫↵
 ```
 
-##### Deleted test-file.js
+##### מחקנו את test-file.js
 ```diff
 @@ -1,3 +0,0 @@
 -┊1┊ ┊foo

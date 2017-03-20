@@ -1,5 +1,5 @@
 [{]: <helper> (diffStep 1.2)
-#### [Step 1.2: Change view](xxx)
+#### [Step 1.2: Change view](../../../../commit/XXX)
 <br>
 ##### Changed test-view.html
 <pre>

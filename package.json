@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "escape-string-regexp": "^1.0.5",
     "mocha": "^3.0.2"
   },
   "engines": {

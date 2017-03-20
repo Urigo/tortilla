@@ -2,6 +2,9 @@ var Renderer = require('..');
 var Translator = require('../../translator');
 var Utils = require('../../utils');
 
+/**
+  A translation helper function which can be used inside handle bars templates
+ */
 
 var t = Translator.translate.bind(Translator);
 

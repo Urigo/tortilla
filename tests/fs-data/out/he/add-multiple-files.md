@@ -1,7 +1,7 @@
 [{]: <helper> (diffStep 1.1 files="test-file.js")
-#### [Step 1.1: Add multiple files](../../../../commit/XXX)
+#### [צעד 1.1: הוספת מיספר קבצים](../../../../commit/XXX)
 
-##### Added test-file.js
+##### הוספנו את test-file.js
 ```diff
 @@ -0,0 +1,3 @@
 +┊ ┊1┊foo

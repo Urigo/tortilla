@@ -21,25 +21,31 @@ var superTranslate = i18n.t.bind(i18n);
 
 // Gets a locale and returns the full resource object
 function getTranslationResource(locale) {
-  var paths = [
+  paths = Paths;
+
+  if (process.env.TORTILLA_CWD) {
+    paths = Paths.resolveProject(process.env.TORTILLA_CWD);
+  }
+
+  paths = [
     // Static locales
-    Path.resolve(Paths.tortilla.translator.locales, locale + '.json'),
+    Path.resolve(paths.tortilla.translator.locales, locale + '.json'),
     // User defined locales
-    Path.resolve(Paths.locales, locale + '.json')
+    Path.resolve(paths.locales, locale + '.json')
   ];
 
   // Unite all resources and return a single one
   return paths.reduce(function (resource, path) {
-    // Will throw an error in case path doesn't exist
+    // Clear cache so files can be properly reloaded
     try {
+      delete require.cache[require.resolve(path)];
       var extension = require(path);
-      Utils.extend(resource, extension);
+      Utils.merge(resource, extension);
     }
     catch (err) {
-      // Ignore expected error
     }
 
-    return resource
+    return resource;
   }, {});
 }
 
@@ -57,17 +63,17 @@ function scopeLanguage(language, fn) {
   var oldLanguage = i18n.translator.language;
 
   try {
-    i18n.translator.language = language;
+    i18n.translator.changeLanguage(language);
     fn();
   }
   finally {
-    i18n.translator.language = oldLanguage;
+    i18n.translator.changeLanguage(oldLanguage);
   }
 }
 
 
 // Shallow cloning i18n so it won't be changed
-module.exports = Utils.extend({}, i18n, {
+module.exports = Utils.extend(i18n, {
   translate: translate,
   scopeLanguage: scopeLanguage
 });

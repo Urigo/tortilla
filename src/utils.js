@@ -175,6 +175,20 @@ function filterMatches(arr, pattern) {
   });
 }
 
+// Deeply merges destination object with source object
+function merge(destination, source) {
+  if (!(destination instanceof Object) ||
+      !(source instanceof Object)) {
+    return source;
+  }
+
+  Object.keys(source).forEach(function (k) {
+    destination[k] = merge(destination[k], source[k]);
+  });
+
+  return destination;
+}
+
 // Extend destination object with provided sources
 function extend(destination) {
   var sources = [].slice.call(arguments, 1);
@@ -301,6 +315,7 @@ module.exports = {
   exists: exists,
   scopeEnv: scopeEnv,
   filterMatches: filterMatches,
+  merge: merge,
   extend: extend,
   contract: contract,
   pluck: pluck,

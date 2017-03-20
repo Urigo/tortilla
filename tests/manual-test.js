@@ -126,7 +126,7 @@ describe('Manual', function () {
       beforeEach(function () {
         this.tortilla(['step', 'edit', '--root']);
 
-        var heLocale = JSON.stringify({
+        const heLocale = JSON.stringify({
           step: {
             'root': 'פרוייקט ניסיוני של טורטייה',
             '1': 'דמה',
@@ -136,7 +136,7 @@ describe('Manual', function () {
         }).replace(/"/g, '\\"');
 
         this.exec('mkdir', ['.tortilla/locales']);
-        this.exec('bash', ['-c', 'echo ' + heLocale + ' > .tortilla/locales/he.json']);
+        this.exec('bash', ['-c', `echo ${heLocale} > .tortilla/locales/he.json`]);
         this.exec('mkdir', ['.tortilla/manuals/templates/locales']);
         this.exec('mkdir', ['.tortilla/manuals/templates/locales/he']);
         this.exec('bash', ['-c', 'echo "המדריך של הצעד הראשי" > .tortilla/manuals/templates/locales/he/root.tmpl']);
@@ -155,7 +155,7 @@ describe('Manual', function () {
           const manual = 'המדריך של צעד ' + step;
 
           this.tortilla(['step', 'edit', step]);
-          this.exec('bash', ['-c', 'echo "' + manual + '" > ' + manualPath]);
+          this.exec('bash', ['-c', `echo "${manual}" > ${manualPath}`]);
           this.git(['add', manualPath]);
           this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
           this.git(['rebase', '--continue']);

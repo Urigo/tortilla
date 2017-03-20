@@ -1,7 +1,7 @@
 [{]: <helper> (diffStep 1.2)
-#### [Step 1.2: Delete file](../../../../commit/XXX)
+#### [צעד 1.2: מחיקת קובץ](../../../../commit/XXX)
 
-##### Deleted test-file.js
+##### מחקנו את test-file.js
 ```diff
 @@ -1,3 +0,0 @@
 -┊1┊ ┊foo

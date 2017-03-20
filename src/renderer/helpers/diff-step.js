@@ -69,6 +69,7 @@ Renderer.registerHelper('diffStep', function (step, options) {
   var stepMessage = stepData.slice(1).join(' ');
   var commitReference = Renderer.resolve('../../../../commit', stepHash);
 
+  // TODO: Expose handlers so we an use them directly
   // Translate step message, if at all
   stepMessage = Renderer.renderTemplate('{{{stepMessage}}}', {
     commitMessage: stepMessage
