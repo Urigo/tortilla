@@ -87,7 +87,17 @@ function registerHelper(name, helper, options) {
   options = options || {};
 
   var wrappedHelper = function () {
-    var out = helper.apply(this, arguments);
+    // Bind the call method to the current context
+    handlebars.call = callHelper.bind(this);
+
+    try {
+      var out = helper.apply(this, arguments);
+    }
+    // Fallback
+    finally {
+      // Restore method to its original
+      handlebars.call = callHelper;
+    }
 
     if (typeof out != 'string') throw Error([
       'Template helper', name, 'must return a string!',
@@ -180,6 +190,21 @@ function stringifyHash(hash) {
   }).join(' ');
 }
 
+// Calls a template helper with the provided context and arguments
+function callHelper(methodName) {
+  var args = [].slice.call(arguments, 1);
+  var options = args.pop();
+
+  // Simulate call from template
+  if (options instanceof Object) {
+    options = { hash: options };
+  }
+
+  args.push(options);
+
+  return handlebars.helpers[methodName].apply(this, args);
+}
+
 // Takes a bunch of paths and resolved them relatively to the current rendered view
 function resolvePath(/* reserved path, user defined path */) {
   var paths = [].slice.call(arguments);
@@ -224,6 +249,8 @@ module.exports = Utils.extend(handlebars, {
   registerHelper: registerHelper,
   registerPartial: registerPartial,
   registerTransformation: registerTransformation,
+  // This should be set whenever we're in a helper scope
+  call: callHelper,
   // Should be bound by the `renderTemplate` method
   resolve: resolvePath.bind(null, null)
 });
