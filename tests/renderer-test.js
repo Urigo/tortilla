@@ -6,7 +6,7 @@ const expect = Chai.expect;
 
 
 describe('Renderer', function () {
-  describe.only('renderTemplate()', function () {
+  describe('renderTemplate()', function () {
     it('should wrap template helpers', function () {
       Renderer.registerHelper('testHelper', function (num, str, options) {
         return [
