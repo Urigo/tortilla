@@ -1,4 +1,5 @@
 [{]: <helper> (diffStep 1.2)
+
 #### [Step 1.2: Rename file](../../../../commit/XXX)
 
 ##### Added new-test-file.js
@@ -16,4 +17,5 @@
 -┊2┊ ┊bar
 -┊3┊ ┊baz🚫↵
 ```
+
 [}]: #

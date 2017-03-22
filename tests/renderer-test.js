@@ -6,7 +6,7 @@ const expect = Chai.expect;
 
 
 describe('Renderer', function () {
-  describe('renderTemplate()', function () {
+  describe.only('renderTemplate()', function () {
     it('should wrap template helpers', function () {
       Renderer.registerHelper('testHelper', function (num, str, options) {
         return [
@@ -30,10 +30,12 @@ describe('Renderer', function () {
 
       expect(view).to.equal([
         '[{]: <helper> (testHelper 123 "str" str="str" num=123)',
+        '',
         'foo 123',
         'bar str',
         'baz 123',
         'qux str',
+        '',
         '[}]: #'
       ].join('\n'));
     });
@@ -55,9 +57,11 @@ describe('Renderer', function () {
 
       expect(view).to.equal([
         '[{]: <partial> (test_partial)',
+        '',
         'foo',
         'bar',
         'baz',
+        '',
         '[}]: #'
       ].join('\n'));
     });

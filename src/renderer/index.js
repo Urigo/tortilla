@@ -175,9 +175,7 @@ function mdWrapComponent(type, name, args, content) {
     .filter(Boolean)
     .join(' ');
 
-  return [
-    '[{]: <' + type + '> (' + args + ')', content, '[}]: #'
-  ].join('\n');
+  return '[{]: <' + type + '> (' + args + ')\n\n' + content + '\n\n[}]: #';
 }
 
 // Takes a helper hash and stringifying it

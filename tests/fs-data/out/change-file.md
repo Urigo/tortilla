@@ -1,4 +1,5 @@
 [{]: <helper> (diffStep 1.2)
+
 #### [Step 1.2: Change file](../../../../commit/XXX)
 
 ##### Changed test-file.js
@@ -9,4 +10,5 @@
 +┊ ┊2┊qux
  ┊3┊3┊baz🚫↵
 ```
+
 [}]: #

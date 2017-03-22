@@ -1,4 +1,5 @@
 [{]: <helper> (diffStep 1.1)
+
 #### [Step 1.1: Add file](../../../../commit/XXX)
 <br>
 ##### Added test-file.js
@@ -8,4 +9,5 @@
 <b>+┊ ┊2┊bar</b>
 <b>+┊ ┊3┊baz🚫↵</b>
 </pre>
+
 [}]: #
