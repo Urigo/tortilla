@@ -70,17 +70,61 @@ As for the project structure itself, the only thing you should be aware of is th
 
     .tortilla/manuals
     ├─ templates
-    │  ├ root.md.tmpl
-    │  ├ step1.md.tmpl
-    │  ├ step2.md.tmpl
-    │  └ step3.md.tmpl
+    │  ├ root.tmpl
+    │  ├ step1.tmpl
+    │  ├ step2.tmpl
+    │  └ step3.tmpl
     └─ views
        ├ root.md
        ├ step1.md
        ├ step2.md
        └ step3.md
 
-Templates are used for development, they are easy to edit and work with since they provide you with some handy [template helpers](#template-helpers). On the other hand, we have the views, which are not as comfortable to work with, and are very comfortable to look at, and will most likely be used by the viewers. The message of the current step's commit will be used as its belonging manual's title (header), and a navigation bar will be rendered automatically at the button of each manual (footer). The header and the footer can be overridden by defining custom templates called `header.md.tmpl` and `footer.md.tmpl` in the root commit.
+Templates are used for development, they are easy to edit and work with since they provide you with some handy [template helpers](#template-helpers). On the other hand, we have the views, which are not as comfortable to work with, and are very comfortable to look at, and will most likely be used by the viewers. The message of the current step's commit will be used as its belonging manual's title (header), and a navigation bar will be rendered automatically at the button of each manual (footer). The header and the footer can be overridden by defining custom templates called `header.tmpl` and `footer.tmpl` in the root commit.
+
+#### Translations
+
+Manuals don't necessarily have to be written in English, and can be also be written in whatever language you'd choose. Translated manual templates are located under the `templates/locales/your-language` path, and their belonging views are localed under `views/locales/your-language`. Here's an example of a manuals directory with manuals which are translated into Hebrew:
+
+    .tortilla/manuals
+    ├─ templates
+    │  ├ root.tmpl
+    │  ├ step1.tmpl
+    │  ├ step2.tmpl
+    │  ├ step3.tmpl
+    │  └ locales/he
+    │    ├ root.tmpl
+    │    ├ step1.tmpl
+    │    ├ step2.tmpl
+    │    └ step3.tmpl
+    └─ views
+       ├ root.md
+       ├ step1.md
+       ├ step2.md
+       ├ step3.md
+       └ locales/he
+         ├ root.md
+         ├ step1.md
+         ├ step2.md
+         └ step3.md
+
+Translations for step messages (and potentially other stuff) can be defined under the `.tortilla/locales` directory in a `json` file with the relevant language code (e.g. `.tortilla/locales/he.json`). Here's an example of a translation file which translates step messages:
+
+```json
+{
+  "step": {
+    "root": "כיצד ליצור רשימת מטלות",
+    "1.1": "יצירת קובץ הגדרות בסיסי ל Webpack",
+    "1.2": "הוספת משימה של בנייה בעזרת Webpack לרשימת המשימות של gulp",
+    "1.3": "התקנת החבילות הנחוצות בכדי שנוכל לבנות בעזרת Webpack",
+    "1": "צרירת הפרוייקט",
+    "2.1": "יצירת מודל למטלה יחידה",
+    "2.2": "יצירת רשימת מטלות ויזואלית",
+    "2.3": "יצירת רשימת מטלות לוגית",
+    "2": "הוספת רשימת מטלות"
+  }
+}
+```
 
 #### Template Helpers
 

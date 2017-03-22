@@ -2,6 +2,7 @@ const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
 const Tmp = require('tmp');
+const Translator = require('../src/translator');
 const Utils = require('../src/utils');
 
 
@@ -62,7 +63,7 @@ require('./assertions');
 // Tests
 require('./step-test');
 require('./hooks-test');
-require('./md-renderer-test');
+require('./renderer-test');
 require('./template-helpers-test');
 require('./manual-test');
 require('./release-test');

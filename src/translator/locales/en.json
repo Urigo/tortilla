@@ -1,0 +1,22 @@
+{
+  "_": {
+    "step": "step"
+  },
+  "nav": {
+    "begin": "Begin Tutorial",
+    "intro": "Intro",
+    "next": "Next Step",
+    "prev": "Previous Step"
+  },
+  "step": {
+    "commit": {
+      "message": "Step {{number}}: {{message}}",
+      "missing": "Step {{number}}: NOT FOUND!"
+    }
+  },
+  "diff": {
+    "added": "Added {{path}}",
+    "changed": "Changed {{path}}",
+    "deleted": "Deleted {{path}}"
+  }
+}

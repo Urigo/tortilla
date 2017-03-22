@@ -14,9 +14,14 @@ var ascii = resolveTree(resolve(__dirname, 'ascii'), {
   views: resolve(__dirname, 'ascii/views')
 });
 
-var mdRenderer = resolveTree(resolve(__dirname, 'md-renderer'), {
-  helpers: resolve(__dirname, 'md-renderer/helpers'),
-  templates: resolve(__dirname, 'md-renderer/templates')
+var renderer = resolveTree(resolve(__dirname, 'renderer'), {
+  helpers: resolve(__dirname, 'renderer/helpers'),
+  templates: resolve(__dirname, 'renderer/templates')
+});
+
+var translator = resolveTree(resolve(__dirname, 'translator'), {
+  translation: resolve(__dirname, 'translator/translation'),
+  locales: resolve(__dirname, 'translator/locales')
 });
 
 var tortilla = resolveTree(resolve(__dirname, '..'), {
@@ -33,11 +38,10 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   step: resolve(__dirname, 'step.js'),
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
-  mdParser: resolve(__dirname, 'md-parser'),
-  templates: resolve(__dirname, 'templates'),
   skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
   ascii: ascii,
-  mdRenderer: mdRenderer
+  renderer: renderer,
+  translator: translator
 });
 
 // Makes the root path available in the branches object using a 'resolve()' method
@@ -101,6 +105,7 @@ function resolveProject(cwd) {
 
   return cache[cwd] = resolveTree(cwd, {
     readme: resolve(cwd, 'README.md'),
+    locales: resolve(cwd, '.tortilla/locales'),
     storage: resolve(cwd, '.git/.tortilla'),
     manuals: manuals,
     tortilla: tortilla,

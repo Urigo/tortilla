@@ -2,9 +2,10 @@ var Fs = require('fs-extra');
 var Minimist = require('minimist');
 var Path = require('path');
 var Git = require('./git');
-var MDRenderer = require('./md-renderer');
 var Paths = require('./paths');
+var Renderer = require('./renderer');
 var Step = require('./step');
+var Translator = require('./translator');
 var Utils = require('./utils');
 
 /**
@@ -61,41 +62,57 @@ function renderManual(step) {
     TORTILLA_STDIO: 'ignore'
   });
 
-  // Fetch the current manual and other useful models
-  var manualTemplatePath = getManualTemplatePath(step);
-  var manualTemplate = Fs.readFileSync(manualTemplatePath, 'utf8');
-  var manualViewPath = getManualViewPath(step);
-  var commitMessage = getStepCommitMessage(step);
+  var localesDir = Paths.manuals.templates + '/locales';
+  var locales = [''];
 
-  var manualView = renderManualView(manualTemplate, {
-    step: step,
-    commit_message: commitMessage,
-    template_path: manualTemplatePath,
-    view_path: manualViewPath
-  });
-
-  // Rewrite manual
-  Fs.ensureDir(Paths.manuals.views);
-
-  // In case a custom render target is specified, ensure its dir exists
-  var target = process.env.TORTILLA_RENDER_TARGET;
-  if (target) {
-    var customTargetDir = Path.resolve(Paths.manuals.views, target);
-    Fs.ensureDir(customTargetDir);
+  if (Utils.exists(localesDir)) {
+    locales = locales.concat(Fs.readdirSync(localesDir));
   }
 
-  Fs.writeFileSync(manualViewPath, manualView);
+  // Render manual for each locale
+  locales.forEach(function (locale) {
+    // Fetch the current manual and other useful models
+    var manualTemplatePath = getManualTemplatePath(step, locale);
+    var manualTemplate = Fs.readFileSync(manualTemplatePath, 'utf8');
+    var manualViewPath = getManualViewPath(step, locale);
+    var commitMessage = getStepCommitMessage(step);
 
-  // Amend changes
-  Git(['add', manualViewPath]);
-  var symlinkPath = Path.resolve(Paths.manuals.views, 'root.md');
+    var manualView = renderManualView(manualTemplate, {
+      step: step,
+      commitMessage: commitMessage,
+      templatePath: manualTemplatePath,
+      viewPath: manualViewPath,
+      language: locale
+    });
 
-  // If this is the root step, create a symlink to README.md if not yet exists
-  if (step == 'root' && !Utils.exists(symlinkPath)) {
+    // Rewrite manual
+    Fs.ensureDir(Paths.manuals.views);
+
+    // In case a custom render target is specified, ensure its dir exists
+    var target = process.env.TORTILLA_RENDER_TARGET;
+    if (target) {
+      var customTargetDir = Path.resolve(Paths.manuals.views, target);
+      Fs.ensureDir(customTargetDir);
+    }
+
+    Fs.ensureDirSync(Path.dirname(manualViewPath));
+    Fs.writeFileSync(manualViewPath, manualView);
+
+    // Amend changes
+    Git(['add', manualViewPath]);
+
+    // The following code is dedicated for locale-free manuals
+    if (locale) return;
+
+    var symlinkPath = Path.resolve(Paths.manuals.views, 'root.md');
+
+    // If this is the root step, create a symlink to README.md if not yet exists
+    if (step != 'root' || Utils.exists(symlinkPath)) return;
+
     var relativeSymlink = Path.relative(Path.dirname(symlinkPath), manualViewPath);
     Fs.symlinkSync(relativeSymlink, symlinkPath);
     Git(['add', symlinkPath]);
-  }
+  });
 
   Git.print(['commit', '--amend'], {
     env: {
@@ -109,32 +126,41 @@ function renderManual(step) {
 
 // Renders manual template into informative view
 function renderManualView(manual, scope) {
-  var header = MDRenderer.renderTemplateFile('header', scope)
-  var body = MDRenderer.renderTemplate(manual, scope);
-  var footer = MDRenderer.renderTemplateFile('footer', scope);
+  var header, body, footer;
+
+  Translator.scopeLanguage(scope.language, function () {
+    header = Renderer.renderTemplateFile('header', scope)
+    body = Renderer.renderTemplate(manual, scope);
+    footer = Renderer.renderTemplateFile('footer', scope);
+  });
 
   return [header, body, footer].join('\n');
 }
 
 // Gets the manual template belonging to the given step
-function getManualTemplatePath(step) {
-  if (step == 'root') return Path.resolve(Paths.manuals.templates, 'root.md.tmpl');
-  return Path.resolve(Paths.manuals.templates, 'step' + step + '.md.tmpl');
+function getManualTemplatePath(step, locale) {
+  locale = locale ? ('locales/' + locale) : '';
+
+  var baseDir = Path.resolve(Paths.manuals.templates, locale);
+  var fileName = step == 'root' ? 'root.tmpl' : ('step' + step + '.tmpl');
+
+  return Path.resolve(baseDir, fileName);
 }
 
 // Gets the manual view belonging to the given step
-function getManualViewPath(step) {
+function getManualViewPath(step, locale) {
+  locale = locale ? ('locales/' + locale) : '';
+
   // The sub-dir of our views in case a custom render target is specified
   var subDir = process.env.TORTILLA_RENDER_TARGET || '';
-  var tagName = step == 'root' ? 'root' : 'step' + step;
-  var fileName = tagName + '.md';
+  var fileName = step == 'root' ? 'root.md' : ('step' + step + '.md');
 
   // If sub-dir exists, return its path e.g. manuals/view/medium
-  if (subDir) return Path.resolve(Paths.manuals.views, subDir, fileName);
+  if (subDir) return Path.resolve(Paths.manuals.views, subDir, locale, fileName);
   // If we're trying to render root step, return README.md
-  if (tagName == 'root') return Paths.readme;
+  if (step == 'root' && !locale) return Paths.readme;
   // Resolve normally e.g. manuals/views/step1.md
-  return Path.resolve(Paths.manuals.views, fileName);
+  return Path.resolve(Paths.manuals.views, locale, fileName);
 }
 
 // Gets the commit message belonging to the given step

@@ -51,14 +51,14 @@ function superPickStep(hash) {
 
   // Fetch patch data
   var diff = newStep - oldStep;
-  var pattern = /step(\d+)\.md/g;
+  var pattern = /step(\d+)\.(md|tmpl)/g;
   var patch = Git(['format-patch', '-1', hash, '--stdout']);
 
   // Replace references for old manual files with new manual files
   // so there would be no conflicts
-  var fixedPatch = patch.replace(pattern, function (file, step) {
+  var fixedPatch = patch.replace(pattern, function (file, step, extension) {
     step = Number(step) + diff;
-    return 'step' + step + '.md';
+    return 'step' + step + '.' + extension;
   });
 
   // Apply patch

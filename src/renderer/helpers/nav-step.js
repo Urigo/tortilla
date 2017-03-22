@@ -1,13 +1,17 @@
-var MDRenderer = require('..');
+var Renderer = require('..');
 var Git = require('../../git');
 var Step = require('../../step');
+var Translator = require('../../translator');
 
 /**
   Provides a navigation bar between steps. The navigation bar should be rendered
   dynamically based on the current step we're currently in.
  */
 
-MDRenderer.registerHelper('nav_step', function(options) {
+var t = Translator.translate.bind(Translator);
+
+
+Renderer.registerHelper('navStep', function(options) {
   var step = options.hash.step || this.step || Step.currentSuper();
   // If there is no belonging step, don't render anything
   if (!step) return '';
@@ -18,9 +22,10 @@ MDRenderer.registerHelper('nav_step', function(options) {
     // If there are no any steps yet, don't show nav bar
     if (!anySuperStep) return '';
 
-    return MDRenderer.renderTemplateFile('next-button', {
-      text: 'Begin Tutorial',
-      ref: options.hash.ref || MDRenderer.resolve('manuals/views/step1.md')
+    return Renderer.renderTemplateFile('nav-step', {
+      nextOnly: true,
+      text: t('nav.begin'),
+      ref: options.hash.ref || Renderer.resolve('manuals/views/step1.md')
     });
   }
 
@@ -45,30 +50,35 @@ MDRenderer.registerHelper('nav_step', function(options) {
 
   // If this is the last step
   if (step == recentSuperStep)
-    return MDRenderer.renderTemplateFile('prev-button', {
-      text: 'Previous Step',
-      ref: options.hash.ref || MDRenderer.resolve('step' + (step - 1) + '.md')
+    return Renderer.renderTemplateFile('nav-step', {
+      prevOnly: true,
+      text: t('nav.prev'),
+      ref: options.hash.ref || Renderer.resolve('step' + (step - 1) + '.md')
     });
 
   // If this is the first super step
   if (step == 1)
-    return MDRenderer.renderTemplateFile('nav-buttons', {
-      next_text: 'Next Step',
-      next_ref: options.hash.next_ref || MDRenderer.resolve('step2.md'),
-      prev_text: 'Intro',
-      prev_ref: options.hash.prev_ref || MDRenderer.resolve('../../README.md')
+    return Renderer.renderTemplateFile('nav-step', {
+      bidirectional: true,
+      nextText: t('nav.next'),
+      nextRef: options.hash.nextRef || Renderer.resolve('step2.md'),
+      prevText: t('nav.intro'),
+      prevRef: options.hash.prevRef || Renderer.resolve('../../README.md')
     });
 
   // Any other case
-  return MDRenderer.renderTemplateFile('nav-buttons', {
-    next_text: 'Next Step',
-    next_ref: options.hash.next_ref || MDRenderer.resolve('step' + (step + 1) + '.md'),
-    prev_text: 'Previous Step',
-    prev_ref: options.hash.prev_ref || MDRenderer.resolve('step' + (step - 1) + '.md')
+  return Renderer.renderTemplateFile('nav-step', {
+    bidirectional: true,
+    nextText: t('nav.next'),
+    nextRef: options.hash.nextRef || Renderer.resolve('step' + (step + 1) + '.md'),
+    prevText: t('nav.prev'),
+    prevRef: options.hash.prevRef || Renderer.resolve('step' + (step - 1) + '.md')
   });
+}, {
+  mdWrap: true
 });
 
-MDRenderer.registerTransformation('medium', 'nav_step', function (view) {
+Renderer.registerTransformation('medium', 'navStep', function (view) {
   var isPrev = !!view.match('\\|:-');
   var isNext = !!view.match('-:\\|');
 

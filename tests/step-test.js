@@ -55,7 +55,7 @@ describe('Step', function () {
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
 
-      const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.md.tmpl`);
+      const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(fileExists).to.be.falsy;
     });
   });
@@ -84,7 +84,7 @@ describe('Step', function () {
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1: target');
 
-      const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.md.tmpl`);
+      const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(fileExists).to.be.truthy;
     });
   });
@@ -262,10 +262,10 @@ describe('Step', function () {
       const newMessage = Step.recentCommit(1, '%s');
       expect(newMessage).to.equal('Step 1: new');
 
-      const oldFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.md.tmpl`);
+      const oldFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(oldFileExists).to.be.truthy;
 
-      const newFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step2.md.tmpl`);
+      const newFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step2.tmpl`);
       expect(newFileExists).to.be.truthy;
     });
 
@@ -280,7 +280,7 @@ describe('Step', function () {
       const oldMessage = Step.recentCommit('%s');
       expect(oldMessage).to.equal('Step 1: old');
 
-      const oldFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.md.tmpl`);
+      const oldFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(oldFileExists).to.be.truthy;
     });
 

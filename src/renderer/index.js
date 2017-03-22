@@ -49,10 +49,10 @@ function renderTemplate(template, scope) {
   if (typeof template == 'string') template = handlebars.compile(template);
   scope = scope || {};
 
-  if (scope.view_path) {
+  if (scope.viewPath) {
     // Relative path of view dir
     // e.g. manuals/views
-    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.view_path));
+    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.viewPath));
   }
 
   try {
@@ -67,10 +67,10 @@ function renderTemplate(template, scope) {
   }
 }
 
-// Returns a template path relative to tortilla with an '.md.tmpl' extension
+// Returns a template path relative to tortilla with an '.tmpl' extension
 function resolveTemplatePath(templatePath) {
-  if (templatePath.indexOf('.md.tmpl') == -1) {
-    templatePath += '.md.tmpl';
+  if (templatePath.indexOf('.tmpl') == -1) {
+    templatePath += '.tmpl';
   }
 
   // User defined templates
@@ -78,14 +78,26 @@ function resolveTemplatePath(templatePath) {
   if (Utils.exists(relativeTemplatePath)) return relativeTemplatePath;
 
   // Tortilla defined templates
-  return Path.resolve(Paths.tortilla.mdRenderer.templates, templatePath);
+  return Path.resolve(Paths.tortilla.renderer.templates, templatePath);
 }
 
 // Register a new helper. Registered helpers will be wrapped with a
 // [{]: <helper> (name ...args) [}]: #
-function registerHelper(name, helper) {
+function registerHelper(name, helper, options) {
+  options = options || {};
+
   var wrappedHelper = function () {
-    var out = helper.apply(this, arguments);
+    // Bind the call method to the current context
+    handlebars.call = callHelper.bind(this);
+
+    try {
+      var out = helper.apply(this, arguments);
+    }
+    // Fallback
+    finally {
+      // Restore method to its original
+      handlebars.call = callHelper;
+    }
 
     if (typeof out != 'string') throw Error([
       'Template helper', name, 'must return a string!',
@@ -97,19 +109,30 @@ function registerHelper(name, helper) {
 
     // Transform helper output
     var transformation = transformations[target] && transformations[target][name];
-    if (transformation) out = transformation.apply(null, [out].concat(args));
-    out = wrapComponent('helper', name, args, out);
+    if (transformation) {
+      out = transformation.apply(null, [out].concat(args));
+    }
+
+    // Wrap helper output
+    if (options.mdWrap) {
+      out = mdWrapComponent('helper', name, args, out);
+    }
 
     return out;
   }
 
-  return superRegisterHelper(name, wrappedHelper);
+  superRegisterHelper(name, wrappedHelper);
 }
 
 // Register a new partial. Registered partials will be wrapped with a
 // [{]: <partial> (name) [}]: #
-function registerPartial(name, partial) {
-  partial = wrapComponent('partial', name, partial);
+function registerPartial(name, partial, options) {
+  options = options || {};
+
+  // Wrap partial template
+  if (options.mdWrap) {
+    partial = mdWrapComponent('partial', name, partial);
+  }
 
   return superRegisterPartial(name, partial);
 }
@@ -127,7 +150,7 @@ function registerTransformation(targetName, helperName, transformation) {
 // components in the view later on using external softwares later on.
 // e.g. https://github.com/Urigo/angular-meteor-docs/blob/master/src/app/tutorials/
 // improve-code-resolver.ts#L24
-function wrapComponent(type, name, args, content) {
+function mdWrapComponent(type, name, args, content) {
   var hash = {};
 
   if (typeof content != 'string') {
@@ -165,6 +188,21 @@ function stringifyHash(hash) {
     if (typeof value == 'string') value = '"' + value +'"';
     return key + '=' + value;
   }).join(' ');
+}
+
+// Calls a template helper with the provided context and arguments
+function callHelper(methodName) {
+  var args = [].slice.call(arguments, 1);
+  var options = args.pop();
+
+  // Simulate call from template
+  if (options instanceof Object) {
+    options = { hash: options };
+  }
+
+  args.push(options);
+
+  return handlebars.helpers[methodName].apply(this, args);
 }
 
 // Takes a bunch of paths and resolved them relatively to the current rendered view
@@ -211,6 +249,8 @@ module.exports = Utils.extend(handlebars, {
   registerHelper: registerHelper,
   registerPartial: registerPartial,
   registerTransformation: registerTransformation,
+  // This should be set whenever we're in a helper scope
+  call: callHelper,
   // Should be bound by the `renderTemplate` method
   resolve: resolvePath.bind(null, null)
 });
@@ -219,3 +259,5 @@ module.exports = Utils.extend(handlebars, {
 require('./helpers/diff-step');
 require('./helpers/nav-step');
 require('./helpers/resolve-path');
+require('./helpers/step-message');
+require('./helpers/translate');

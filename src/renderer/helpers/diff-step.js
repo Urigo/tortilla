@@ -1,11 +1,13 @@
+var Renderer = require('..');
 var Handlebars = require('handlebars');
 var ParseDiff = require('parse-diff');
-var MDRenderer = require('..');
 var Git = require('../../git');
+var Step = require('../../step');
+var Translator = require('../../translator');
 var Utils = require('../../utils');
 
 /**
-  Renders step diff in a pretty markdown format. For example {{{ diff_step 1.1 }}}
+  Renders step diff in a pretty markdown format. For example {{{ diffStep 1.1 }}}
   will render as:
 
   #### Step 1.1
@@ -34,7 +36,10 @@ var Utils = require('../../utils');
   very simple stuff
  */
 
-MDRenderer.registerHelper('diff_step', function (step, options) {
+var t = Translator.translate.bind(Translator);
+
+
+Renderer.registerHelper('diffStep', function (step, options) {
   var pattern;
 
   // Will print diff of multiple specified files
@@ -56,11 +61,18 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
   // In case step doesn't exist just render the error message.
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
-  if (!stepData.length) return '#### Step ' + step + ': NOT FOUND!';
+  if (!stepData.length) {
+    return '#### ' + t('step.commit.missing', { number: step });
+  }
 
   var stepHash = stepData[0];
   var stepMessage = stepData.slice(1).join(' ');
-  var commitReference = MDRenderer.resolve('../../../../commit', stepHash);
+  var commitReference = Renderer.resolve('../../../../commit', stepHash);
+
+  // Translate step message, if at all
+  stepMessage = Renderer.call('stepMessage', {
+    commitMessage: stepMessage
+  });
 
   var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
   var diff = Git(['diff', stepHash + '^', stepHash]);
@@ -76,6 +88,8 @@ MDRenderer.registerHelper('diff_step', function (step, options) {
     .join('\n\n');
 
   return stepTitle + '\n\n' + mdDiffs;
+}, {
+  mdWrap: true
 });
 
 // Gets all diff chunks in a markdown format for a single file
@@ -83,11 +97,11 @@ function getMdDiff(file) {
   var fileTitle;
 
   if (file.new)
-    fileTitle = '##### Added ' + file.to;
+    fileTitle = '##### ' + t('diff.added', { path: file.to });
   else if (file.deleted)
-    fileTitle = '##### Deleted ' + file.from;
+    fileTitle = '##### ' + t('diff.deleted', { path: file.from });
   else
-    fileTitle = '##### Changed ' + file.from;
+    fileTitle = '##### ' + t('diff.changed', { path: file.from });
 
   var mdChunks = file.chunks
     .map(getMdChunk)
@@ -159,7 +173,7 @@ function getPadLength(changes) {
   return maxLineNumber.toString().length;
 }
 
-MDRenderer.registerTransformation('medium', 'diff_step', function (view) {
+Renderer.registerTransformation('medium', 'diffStep', function (view) {
   return view
     // Add line break after title
     .replace(/(#### .+)\n\n/, '$1\n<br>\n')

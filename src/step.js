@@ -72,7 +72,7 @@ function popStep() {
 function tagStep(message) {
   var step = getNextSuperStep();
   var tag = 'step' + step;
-  var manualFile = tag + '.md.tmpl';
+  var manualFile = tag + '.tmpl';
   var manualTemplatePath = Path.resolve(Paths.manuals.templates, manualFile);
 
   Fs.ensureDirSync(Paths.manuals.templates);

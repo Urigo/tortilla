@@ -1,6 +1,8 @@
 var Git = require('../git');
 var LocalStorage = require('../local-storage');
+var Paths = require('../paths');
 var Step = require('../step');
+var Utils = require('../utils');
 
 /**
   Pre-commit git hook launches right before we commit changes. If an error was thrown
@@ -28,18 +30,37 @@ var Step = require('../step');
   // If this is a super step only the appropriate manual file can be modified
   if (isSuperStep) {
     var tag = 'step' + stepDescriptor.number;
-    var manualTemplatePath = '.tortilla/manuals/templates/' + tag + '.md.tmpl';
-    var manualViewPath = '.tortilla/manuals/views/' + tag + '.md';
+
+    var allowedFiles = [
+      '.tortilla/manuals/templates/' + tag + '.tmpl',
+      '.tortilla/manuals/views/' + tag + '.md'
+    ];
+
+    var localesDir = Paths.manuals.templates + '/locales';
+
+    if (Utils.exists(localesDir)) {
+      var locales = Fs.readdirSync(localesDir);
+
+      allowedFiles = allowedFiles.concat(locales.map(function (locale) {
+        return '.tortilla/manuals/templates/locales/' + locale + '/' + tag + '.tmpl';
+      }));
+
+      allowedFiles = allowedFiles.concat(locales.map(function (locale) {
+        return '.tortilla/manuals/views/locales/' + locale + '/' + tag + '.md';
+      }));
+    }
 
     var stagedFiles = Git.stagedFiles().filter(function (stagedFile) {
-      return [manualTemplatePath, manualViewPath].indexOf(stagedFile) != -1;
+      return allowedFiles.indexOf(stagedFile) != -1;
     });
 
-    if (!stagedFiles.length) throw Error([
-      'Staged files must be one of:',
-      '• ' + manualTemplatePath + ' (manual template)',
-      '• ' + manualViewPath + ' (manual view)'
-    ].join('\n'));
+    if (!stagedFiles.length) {
+      var filesList = allowedFiles.map(function (file) {
+        return '• ' + file;
+      }).join('\n');
+
+      throw Error('Staged files must be one of:\n' + filesList);
+    }
   }
   // Else, if this is not root commit prohibit manual files modifications
   else if (stepDescriptor) {
