@@ -55,6 +55,8 @@ function renderTemplate(template, scope) {
     var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.viewPath));
   }
 
+  var oldResolve = handlebars.resolve;
+
   try {
     // Set the view file for the resolve utility. If no view path was provided, the
     // resolve function below still won't work
@@ -63,7 +65,7 @@ function renderTemplate(template, scope) {
   }
   finally {
     // Either if an error was thrown or not, unbind it
-    handlebars.resolve = resolvePath.bind(null, null);
+    handlebars.resolve = oldResolve;
   }
 }
 
@@ -87,16 +89,17 @@ function registerHelper(name, helper, options) {
   options = options || {};
 
   var wrappedHelper = function () {
-    // Bind the call method to the current context
-    handlebars.call = callHelper.bind(this);
+    var oldCall = handlebars.call;
 
     try {
+      // Bind the call method to the current context
+      handlebars.call = callHelper.bind(this);
       var out = helper.apply(this, arguments);
     }
     // Fallback
     finally {
       // Restore method to its original
-      handlebars.call = callHelper;
+      handlebars.call = oldCall;
     }
 
     if (typeof out != 'string') throw Error([

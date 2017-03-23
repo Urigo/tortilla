@@ -150,4 +150,35 @@ describe('Renderer', function () {
       ].join('\n'));
     });
   });
+
+  describe('call()', function () {
+    it('should call specified template helper inside an existing template helper', function () {
+      Renderer.registerHelper('callerHelper', function () {
+        return Renderer.call('calleeHelper', 'arg1', 'arg2', {
+          option1: 'option1',
+          option2: 'option2'
+        });
+      });
+
+      Renderer.registerHelper('calleeHelper', function (arg1, arg2, options) {
+        expect(this.model1).to.equal('model1');
+        expect(this.model2).to.equal('model2');
+
+        expect(arg1).to.equal('arg1');
+        expect(arg2).to.equal('arg2');
+
+        expect(options.hash.option1).to.equal('option1');
+        expect(options.hash.option2).to.equal('option2');
+
+        return 'helper';
+      });
+
+      const result = Renderer.renderTemplate('{{{callerHelper}}}', {
+        model1: 'model1',
+        model2: 'model2'
+      });
+
+      expect(result).to.equal('helper');
+    });
+  });
 });
