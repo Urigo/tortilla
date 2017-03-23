@@ -55,6 +55,16 @@ describe('Template Helpers', function() {
       expect(view).to.be.a.file('step-not-found.md');
     });
 
+    it('should reference commit if repo URL is defined in package.json', function () {
+      this.applyTestPatch('add-file');
+
+      const view = Renderer.renderTemplate('{{{diffStep 1.1}}}', {
+        viewPath: 'dummy'
+      });
+
+      expect(view).to.be.a.file('referenced-diff.md');
+    });
+
     describe('render target set to Medium', function () {
       before(function () {
         process.env.TORTILLA_RENDER_TARGET = 'medium';

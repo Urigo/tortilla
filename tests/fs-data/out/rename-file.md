@@ -1,6 +1,6 @@
 [{]: <helper> (diffStep 1.2)
 
-#### [Step 1.2: Rename file](../../../../commit/XXX)
+#### Step 1.2: Rename file
 
 ##### Added new-test-file.js
 ```diff

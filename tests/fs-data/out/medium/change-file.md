@@ -1,6 +1,6 @@
 [{]: <helper> (diffStep 1.2)
 
-#### [Step 1.2: Change file](../../../../commit/XXX)
+#### Step 1.2: Change file
 <br>
 ##### Changed test-file.js
 <pre>

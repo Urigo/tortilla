@@ -135,5 +135,19 @@ describe('Renderer', function () {
         'https://github.com/Urigo/tortilla/tree/master@0.0.0/.tortilla/manuals/templates/step1.md'
       ].join('\n'));
     });
+
+    it('should replace tilde (~) with root', function () {
+      Renderer.registerHelper('testHelper', function () {
+        return Renderer.resolve('~/commit/abc0xyz');
+      });
+
+      const view = Renderer.renderTemplate('{{{testHelper}}}', {
+        viewPath: '.tortilla/manuals/views/step1.md'
+      });
+
+      expect(view).to.equal([
+        'https://github.com/Urigo/tortilla/commit/abc0xyz'
+      ].join('\n'));
+    });
   });
 });

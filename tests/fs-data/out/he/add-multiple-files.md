@@ -1,6 +1,6 @@
 [{]: <helper> (diffStep 1.1 files="test-file.js")
 
-#### [צעד 1.1: הוספת מיספר קבצים](../../../../commit/XXX)
+#### צעד 1.1: הוספת מיספר קבצים
 
 ##### הוספנו את test-file.js
 ```diff

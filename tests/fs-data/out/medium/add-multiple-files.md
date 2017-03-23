@@ -1,6 +1,6 @@
 [{]: <helper> (diffStep 1.1 files="test-file.js")
 
-#### [Step 1.1: Add multiple files](../../../../commit/XXX)
+#### Step 1.1: Add multiple files
 <br>
 ##### Added test-file.js
 <pre>

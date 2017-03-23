@@ -67,14 +67,21 @@ Renderer.registerHelper('diffStep', function (step, options) {
 
   var stepHash = stepData[0];
   var stepMessage = stepData.slice(1).join(' ');
-  var commitReference = Renderer.resolve('../../../../commit', stepHash);
+  var commitReference = Renderer.resolve('~/commit', stepHash);
 
   // Translate step message, if at all
   stepMessage = Renderer.call('stepMessage', {
     commitMessage: stepMessage
   });
 
-  var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
+  // If this is a relative path, we won't reference the commit
+  if (commitReference.isRelative) {
+    var stepTitle = '#### ' + stepMessage;
+  }
+  else {
+    var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
+  }
+
   var diff = Git(['diff', stepHash + '^', stepHash]);
 
   // Convert diff string to json format
