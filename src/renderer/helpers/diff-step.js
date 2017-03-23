@@ -196,11 +196,5 @@ Renderer.registerTransformation('medium', 'diffStep', function (view) {
       // Wrap with <pre> tag
       return '<pre>\n' + content + '\n</pre>';
     })
-    .join('')
-    // Remove line break after title
-    .replace(/(#### .+)\n\n/, '$1\n')
-    // Turn main title into a bold text
-    .replace(/^#### (.+)$/m, '**$1**')
-    // Turn sub-titles into block quotes
-    .replace(/^##### (.+)$/mg, '> $1');
+    .join('');
 });

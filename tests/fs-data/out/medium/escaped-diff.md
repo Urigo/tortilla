@@ -1,7 +1,8 @@
 [{]: <helper> (diffStep 1.2)
 
-**Step 1.2: Change view**
-> Changed test-view.html
+#### Step 1.2: Change view
+
+##### Changed test-view.html
 <pre>
 <i>@@ -1,4 +1,4 @@</i>
  ┊1┊1┊&lt;pre&gt;
