@@ -1,8 +1,7 @@
 [{]: <helper> (diffStep 1.1)
 
-#### Step 1.1: Add file
-<br>
-##### Added test-file.js
+**Step 1.1: Add file**
+> Added test-file.js
 <pre>
 <i>@@ -0,0 +1,3 @@</i>
 <b>+┊ ┊1┊foo</b>

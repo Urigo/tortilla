@@ -182,8 +182,6 @@ function getPadLength(changes) {
 
 Renderer.registerTransformation('medium', 'diffStep', function (view) {
   return view
-    // Add line break after title
-    .replace(/(#### .+)\n\n/, '$1\n<br>\n')
     .split(/```diff\n|\n```(?!diff)/).map(function (chunk, index) {
       if (index % 2 == 0) return chunk;
 
@@ -198,5 +196,11 @@ Renderer.registerTransformation('medium', 'diffStep', function (view) {
       // Wrap with <pre> tag
       return '<pre>\n' + content + '\n</pre>';
     })
-    .join('');
+    .join('')
+    // Remove line break after title
+    .replace(/(#### .+)\n\n/, '$1\n')
+    // Turn main title into a bold text
+    .replace(/^#### (.+)$/m, '**$1**')
+    // Turn sub-titles into block quotes
+    .replace(/^##### (.+)$/mg, '> $1');
 });
