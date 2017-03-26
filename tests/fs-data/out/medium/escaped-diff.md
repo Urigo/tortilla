@@ -4,7 +4,9 @@
 
 ##### Changed test-view.html
 <pre>
-<i>@@ -1,4 +1,4 @@</i>
+<i>╔══════╗</i>
+<i>║ diff ║</i>
+<i>╚══════╝</i>
  ┊1┊1┊&lt;pre&gt;
  ┊2┊2┊  &lt;div&gt;FOO&lt;/div&gt;
 <b>+┊ ┊3┊  &lt;span&gt;BAZ&lt;/span&gt;</b>

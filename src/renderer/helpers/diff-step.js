@@ -181,13 +181,19 @@ function getPadLength(changes) {
 }
 
 Renderer.registerTransformation('medium', 'diffStep', function (view) {
+  var diffBlock = [
+    '<i>╔══════╗</i>',
+    '<i>║ diff ║</i>',
+    '<i>╚══════╝</i>'
+  ].join('\n');
+
   return view
     .split(/```diff\n|\n```(?!diff)/).map(function (chunk, index) {
       if (index % 2 == 0) return chunk;
 
       var content = Handlebars.escapeExpression(chunk)
         // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
-        .replace(/^@.+$/m, '<i>$&</i>')
+        .replace(/^@.+$/m, diffBlock)
         // Remove removals
         .replace(/\n\-.+/g, '')
         // Bold additions
