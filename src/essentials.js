@@ -50,7 +50,7 @@ function createProject(projectName, options) {
   projectName = projectName || 'tortilla-project';
 
   options = Utils.extend({
-    output: Paths.resolveProject(projectName)
+    output: Path.resolve(projectName)
   }, options);
 
   // In case dir already exists verify the user's decision
