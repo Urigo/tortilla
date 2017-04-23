@@ -25,7 +25,7 @@ Renderer.registerHelper('navStep', function(options) {
     return Renderer.renderTemplateFile('nav-step', {
       nextOnly: true,
       text: t('nav.begin'),
-      ref: options.hash.ref || Renderer.resolve('manuals/views/step1.md')
+      ref: options.hash.ref || Renderer.resolve('.tortilla/manuals/views/step1.md')
     });
   }
 
@@ -63,7 +63,7 @@ Renderer.registerHelper('navStep', function(options) {
       nextText: t('nav.next'),
       nextRef: options.hash.nextRef || Renderer.resolve('step2.md'),
       prevText: t('nav.intro'),
-      prevRef: options.hash.prevRef || Renderer.resolve('../../README.md')
+      prevRef: options.hash.prevRef || Renderer.resolve('../../../README.md')
     });
 
   // Any other case
