@@ -1,6 +1,6 @@
 [{]: <helper> (navStep)
 
-| [התחל במדריך >](manuals/views/step1.md) |
+| [התחל במדריך >](.tortilla/manuals/views/step1.md) |
 |----------------------:|
 
 [}]: #

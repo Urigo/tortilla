@@ -4,6 +4,6 @@
 
 [{]: <helper> (navStep)
 
-⟸ <a href="../../README.md">בחזרה לפתיח</a> <b>║</b> <a href="step2.md">עבור לצעד הבא</a> ⟹
+⟸ <a href="../../../README.md">בחזרה לפתיח</a> <b>║</b> <a href="step2.md">עבור לצעד הבא</a> ⟹
 
 [}]: #
