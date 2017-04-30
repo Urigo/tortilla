@@ -23,9 +23,7 @@ Tutorials for example:
 
 If you're not familiar with Tortilla I recommend you to go through the this `README.md` file since it contains everything you have to know about Tortilla in order to use it.
 
-[![intro](https://img.youtube.com/vi/dHfmN1NtcUk/0.jpg)](https://www.youtube.com/watch?v=dHfmN1NtcUk)
-
-> **⚠** Video is outdated!
+[![intro](https://cloud.githubusercontent.com/assets/7648874/25558853/02cbaaf4-2d0e-11e7-89db-9aff3c87cc18.png)](https://www.youtube.com/watch?v=uboqQ8B4XFk)
 
 ## Tutorial Structure
 
