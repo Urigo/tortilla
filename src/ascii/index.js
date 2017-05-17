@@ -1,6 +1,6 @@
-var Fs = require('fs-extra');
-var Path = require('path');
-var Paths = require('../paths');
+const Fs = require('fs-extra');
+const Path = require('path');
+const Paths = require('../paths');
 
 /**
   Responsible for printing ascii art files
@@ -8,8 +8,8 @@ var Paths = require('../paths');
 
 // Get string for provided ascii art name
 function getAsciiArt(artName) {
-  var artFile = artName + '.txt';
-  var artPath = Path.resolve(Paths.tortilla.ascii.views, artFile);
+  const artFile = `${artName}.txt`;
+  const artPath = Path.resolve(Paths.tortilla.ascii.views, artFile);
   return Fs.readFileSync(artPath).toString();
 }
 
@@ -21,5 +21,5 @@ function printAsciiArt(artName) {
 
 module.exports = {
   get: getAsciiArt,
-  print: printAsciiArt
+  print: printAsciiArt,
 };

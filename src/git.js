@@ -1,13 +1,13 @@
-var Path = require('path');
-var LocalStorage = require('./local-storage');
-var Paths = require('./paths');
-var Utils = require('./utils');
+const Path = require('path');
+const LocalStorage = require('./local-storage');
+const Paths = require('./paths');
+const Utils = require('./utils');
 
 /**
   Contains general git utilities.
  */
 
-var git = Utils.git;
+const git = Utils.git;
 
 
 // Tells if rebasing or not
@@ -30,8 +30,7 @@ function tagExists(tag) {
   try {
     git(['rev-parse', tag]);
     return true;
-  }
-  catch (err) {
+  } catch (err) {
     return false;
   }
 }
@@ -42,13 +41,12 @@ function getRecentCommit(offset, argv) {
   if (offset instanceof Array) {
     argv = offset;
     offset = 0;
-  }
-  else {
+  } else {
     argv = argv || [];
     offset = offset || 0;
   }
 
-  var hash = typeof offset == 'string' ? offset : ('HEAD~' + offset);
+  const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
 
   argv = ['log', hash, '-1'].concat(argv);
   return git(argv);
@@ -57,7 +55,7 @@ function getRecentCommit(offset, argv) {
 // Gets a list of the modified files reported by git matching the provided pattern.
 // This includes untracked files, changed files and deleted files
 function getStagedFiles(pattern) {
-  var stagedFiles = git(['diff', '--name-only', '--cached'])
+  const stagedFiles = git(['diff', '--name-only', '--cached'])
     .split('\n')
     .filter(Boolean);
 
@@ -83,10 +81,10 @@ function getRootHash() {
 module.exports = Utils.extend(git.bind(null), git, {
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,
-  gonnaAmend: gonnaAmend,
-  tagExists: tagExists,
+  gonnaAmend,
+  tagExists,
   recentCommit: getRecentCommit,
   stagedFiles: getStagedFiles,
   activeBranchName: getActiveBranchName,
-  rootHash: getRootHash
+  rootHash: getRootHash,
 });

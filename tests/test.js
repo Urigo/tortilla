@@ -16,11 +16,11 @@ before(function () {
   // Set environment from which Tortilla calculations are gonna be made from
   process.env.TORTILLA_CWD = this.testDir;
   // Print test dir so it can be observed in case of failure
-  console.log('Test Dir: ' + this.testDir);
+  console.log(`Test Dir: ${this.testDir}`);
 
   // Initializing test tortilla project
   ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [
-    'create', '-m', 'Test tortilla project', '-o', this.plainDir, '--override'
+    'create', '-m', 'Test tortilla project', '-o', this.plainDir, '--override',
   ]);
 
   // Utils
@@ -40,7 +40,7 @@ before(function () {
 
   // Git-am patch located in 'fs-data/in'
   this.applyTestPatch = (patchName) => {
-    const patchPath = Path.resolve(__dirname, 'fs-data/in', patchName + '.patch');
+    const patchPath = Path.resolve(__dirname, 'fs-data/in', `${patchName}.patch`);
     return this.git(['am', patchPath]);
   };
 });

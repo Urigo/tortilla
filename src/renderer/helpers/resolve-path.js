@@ -1,4 +1,4 @@
-var Renderer = require('..');
+const Renderer = require('..');
 
 /**
   A template helper which invokes Renderer.resolve(). This is currently being used
@@ -6,9 +6,7 @@ var Renderer = require('..');
  */
 
 Renderer.registerHelper('resolvePath', function () {
-  var paths = [].filter.call(arguments, function (arg) {
-    return typeof arg == 'string';
-  });
+  const paths = [].filter.call(arguments, arg => typeof arg === 'string');
 
-  return Renderer.resolve.apply(Renderer, paths);
+  return Renderer.resolve(...paths);
 });

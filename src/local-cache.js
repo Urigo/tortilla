@@ -11,59 +11,59 @@ LocalCache.prototype = Object.create(Object.prototype, {
   constructor: {
     writable: true,
     configurable: true,
-    value: LocalCache
+    value: LocalCache,
   },
 
   getItem: {
     writable: true,
     configurable: true,
-    value: function (key) {
+    value(key) {
       if (this._cache.hasOwnProperty(key)) {
         return this._cache[key];
       }
-    }
+    },
   },
 
   setItem: {
     writable: true,
     configurable: true,
-    value: function (key, value) {
+    value(key, value) {
       return this._cache[key] = value;
-    }
+    },
   },
 
   removeItem: {
     writable: true,
     configurable: true,
-    value: function (key, value) {
+    value(key, value) {
       return delete this._cache[key];
-    }
+    },
   },
 
   key: {
     writable: true,
     configurable: true,
-    value: function (n) {
+    value(n) {
       return Object.keys(this._cache)[n];
-    }
+    },
   },
 
   clear: {
     writable: true,
     configurable: true,
-    value: function () {
+    value() {
       Object.keys(this._cache).forEach(function (key) {
         delete this._cache[key];
       });
-    }
+    },
   },
 
   length: {
     configurable: true,
-    get: function () {
+    get() {
       return Object.keys(this._cache).length;
-    }
-  }
+    },
+  },
 });
 
 

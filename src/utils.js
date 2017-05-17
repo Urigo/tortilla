@@ -1,14 +1,14 @@
-var ChildProcess = require('child_process');
-var Fs = require('fs-extra');
+const ChildProcess = require('child_process');
+const Fs = require('fs-extra');
 
 /**
   Contains general utilities.
  */
 
-var cwd;
-var git;
-var npm;
-var node;
+let cwd;
+let git;
+let npm;
+let node;
 
 
 (function () {
@@ -17,14 +17,13 @@ var node;
 
   try {
     cwd = ChildProcess.execFileSync('git', [
-      'rev-parse', '--show-toplevel'
+      'rev-parse', '--show-toplevel',
     ], {
-      cwd: cwd,
-      stdio: ['pipe', 'pipe', 'ignore']
+      cwd,
+      stdio: ['pipe', 'pipe', 'ignore'],
     }).toString()
       .trim();
-  }
-  catch (err) {
+  } catch (err) {
     // If no git-exists nor git-failed use default value instead
   }
 
@@ -39,20 +38,20 @@ var node;
   // It's better to have a getter rather than an explicit value otherwise
   // it might be reset
   cwd = String.bind(null, cwd);
-})();
+}());
 
 // Checks if one of the parent processes launched by the provided file and has
 // the provided arguments
 function isChildProcessOf(file, argv, offset) {
   // There might be nested processes of the same file so we wanna go through all of them,
   // This variable represents how much skips will be done anytime the file is found.
-  var trial = offset = offset || 0;
+  let trial = offset = offset || 0;
 
   // The current process would be the node's
-  var currProcess = {
+  const currProcess = {
     file: process.title,
     pid: process.pid,
-    argv: process.argv
+    argv: process.argv,
   };
 
   // Will abort once the file is found and there are no more skips left to be done
@@ -73,9 +72,7 @@ function isChildProcessOf(file, argv, offset) {
   }
 
   // Make sure it has the provided arguments
-  var result = argv.every(function (arg) {
-    return currProcess.argv.indexOf(arg) != -1;
-  });
+  const result = argv.every(arg => currProcess.argv.indexOf(arg) != -1);
 
   // If this is not the file we're looking for keep going up in the processes tree
   return result || isChildProcessOf(file, argv, ++offset);
@@ -88,7 +85,7 @@ function getProcessData(pid, format) {
     pid = process.pid;
   }
 
-  var result = exec('ps', ['-p', pid, '-o', format]).split('\n');
+  const result = exec('ps', ['-p', pid, '-o', format]).split('\n');
   result.shift();
 
   return result.join('\n');
@@ -100,11 +97,11 @@ function spawn(file, argv, options) {
 
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
-    stdio: process.env.TORTILLA_STDIO || 'inherit'
+    stdio: process.env.TORTILLA_STDIO || 'inherit',
   }, options);
 
   options.env = extend({
-    TORTILLA_CHILD_PROCESS: true
+    TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
 
   return ChildProcess.spawnSync(file, argv, options);
@@ -116,11 +113,11 @@ function exec(file, argv, options) {
 
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
-    stdio: 'pipe'
+    stdio: 'pipe',
   }, options);
 
   options.env = extend({
-    TORTILLA_CHILD_PROCESS: true
+    TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
 
   return ChildProcess
@@ -132,7 +129,7 @@ function exec(file, argv, options) {
 // Tells if entity exists or not by an optional document type
 function exists(path, type) {
   try {
-    var stats = Fs.lstatSync(path);
+    const stats = Fs.lstatSync(path);
 
     switch (type) {
       case 'dir': return stats.isDirectory();
@@ -140,27 +137,23 @@ function exists(path, type) {
       case 'symlink': return stats.isSymbolicLink();
       default: return true;
     }
-  }
-  catch (err) {
+  } catch (err) {
     return false;
   }
 }
 
 // Create a temporary scope which will define provided variables on the environment
 function scopeEnv(fn, env) {
-  var keys = Object.keys(env);
-  var originalEnv = pluck(process.env, keys);
+  const keys = Object.keys(env);
+  const originalEnv = pluck(process.env, keys);
 
-  var nullKeys = keys.filter(function (key) {
-    return process.env[key] == null;
-  });
+  const nullKeys = keys.filter(key => process.env[key] == null);
 
   extend(process.env, env);
 
   try {
     fn();
-  }
-  finally {
+  } finally {
     extend(process.env, originalEnv);
     contract(process.env, nullKeys);
   }
@@ -170,9 +163,7 @@ function scopeEnv(fn, env) {
 function filterMatches(arr, pattern) {
   pattern = pattern || '';
 
-  return arr.filter(function (str) {
-    return str.match(pattern);
-  });
+  return arr.filter(str => str.match(pattern));
 }
 
 // Deeply merges destination object with source object
@@ -182,7 +173,7 @@ function merge(destination, source) {
     return source;
   }
 
-  Object.keys(source).forEach(function (k) {
+  Object.keys(source).forEach((k) => {
     destination[k] = merge(destination[k], source[k]);
   });
 
@@ -191,12 +182,12 @@ function merge(destination, source) {
 
 // Extend destination object with provided sources
 function extend(destination) {
-  var sources = [].slice.call(arguments, 1);
+  const sources = [].slice.call(arguments, 1);
 
-  sources.forEach(function (source) {
+  sources.forEach((source) => {
     if (!(source instanceof Object)) return;
 
-    Object.keys(source).forEach(function (k) {
+    Object.keys(source).forEach((k) => {
       destination[k] = source[k];
     });
   });
@@ -206,7 +197,7 @@ function extend(destination) {
 
 // Deletes all keys in the provided object
 function contract(destination, keys) {
-  keys.forEach(function (key) {
+  keys.forEach((key) => {
     delete destination[key];
   });
 
@@ -215,7 +206,7 @@ function contract(destination, keys) {
 
 // Plucks all keys from object
 function pluck(obj, keys) {
-  return keys.reduce(function (result, key) {
+  return keys.reduce((result, key) => {
     result[key] = obj[key];
     return result;
   }, {});
@@ -226,7 +217,7 @@ function pluck(obj, keys) {
 function pad(str, length, char) {
   str = str.toString();
   char = char || ' ';
-  var chars = Array(length + 1).join(char);
+  const chars = Array(length + 1).join(char);
 
   return chars.substr(0, chars.length - str.length) + str;
 }
@@ -269,19 +260,18 @@ function splitWords(str) {
 // - set - A setter wrapper
 // All 3 wrappers are called with 3 arguments: handler, propertyName, args
 function delegateProperties(destination, source, modifiers) {
-  Object.getOwnPropertyNames(source).forEach(function (propertyName) {
-    var propertyDescriptor = Object.getOwnPropertyDescriptor(source, propertyName);
+  Object.getOwnPropertyNames(source).forEach((propertyName) => {
+    const propertyDescriptor = Object.getOwnPropertyDescriptor(source, propertyName);
 
-    if (typeof propertyDescriptor.value == 'function' && modifiers.value) {
-      var superValue = propertyDescriptor.value;
+    if (typeof propertyDescriptor.value === 'function' && modifiers.value) {
+      const superValue = propertyDescriptor.value;
 
       propertyDescriptor.value = function () {
-        var args = [].slice.call(arguments);
+        const args = [].slice.call(arguments);
 
         return modifiers.value.call(this, superValue, propertyName, args);
       };
-    }
-    else {
+    } else {
       if (propertyDescriptor.get && modifiers.get) {
         var superGetter = propertyDescriptor.get;
 
@@ -307,23 +297,23 @@ function delegateProperties(destination, source, modifiers) {
 
 
 module.exports = {
-  cwd: cwd,
-  exec: exec,
-  git: git,
-  npm: npm,
+  cwd,
+  exec,
+  git,
+  npm,
   childProcessOf: isChildProcessOf,
-  exists: exists,
-  scopeEnv: scopeEnv,
-  filterMatches: filterMatches,
-  merge: merge,
-  extend: extend,
-  contract: contract,
-  pluck: pluck,
-  pad: pad,
+  exists,
+  scopeEnv,
+  filterMatches,
+  merge,
+  extend,
+  contract,
+  pluck,
+  pad,
   kebabCase: toKebabCase,
   startCase: toStartCase,
-  lowerFirst: lowerFirst,
-  upperFirst: upperFirst,
+  lowerFirst,
+  upperFirst,
   words: splitWords,
-  delegateProperties: delegateProperties
+  delegateProperties,
 };
