@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-require('babel-register');
-
 const Program = require('commander');
 const Pack = require('../package.json');
 const Essentials = require('../src/essentials');
