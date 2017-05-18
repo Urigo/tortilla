@@ -8,12 +8,10 @@
     "url": "https://github.com/Urigo/tortilla.git"
   },
   "bin": {
-    "tortilla": "cli/tortilla-compiled"
+    "tortilla": "cli/tortilla"
   },
   "scripts": {
-    "build": "babel cli/tortilla --out-file cli/tortilla-compiled --presets=es2015,stage-2 --source-maps",
-    "test": "npm run build && make test",
-    "prepublish": "npm run build"
+    "test": "make test"
   },
   "dependencies": {
     "commander": "^2.9.0",
@@ -27,9 +25,6 @@
     "tmp": "0.0.31"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
     "chai": "^3.5.0",
     "escape-string-regexp": "^1.0.5",
     "eslint": "^3.19.0",

@@ -10,7 +10,7 @@ const Assertion = Chai.Assertion;
 // Matches content to given file in fs-data/out dir. We can use the XXX pattern
 // if we would like to ignore some parts of the matched content
 Assertion.addMethod('file', function (expectedFileName, extension) {
-  const expectedFile = expectedFileName;
+  let expectedFile = expectedFileName;
 
   if (extension) expectedFile += '.' + extension;
 
