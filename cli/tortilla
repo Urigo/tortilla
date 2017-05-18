@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+var semver = require('semver');
+if (!semver.gt(process.version, '6.0.0')) {
+  require('babel-register');
+}
+
 const Program = require('commander');
 const Pack = require('../package.json');
 const Essentials = require('../src/essentials');
