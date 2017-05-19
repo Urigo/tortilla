@@ -3,68 +3,40 @@
   instead of fs.
  */
 
-function LocalCache() {
-  this._cache = {};
+class LocalCache {
+  constructor() {
+    this._cache = {};
+  }
+
+  getItem(key) {
+    if (this._cache.hasOwnProperty(key)) {
+      return this._cache[key];
+    }
+  }
+
+  setItem(key) {
+    if (this._cache.hasOwnProperty(key)) {
+      return this._cache[key];
+    }
+  }
+
+  removeItem(key, value) {
+    return delete this._cache[key];
+  }
+
+  key(n) {
+    return Object.keys(this._cache)[n];
+  }
+
+  clear() {
+    Object.keys(this._cache).forEach(function (key) {
+      delete this._cache[key];
+    });
+  }
+
+  get length() {
+    return Object.keys(this._cache).length;
+  }
 }
-
-LocalCache.prototype = Object.create(Object.prototype, {
-  constructor: {
-    writable: true,
-    configurable: true,
-    value: LocalCache,
-  },
-
-  getItem: {
-    writable: true,
-    configurable: true,
-    value(key) {
-      if (this._cache.hasOwnProperty(key)) {
-        return this._cache[key];
-      }
-    },
-  },
-
-  setItem: {
-    writable: true,
-    configurable: true,
-    value(key, value) {
-      return this._cache[key] = value;
-    },
-  },
-
-  removeItem: {
-    writable: true,
-    configurable: true,
-    value(key, value) {
-      return delete this._cache[key];
-    },
-  },
-
-  key: {
-    writable: true,
-    configurable: true,
-    value(n) {
-      return Object.keys(this._cache)[n];
-    },
-  },
-
-  clear: {
-    writable: true,
-    configurable: true,
-    value() {
-      Object.keys(this._cache).forEach(function (key) {
-        delete this._cache[key];
-      });
-    },
-  },
-
-  length: {
-    configurable: true,
-    get() {
-      return Object.keys(this._cache).length;
-    },
-  },
-});
-
 
 module.exports = LocalCache;
