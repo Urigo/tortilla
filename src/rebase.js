@@ -9,7 +9,9 @@ const Step = require('./step');
  */
 
 (function () {
-  if (require.main !== module) return;
+  if (require.main !== module) {
+    return;
+  }
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_'],
@@ -34,7 +36,9 @@ function rewordRecentStep(message) {
   // Open the editor by default
   const argv = ['commit', '--amend', '--allow-empty'];
   // If message provided skip editor
-  if (message) argv.push('-m', message);
+  if (message) {
+    argv.push('-m', message);
+  }
 
   // Specified step is gonna be used for when forming the commit message
   LocalStorage.setItem('HOOK_STEP', nextStep);
@@ -69,7 +73,9 @@ function superPickStep(hash) {
 
 // Calculate the next step dynamically based on its super flag
 function getNextStep(stepDescriptor) {
-  if (!stepDescriptor) return '';
+  if (!stepDescriptor) {
+    return '';
+  }
 
   const isSubStep = !!stepDescriptor.number.split('.')[1];
   return isSubStep ? Step.next(1) : Step.nextSuper(1);

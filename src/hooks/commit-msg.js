@@ -12,12 +12,18 @@ const Step = require('../step');
 
 (function () {
   // Should abort hook once steps limit reached
-  if (Git.rebasing() && LocalStorage.getItem('REBASE_HOOKS_DISABLED')) return;
+  if (Git.rebasing() && LocalStorage.getItem('REBASE_HOOKS_DISABLED')) {
+    return;
+  }
   // Amend is the only thing allowed by tortilla, the rest is irrelevant
-  if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) return;
+  if (!process.env.TORTILLA_CHILD_PROCESS && !Git.gonnaAmend()) {
+    return;
+  }
 
   // If we're amending to the root commit then a step prefix is not needed
-  if (Git.gonnaAmend() && !LocalStorage.getItem('HOOK_STEP')) return;
+  if (Git.gonnaAmend() && !LocalStorage.getItem('HOOK_STEP')) {
+    return;
+  }
 
   const commitMessage = Fs.readFileSync(Paths.git.messages.commit, 'utf8');
   // Prepend a step prefix to the commit message

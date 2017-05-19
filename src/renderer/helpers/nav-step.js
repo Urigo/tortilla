@@ -11,16 +11,20 @@ const Translator = require('../../translator');
 const t = Translator.translate.bind(Translator);
 
 
-Renderer.registerHelper('navStep', function (options) {
-  var step = options.hash.step || this.step || Step.currentSuper();
+Renderer.registerHelper('navStep', (options) => {
+  let step = options.hash.step || this.step || Step.currentSuper();
   // If there is no belonging step, don't render anything
-  if (!step) return '';
+  if (!step) {
+    return '';
+  }
 
   // Editing root
-  if (step == 'root') {
+  if (step === 'root') {
     const anySuperStep = !!Git(['log', 'ORIG_HEAD', '-1', '--grep', '^Step [0-9]\\+:']);
     // If there are no any steps yet, don't show nav bar
-    if (!anySuperStep) return '';
+    if (!anySuperStep) {
+      return '';
+    }
 
     return Renderer.renderTemplateFile('nav-step', {
       nextOnly: true,
@@ -30,7 +34,7 @@ Renderer.registerHelper('navStep', function (options) {
   }
 
   // Convert to number just in case, so we can run arbitrary operations
-  var step = Number(step);
+  step = Number(step);
 
   // Get an array of all super steps in the current tutorial
   const superSteps = Git([
@@ -43,13 +47,15 @@ Renderer.registerHelper('navStep', function (options) {
     .map(Number);
 
   // If there are no super steps at all
-  if (superSteps.length == 0) return '';
+  if (superSteps.length === 0) {
+    return '';
+  }
 
   // The order is the other way around, this way we save ourselves the sorting
   const recentSuperStep = superSteps[0];
 
   // If this is the last step
-  if (step == recentSuperStep) {
+  if (step === recentSuperStep) {
     return Renderer.renderTemplateFile('nav-step', {
       prevOnly: true,
       text: t('nav.prev'),
@@ -58,7 +64,7 @@ Renderer.registerHelper('navStep', function (options) {
   }
 
   // If this is the first super step
-  if (step == 1) {
+  if (step === 1) {
     return Renderer.renderTemplateFile('nav-step', {
       bidirectional: true,
       nextText: t('nav.next'),
@@ -102,18 +108,18 @@ Renderer.registerTransformation('medium', 'navStep', (view) => {
 
   // ⟸ PREVIOUS STEP ║
   if (isPrev) {
-    var matches = view.match(/\[< ([^\]]+)\]\(([^\)]+)\)/);
-    var text = matches[1];
-    var ref = matches[2];
+    const matches = view.match(/\[< ([^\]]+)\]\(([^\)]+)\)/);
+    const text = matches[1];
+    const ref = matches[2];
 
     return `⟸ <a href="${ref}">${text.toUpperCase()}</a> <b>║</b>`;
   }
 
   // ║ NEXT STEP ⟹
   if (isNext) {
-    var matches = view.match(/\[([^\]]+) >\]\(([^\)]+)\)/);
-    var text = matches[1];
-    var ref = matches[2];
+    const matches = view.match(/\[([^\]]+) >\]\(([^\)]+)\)/);
+    const text = matches[1];
+    const ref = matches[2];
 
     return `<b>║</b> <a href="${ref}">${text.toUpperCase()}</a> ⟹`;
   }

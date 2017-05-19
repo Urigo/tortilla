@@ -21,7 +21,9 @@ const exec = Utils.exec;
 
 
 (function () {
-  if (require.main !== module) return;
+  if (require.main !== module) {
+    return;
+  }
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm', 'output', 'o'],
@@ -60,7 +62,9 @@ function createProject(projectName, options) {
       'Would you like to override it and continue?',
     ].join('\n'));
 
-    if (!options.override) return;
+    if (!options.override) {
+      return;
+    }
   }
 
   Fs.removeSync(tmpDir.name);
@@ -89,7 +93,11 @@ function createProject(projectName, options) {
   Git(['add', '.'], { cwd: tmpDir.name });
   Git(['commit', '-m', title], { cwd: tmpDir.name });
 
-  if (options.message) { Git.print(['commit', '--amend', '-m', options.message], { cwd: tmpDir.name }); } else { Git.print(['commit', '--amend'], { cwd: tmpDir.name }); }
+  if (options.message) {
+    Git.print(['commit', '--amend', '-m', options.message], { cwd: tmpDir.name });
+  } else {
+    Git.print(['commit', '--amend'], { cwd: tmpDir.name });
+  }
 
   // Initializing
   ensureTortilla(tmpPaths);
@@ -110,7 +118,9 @@ function ensureTortilla(projectDir) {
 
   // If tortilla is already initialized don't do anything
   const isInitialized = localStorage.getItem('INIT');
-  if (isInitialized) return;
+  if (isInitialized) {
+    return;
+  }
 
   const hookFiles = Fs.readdirSync(projectPaths.tortilla.hooks);
 
@@ -129,9 +139,11 @@ function ensureTortilla(projectDir) {
     ].join('\n');
 
     // If exists, append logic
-    if (Utils.exists(hookPath, 'file')) { Fs.appendFileSync(hookPath, `\n${hook}`); }
-    // Else, create file
-    else { Fs.writeFileSync(hookPath, `#!/bin/sh${hook}`); }
+    if (Utils.exists(hookPath, 'file')) {
+      Fs.appendFileSync(hookPath, `\n${hook}`);
+    } else { // Else, create file
+      Fs.writeFileSync(hookPath, `#!/bin/sh${hook}`);
+    }
 
     // Give read permissions to hooks so git can execute properly
     Fs.chmodSync(hookPath, '755');

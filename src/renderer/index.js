@@ -1,30 +1,30 @@
-var Fs = require('fs-extra');
-var Handlebars = require('handlebars');
-var Path = require('path');
-var Git = require('../git');
-var Paths = require('../paths');
-var Release = require('../release');
-var Utils = require('../utils');
+const Fs = require('fs-extra');
+const Handlebars = require('handlebars');
+const Path = require('path');
+const Git = require('../git');
+const Paths = require('../paths');
+const Release = require('../release');
+const Utils = require('../utils');
 
 /**
   A wrapper for Handlebars with several additions which are essential for Tortilla
  */
 
 // Creating a new instance of handlebars which will then be merged with the module
-var handlebars = Handlebars.create();
+const handlebars = Handlebars.create();
 // Keep original handlers since these methods are gonna be overriden
-var superRegisterHelper = handlebars.registerHelper.bind(handlebars);
-var superRegisterPartial = handlebars.registerPartial.bind(handlebars);
+const superRegisterHelper = handlebars.registerHelper.bind(handlebars);
+const superRegisterPartial = handlebars.registerPartial.bind(handlebars);
 // Used to store registered transformations
-var transformations = {};
+const transformations = {};
 // Cache for templates which were already compiled
-var cache = {};
+const cache = {};
 
 
 // Read the provided file, render it, and overwrite it. Use with caution!
 function overwriteTemplateFile(templatePath, scope) {
   templatePath = resolveTemplatePath(templatePath);
-  var view = renderTemplateFile(templatePath, scope);
+  const view = renderTemplateFile(templatePath, scope);
 
   return Fs.writeFileSync(templatePath, view);
 }
@@ -35,18 +35,20 @@ function renderTemplateFile(templatePath, scope) {
   templatePath = resolveTemplatePath(templatePath);
 
   if (process.env.TORTILLA_CACHE_DISABLED || !cache[templatePath]) {
-    var templateContent = Fs.readFileSync(templatePath, 'utf8');
+    const templateContent = Fs.readFileSync(templatePath, 'utf8');
     cache[templatePath] = handlebars.compile(templateContent);
   }
 
-  var template = cache[templatePath];
+  const template = cache[templatePath];
   return renderTemplate(template, scope);
 }
 
 // Render provided template
 function renderTemplate(template, scope) {
   // Template can either be a string or a compiled template object
-  if (typeof template == 'string') template = handlebars.compile(template);
+  if (typeof template === 'string') { 
+    template = handlebars.compile(template); 
+  }
   scope = scope || {};
 
   if (scope.viewPath) {
@@ -55,15 +57,14 @@ function renderTemplate(template, scope) {
     var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.viewPath));
   }
 
-  var oldResolve = handlebars.resolve;
+  const oldResolve = handlebars.resolve;
 
   try {
     // Set the view file for the resolve utility. If no view path was provided, the
     // resolve function below still won't work
     handlebars.resolve = resolvePath.bind(null, viewDir);
     return template(scope);
-  }
-  finally {
+  } finally {
     // Either if an error was thrown or not, unbind it
     handlebars.resolve = oldResolve;
   }
@@ -76,8 +77,10 @@ function resolveTemplatePath(templatePath) {
   }
 
   // User defined templates
-  var relativeTemplatePath = Path.resolve(Paths.manuals.templates, templatePath);
-  if (Utils.exists(relativeTemplatePath)) return relativeTemplatePath;
+  const relativeTemplatePath = Path.resolve(Paths.manuals.templates, templatePath);
+  if (Utils.exists(relativeTemplatePath)) { 
+    return relativeTemplatePath; 
+  }
 
   // Tortilla defined templates
   return Path.resolve(Paths.tortilla.renderer.templates, templatePath);
@@ -88,32 +91,32 @@ function resolveTemplatePath(templatePath) {
 function registerHelper(name, helper, options) {
   options = options || {};
 
-  var wrappedHelper = function () {
-    var oldCall = handlebars.call;
+  const wrappedHelper = function () {
+    const oldCall = handlebars.call;
 
     try {
       // Bind the call method to the current context
       handlebars.call = callHelper.bind(this);
       var out = helper.apply(this, arguments);
-    }
-    // Fallback
-    finally {
+    } finally { // Fallback
       // Restore method to its original
       handlebars.call = oldCall;
     }
 
-    if (typeof out != 'string') throw Error([
-      'Template helper', name, 'must return a string!',
-      'Instead it returned', out
-    ].join(' '));
+    if (typeof out !== 'string') {
+      throw Error([
+        'Template helper', name, 'must return a string!',
+        'Instead it returned', out,
+      ].join(' '));
+    }
 
-    var target = process.env.TORTILLA_RENDER_TARGET;
-    var args = [].slice.call(arguments);
+    const target = process.env.TORTILLA_RENDER_TARGET;
+    const args = [].slice.call(arguments);
 
     // Transform helper output
-    var transformation = transformations[target] && transformations[target][name];
+    const transformation = transformations[target] && transformations[target][name];
     if (transformation) {
-      out = transformation.apply(null, [out].concat(args));
+      out = transformation(...[out].concat(args));
     }
 
     // Wrap helper output
@@ -122,7 +125,7 @@ function registerHelper(name, helper, options) {
     }
 
     return out;
-  }
+  };
 
   superRegisterHelper(name, wrappedHelper);
 }
@@ -145,7 +148,9 @@ function registerPartial(name, partial, options) {
 // adjustments for custom targets. For now this is NOT part of the official API and
 // is used only for development purposes
 function registerTransformation(targetName, helperName, transformation) {
-  if (!transformations[targetName]) transformations[targetName] = {};
+  if (!transformations[targetName]) { 
+    transformations[targetName] = {}; 
+  }
   transformations[targetName][helperName] = transformation;
 }
 
@@ -154,9 +159,9 @@ function registerTransformation(targetName, helperName, transformation) {
 // e.g. https://github.com/Urigo/angular-meteor-docs/blob/master/src/app/tutorials/
 // improve-code-resolver.ts#L24
 function mdWrapComponent(type, name, args, content) {
-  var hash = {};
+  let hash = {};
 
-  if (typeof content != 'string') {
+  if (typeof content !== 'string') {
     content = args;
     args = [];
   }
@@ -166,9 +171,7 @@ function mdWrapComponent(type, name, args, content) {
   }
 
   // Stringify arguments
-  var params = args.map(function (param) {
-    return typeof param == 'string' ? '"' + param + '"' : param;
-  }).join(' ');
+  const params = args.map(param => typeof param === 'string' ? `"${param}"` : param).join(' ');
 
   hash = stringifyHash(hash);
 
@@ -178,23 +181,25 @@ function mdWrapComponent(type, name, args, content) {
     .filter(Boolean)
     .join(' ');
 
-  return '[{]: <' + type + '> (' + args + ')\n\n' + content + '\n\n[}]: #';
+  return `[{]: <${type}> (${args})\n\n${content}\n\n[}]: #`;
 }
 
 // Takes a helper hash and stringifying it
 // e.g. { foo: '1', bar: 2 } -> foo="1" bar=2
 function stringifyHash(hash) {
-  return Object.keys(hash).map(function (key) {
-    var value = hash[key];
-    if (typeof value == 'string') value = '"' + value +'"';
-    return key + '=' + value;
+  return Object.keys(hash).map((key) => {
+    let value = hash[key];
+    if (typeof value === 'string') { 
+      value = `"${value}"`; 
+    }
+    return `${key}=${value}`;
   }).join(' ');
 }
 
 // Calls a template helper with the provided context and arguments
 function callHelper(methodName) {
-  var args = [].slice.call(arguments, 1);
-  var options = args.pop();
+  const args = [].slice.call(arguments, 1);
+  let options = args.pop();
 
   // Simulate call from template
   if (options instanceof Object) {
@@ -208,19 +213,21 @@ function callHelper(methodName) {
 
 // Takes a bunch of paths and resolved them relatively to the current rendered view
 function resolvePath(/* reserved path, user defined path */) {
-  var paths = [].slice.call(arguments);
+  let paths = [].slice.call(arguments);
 
   // A default path that the host's markdown renderer will know how to resolve by its own
-  var defaultPath = paths.slice(1).join('/');
+  let defaultPath = paths.slice(1).join('/');
   defaultPath = new String(defaultPath);
   // The 'isRelative' flag can be used later on to determine if this is an absolute path
   // or a relative path
   defaultPath.isRelative = true;
 
   // If function is unbound, return default path
-  if (typeof paths[0] != 'string') return defaultPath;
+  if (typeof paths[0] !== 'string') { 
+    return defaultPath; 
+  }
 
-  var repository = require(Paths.npm.package).repository;
+  const repository = require(Paths.npm.package).repository;
 
   // If no repository was defined, or
   // repository type is not git, or
@@ -233,38 +240,36 @@ function resolvePath(/* reserved path, user defined path */) {
 
   // Compose branch path for current release tree
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
-  var releaseTag = Git.activeBranchName() + '@' + Release.format(Release.current());
-  var repositoryUrl = repository.url.replace('.git', '');
-  var branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
-  var protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
-  var branchPath = '/' + branchUrl.substr(protocol.length);
+  const releaseTag = `${Git.activeBranchName()}@${Release.format(Release.current())}`;
+  const repositoryUrl = repository.url.replace('.git', '');
+  const branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
+  const protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
+  const branchPath = `/${branchUrl.substr(protocol.length)}`;
 
   // If we use tilde (~) at the beginning of the path, we will be referenced to the
   // repo's root URL. This is useful when we want to compose links which are
   // completely disconnected from the current state, like commits, issues and PRs
-  paths = paths.map(function (path) {
-    return path.replace(/~/g, Path.resolve(branchPath, '../..'));
-  });
+  paths = paths.map(path => path.replace(/~/g, Path.resolve(branchPath, '../..')));
 
   // Resolve full path
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
   // /manuals/views/step1.md
   paths.unshift(branchPath);
-  return protocol + Path.resolve.apply(Path, paths).substr(1);
+  return protocol + Path.resolve(...paths).substr(1);
 }
 
 
 module.exports = Utils.extend(handlebars, {
-  overwriteTemplateFile: overwriteTemplateFile,
-  renderTemplateFile: renderTemplateFile,
-  renderTemplate: renderTemplate,
-  registerHelper: registerHelper,
-  registerPartial: registerPartial,
-  registerTransformation: registerTransformation,
+  overwriteTemplateFile,
+  renderTemplateFile,
+  renderTemplate,
+  registerHelper,
+  registerPartial,
+  registerTransformation,
   // This should be set whenever we're in a helper scope
   call: callHelper,
   // Should be bound by the `renderTemplate` method
-  resolve: resolvePath.bind(null, null)
+  resolve: resolvePath.bind(null, null),
 });
 
 // Built-in helpers and partials

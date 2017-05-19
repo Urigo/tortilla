@@ -57,7 +57,9 @@ function translate() {
 
 // Any translation would be done using the provided locale
 function scopeLanguage(language, fn) {
-  if (!language) return fn();
+  if (!language) {
+    return fn();
+  }
 
   const oldLanguage = i18n.translator.language;
 

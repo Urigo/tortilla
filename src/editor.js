@@ -13,7 +13,9 @@ const Step = require('./step');
  */
 
 (function () {
-  if (require.main !== module) return;
+  if (require.main !== module) {
+    return;
+  }
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
@@ -54,7 +56,9 @@ function editStep(operations) {
   operations[0].method = 'edit';
 
   // Probably editing the recent step in which case no sortments are needed
-  if (operations.length <= 1) return;
+  if (operations.length <= 1) {
+    return;
+  }
 
   // Prepare meta-data for upcoming sortments
   const descriptor = Step.descriptor(operations[0].message);
@@ -63,9 +67,7 @@ function editStep(operations) {
   if (descriptor) {
     LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
     LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
-  }
-  // Probably root commit
-  else {
+  } else { // Probably root commit
     LocalStorage.setItem('REBASE_OLD_STEP', 'root');
     LocalStorage.setItem('REBASE_NEW_STEP', 'root');
   }
@@ -96,7 +98,9 @@ function sortSteps(operations) {
   operations.slice().some((operation, index) => {
     const currStepDescriptor = Step.descriptor(operation.message);
     // Skip commits which are not step commits
-    if (!currStepDescriptor) return;
+    if (!currStepDescriptor) {
+      return;
+    }
 
     const currStepSplit = currStepDescriptor.number.split('.');
     const currSuperStep = currStepSplit[0];
@@ -140,7 +144,9 @@ function sortSteps(operations) {
 // Reword the last step in the rebase file
 function rewordStep(operations, message) {
   const argv = [Paths.tortilla.rebase, 'reword'];
-  if (message) argv.push(`"${message}"`);
+  if (message) {
+    argv.push(`"${message}"`);
+  }
 
   // Replace original message with the provided message
   operations.splice(1, 0, {
@@ -161,7 +167,9 @@ function renderManuals(operations) {
 
   operations.slice(offset).forEach((operation, index) => {
     const stepDescriptor = Step.superDescriptor(operation.message);
-    if (!stepDescriptor) return;
+    if (!stepDescriptor) {
+      return;
+    }
 
     // Render step manual file
     operations.splice(index + ++offset, 0, {
@@ -189,7 +197,9 @@ function getStepLimit(oldStep, newStep) {
 
   if (oldSuperStep == newSuperStep) {
     // 1.1, 1.2 or 1.2, 1.1 or 1.1 or 1.1, 1
-    if (oldSubStep) return oldSuperStep;
+    if (oldSubStep) {
+      return oldSuperStep;
+    }
     // 1, 1.1
     return Infinity;
   }
@@ -211,7 +221,9 @@ function getStepLimit(oldStep, newStep) {
 // Convert rebase file content to operations array
 function disassemblyOperations(rebaseFileContent) {
   const operations = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
-  if (!operations) return;
+  if (!operations) {
+    return;
+  }
 
   return operations.map((line) => {
     const split = line.split(' ');

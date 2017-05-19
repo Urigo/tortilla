@@ -13,7 +13,9 @@ const Utils = require('./utils');
  */
 
 (function () {
-  if (require.main !== module) return;
+  if (require.main !== module) {
+    return;
+  }
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_'],
@@ -25,8 +27,12 @@ const Utils = require('./utils');
   const all = argv.all;
   const root = argv.root;
 
-  if (!step && all) step = 'all';
-  if (!step && root) step = 'root';
+  if (!step && all) {
+    step = 'all';
+  }
+  if (!step && root) {
+    step = 'root';
+  }
 
   switch (method) {
     case 'render': return renderManual(step);
@@ -37,10 +43,10 @@ const Utils = require('./utils');
 function renderManual(step) {
   if (step) {
     const isSuperStep = !step.split('.')[1];
-    if (!isSuperStep) throw TypeError('Provided step must be a super step');
-  }
-  // Grab recent super step by default
-  else {
+    if (!isSuperStep) {
+      throw TypeError('Provided step must be a super step');
+    }
+  } else { // Grab recent super step by default
     const superMessage = Step.recentSuperCommit('%s');
     step = superMessage ? Step.descriptor(superMessage).number : 'root';
   }
@@ -105,12 +111,16 @@ function renderManual(step) {
     Git(['add', manualViewPath]);
 
     // The following code is dedicated for locale-free manuals
-    if (locale) return;
+    if (locale) {
+      return;
+    }
 
     const symlinkPath = Path.resolve(Paths.manuals.views, 'root.md');
 
     // If this is the root step, create a symlink to README.md if not yet exists
-    if (step != 'root' || Utils.exists(symlinkPath)) return;
+    if (step != 'root' || Utils.exists(symlinkPath)) {
+      return;
+    }
 
     const relativeSymlink = Path.relative(Path.dirname(symlinkPath), manualViewPath);
     Fs.symlinkSync(relativeSymlink, symlinkPath);
@@ -124,7 +134,9 @@ function renderManual(step) {
   });
 
   // Continue if should
-  if (shouldContinue) Git.print(['rebase', '--continue']);
+  if (shouldContinue) {
+    Git.print(['rebase', '--continue']);
+  }
 }
 
 // Renders manual template into informative view
@@ -161,9 +173,13 @@ function getManualViewPath(step, locale) {
   const fileName = step == 'root' ? 'root.md' : (`step${step}.md`);
 
   // If sub-dir exists, return its path e.g. manuals/view/medium
-  if (subDir) return Path.resolve(Paths.manuals.views, subDir, locale, fileName);
+  if (subDir) {
+    return Path.resolve(Paths.manuals.views, subDir, locale, fileName);
+  }
   // If we're trying to render root step, return README.md
-  if (step == 'root' && !locale) return Paths.readme;
+  if (step == 'root' && !locale) {
+    return Paths.readme;
+  }
   // Resolve normally e.g. manuals/views/step1.md
   return Path.resolve(Paths.manuals.views, locale, fileName);
 }

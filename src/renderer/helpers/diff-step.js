@@ -98,7 +98,13 @@ Renderer.registerHelper('diffStep', (step, options) => {
 function getMdDiff(file) {
   let fileTitle;
 
-  if (file.new) { fileTitle = `##### ${t('diff.added', { path: file.to })}`; } else if (file.deleted) { fileTitle = `##### ${t('diff.deleted', { path: file.from })}`; } else { fileTitle = `##### ${t('diff.changed', { path: file.from })}`; }
+  if (file.new) {
+    fileTitle = `##### ${t('diff.added', { path: file.to })}`;
+  } else if (file.deleted) {
+    fileTitle = `##### ${t('diff.deleted', { path: file.from })}`;
+  } else {
+    fileTitle = `##### ${t('diff.changed', { path: file.from })}`;
+  }
 
   const mdChunks = file.chunks
     .map(getMdChunk)
@@ -126,7 +132,9 @@ function getMdChunk(chunk) {
 // Gets line in a markdown format for a single change
 function getMdChange(padLength, change) {
   // No newline at end of file
-  if (change.content[0] == '\\') return change.content;
+  if (change.content[0] == '\\') {
+    return change.content;
+  }
 
   let addLineNum = '';
   let delLineNum = '';
@@ -175,7 +183,7 @@ Renderer.registerTransformation('medium', 'diffStep', (view) => {
 
   return view
     .split(/```diff\n|\n```(?!diff)/).map((chunk, index) => {
-      if (index % 2 == 0) return chunk;
+      if (index % 2 == 0) { return chunk; }
 
       const content = Handlebars.escapeExpression(chunk)
         // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic

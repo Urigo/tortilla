@@ -61,7 +61,9 @@ function resolveTree(root, branches) {
 function resolveProject(cwd) {
   if (!cwd) { throw TypeError('A project path must be provided'); }
 
-  if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) return cache[cwd];
+  if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) {
+    return cache[cwd];
+  }
 
   const gitHeads = resolveTree(resolve(cwd, '.git/HEAD'), {
     cherryPick: resolve(cwd, '.git/CHERRY_PICK_HEAD'),

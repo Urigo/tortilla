@@ -59,7 +59,9 @@ function isChildProcessOf(file, argv, offset) {
     // Get the parent process id
     currProcess.pid = Number(getProcessData(currProcess.pid, 'ppid'));
     // The root process'es id is 0 which means we've reached the limit
-    if (!currProcess.pid) return false;
+    if (!currProcess.pid) { 
+      return false; 
+    }
 
     currProcess.argv = getProcessData(currProcess.pid, 'command')
       .split(' ')
@@ -185,7 +187,9 @@ function extend(destination) {
   const sources = [].slice.call(arguments, 1);
 
   sources.forEach((source) => {
-    if (!(source instanceof Object)) return;
+    if (!(source instanceof Object)) { 
+      return; 
+    }
 
     Object.keys(source).forEach((k) => {
       destination[k] = source[k];

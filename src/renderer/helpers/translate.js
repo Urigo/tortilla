@@ -10,7 +10,7 @@ const t = Translator.translate.bind(Translator);
 
 
 Renderer.registerHelper('t', function (path, options) {
-  var options = Utils.extend({}, this, options.hash);
+  options = Utils.extend({}, this, options.hash);
 
   let translation = t(path, options);
 

@@ -93,9 +93,11 @@ function bumpRelease(releaseType, options) {
 
   // Create a tag with the provided message which will reference to HEAD
   // e.g. 'master@1.0.1'
-  if (options.message) { Git.print(['tag', tag, 'HEAD', '-m', options.message]); }
-  // If no message provided, open the editor
-  else { Git.print(['tag', tag, 'HEAD', '-a']); }
+  if (options.message) { 
+    Git.print(['tag', tag, 'HEAD', '-m', options.message]); 
+  } else { // If no message provided, open the editor
+    Git.print(['tag', tag, 'HEAD', '-a']); 
+  }
 
   createDiffReleasesBranch();
   printCurrentRelease();
@@ -121,7 +123,9 @@ function createDiffReleasesBranch() {
   Git(['push', sourceDir, historyBranch], { cwd: destinationDir });
 
   // Pull the newly created project to the branch name above
-  if (Git.tagExists(historyBranch)) Git(['branch', '-D', historyBranch]);
+  if (Git.tagExists(historyBranch)) {
+    Git(['branch', '-D', historyBranch]);
+  }
   Git(['fetch', sourceDir, historyBranch]);
   Git(['branch', historyBranch, 'FETCH_HEAD']);
 
@@ -239,7 +243,9 @@ function getCurrentRelease() {
   // Return potential release, if defined
   const potentialRelease = LocalStorage.getItem('POTENTIAL_RELEASE');
 
-  if (potentialRelease) return JSON.parse(potentialRelease);
+  if (potentialRelease) {
+    return JSON.parse(potentialRelease);
+  }
 
   // If release was yet to be released, assume this is a null release
   return getAllReleases()[0] || {

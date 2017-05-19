@@ -22,13 +22,19 @@ Program
     LocalStorage.assertTortilla(true);
     mode = JSON.parse(mode);
 
-    if (mode) { LocalStorage.setItem('USE_STRICT', true); } else { LocalStorage.removeItem('USE_STRICT'); }
+    if (mode) {
+      LocalStorage.setItem('USE_STRICT', true);
+    } else {
+      LocalStorage.removeItem('USE_STRICT');
+    }
 
     printStrictMode(mode);
   });
 
 function printStrictMode(mode) {
-  if (mode == null) mode = !!LocalStorage.getItem('USE_STRICT');
+  if (mode == null) {
+    mode = !!LocalStorage.getItem('USE_STRICT');
+  }
   const strictStatus = mode ? 'enabled' : 'disabled';
   console.log();
   console.log(`Strict mode is ${strictStatus}`);

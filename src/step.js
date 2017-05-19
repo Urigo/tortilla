@@ -13,7 +13,9 @@ function getRecentCommit(offset, format, grep) {
   }
 
   const argv = [`--grep=${grep}`];
-  if (format) argv.push(`--format=${format}`);
+  if (format) {
+    argv.push(`--format=${format}`);
+  }
 
   return Git.recentCommit(offset, argv);
 }
@@ -91,9 +93,11 @@ function popStep() {
 
   Git.print(['reset', '--hard', 'HEAD~1']);
 
-  if (stepDescriptor)
-    // Meta-data for step editing
-    { LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep()); } else { return console.warn('Removed commit was not a step'); }
+  if (stepDescriptor) { // Meta-data for step editing
+    LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
+  } else {
+    return console.warn('Removed commit was not a step');
+  }
 }
 
 // Finish the current with the provided message and tag it
@@ -118,12 +122,16 @@ function tagStep(message) {
 function getStepBase(step) {
   if (!step) {
     const message = getRecentStepCommit('%s');
-    if (!message) return '--root';
+    if (!message) {
+      return '--root';
+    }
 
     step = getStepDescriptor(message).number;
   }
 
-  if (step === 'root') return '--root';
+  if (step === 'root') {
+    return '--root';
+  }
 
   const hash = Git.recentCommit([
     `--grep=^Step ${step}:`,
@@ -186,7 +194,9 @@ function sortStep(step) {
 function rewordStep(step, message) {
   const base = getStepBase(step);
   const argv = [Paths.tortilla.editor, 'reword'];
-  if (message) argv.push('-m', `"${message}"`);
+  if (message) {
+    argv.push('-m', `"${message}"`);
+  }
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
@@ -198,8 +208,12 @@ function rewordStep(step, message) {
 // Add a new commit of the provided step with the provided message
 function commitStep(step, message, options = {}) {
   const argv = ['commit'];
-  if (message) argv.push('-m', message);
-  if (options.allowEmpty) argv.push('--allow-empty');
+  if (message) {
+    argv.push('-m', message);
+  }
+  if (options.allowEmpty) {
+    argv.push('--allow-empty');
+  }
 
   // Specified step is gonna be used for when forming the commit message
   LocalStorage.setItem('HOOK_STEP', step);
@@ -218,11 +232,15 @@ function commitStep(step, message, options = {}) {
 function getCurrentStep() {
   // Probably root commit
   const recentStepCommit = getRecentStepCommit('%s');
-  if (!recentStepCommit) return 'root';
+  if (!recentStepCommit) {
+    return 'root';
+  }
 
   // Cover unexpected behavior
   const descriptor = getStepDescriptor(recentStepCommit);
-  if (!descriptor) return 'root';
+  if (!descriptor) {
+    return 'root';
+  }
 
   return descriptor.number;
 }
@@ -231,11 +249,15 @@ function getCurrentStep() {
 function getCurrentSuperStep() {
   // Probably root commit
   const recentStepCommit = getRecentSuperStepCommit('%s');
-  if (!recentStepCommit) return 'root';
+  if (!recentStepCommit) {
+    return 'root';
+  }
 
   // Cover unexpected behavior
   const descriptor = getSuperStepDescriptor(recentStepCommit);
-  if (!descriptor) return 'root';
+  if (!descriptor) {
+    return 'root';
+  }
 
   return descriptor.number;
 }
@@ -247,7 +269,9 @@ function getNextStep(offset) {
   const followedByStep = !!stepCommitMessage;
 
   // If no previous steps found return the first one
-  if (!followedByStep) return '1.1';
+  if (!followedByStep) {
+    return '1.1';
+  }
 
   // Fetch data about current step
   const stepDescriptor = getStepDescriptor(stepCommitMessage);
@@ -258,7 +282,9 @@ function getNextStep(offset) {
 
   if (!offset) {
     // If this is a super step return the first sub step of a new step
-    if (isSuperStep) return `${superStepNumber + 1}.${1}`;
+    if (isSuperStep) {
+      return `${superStepNumber + 1}.${1}`;
+    }
     // Else, return the next step as expected
     return `${superStepNumber}.${subStepNumber + 1}`;
   }
@@ -272,13 +298,17 @@ function getNextStep(offset) {
 
   if (isNextSuperStep) {
     // If this is a super step return the next super step right away
-    if (isSuperStep) return (superStepNumber + 1).toString();
+    if (isSuperStep) {
+      return (superStepNumber + 1).toString();
+    }
     // Else, return the current super step
     return superStepNumber.toString();
   }
 
   // If this is a super step return the first sub step of the next step
-  if (isSuperStep) return `${superStepNumber + 1}.${1}`;
+  if (isSuperStep) {
+    return `${superStepNumber + 1}.${1}`;
+  }
   // Else, return the next step as expected
   return `${superStepNumber}.${subStepNumber + 1}`;
 }
@@ -293,7 +323,9 @@ function getNextSuperStep(offset) {
  */
 
 (() => {
-  if (require.main !== module) return;
+  if (require.main !== module) {
+    return;
+  }
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
@@ -306,7 +338,9 @@ function getNextSuperStep(offset) {
   const root = argv.root;
   const allowEmpty = argv['allow-empty'];
 
-  if (!step && root) step = 'root';
+  if (!step && root) {
+    step = 'root';
+  }
 
   const options = {
     allowEmpty,
