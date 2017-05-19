@@ -292,7 +292,7 @@ Initializes Tortilla essentials in the provided project.
 
 For more information see the [manuals](#manuals) section.
 
-**command:** `tortilla render manual [step]`
+**command:** `tortilla manual render [step]`
 
 Renders specified manual view.
 
