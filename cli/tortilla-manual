@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-var Program = require('commander');
-var LocalStorage = require('../src/local-storage');
-var Manual = require('../src/manual');
+const Program = require('commander');
+const LocalStorage = require('../src/local-storage');
+const Manual = require('../src/manual');
 
 /**
   Manual CLI.
@@ -12,7 +12,7 @@ Program
   .description('Render [step] manual to its opposite format')
   .option('--root', 'Render \'README.md\'')
   .option('--all', 'Render all manuals through out history')
-  .action(function (step, options) {
+  .action((step, options) => {
     LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
     step = step || (options.all && 'all');

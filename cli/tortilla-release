@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-var Program = require('commander');
-var LocalStorage = require('../src/local-storage');
-var Release = require('../src/release');
+const Program = require('commander');
+const LocalStorage = require('../src/local-storage');
+const Release = require('../src/release');
 
 /**
   Release CLI.
@@ -11,7 +11,7 @@ Program
   .command('bump <type>')
   .description('Bumps the current release of the tutorial')
   .option('-m, --message [message]', 'A message describing the newly created release')
-  .action(function (type, options) {
+  .action((type, options) => {
     LocalStorage.assertTortilla(true);
     Release.bump(type, options);
   });
@@ -19,7 +19,7 @@ Program
 Program
   .command('current')
   .description('Prints the current release')
-  .action(function () {
+  .action(() => {
     LocalStorage.assertTortilla(true);
     Release.printCurrent();
   });
@@ -28,7 +28,7 @@ Program
   .command('diff <sourceRelease> <destinationRelease>')
   .description('Runs `git diff` between 2 specified releases')
   .allowUnknownOption(true)
-  .action(function (sourceRelease, destinationRelease) {
+  .action((sourceRelease, destinationRelease) => {
     LocalStorage.assertTortilla(true);
     Release.diff(sourceRelease, destinationRelease, process.argv.slice(5));
   });

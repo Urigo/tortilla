@@ -1,5 +1,5 @@
-var Path = require('path');
-var Utils = require('./utils');
+const Path = require('path');
+const Utils = require('./utils');
 
 /**
   It is important to use absolute paths and not relative paths since some helpers
@@ -7,24 +7,24 @@ var Utils = require('./utils');
   therefore this module was created.
  */
 
-var cache = {};
-var resolve = Path.resolve.bind(Path);
+const cache = {};
+const resolve = Path.resolve.bind(Path);
 
-var ascii = resolveTree(resolve(__dirname, 'ascii'), {
-  views: resolve(__dirname, 'ascii/views')
+const ascii = resolveTree(resolve(__dirname, 'ascii'), {
+  views: resolve(__dirname, 'ascii/views'),
 });
 
-var renderer = resolveTree(resolve(__dirname, 'renderer'), {
+const renderer = resolveTree(resolve(__dirname, 'renderer'), {
   helpers: resolve(__dirname, 'renderer/helpers'),
-  templates: resolve(__dirname, 'renderer/templates')
+  templates: resolve(__dirname, 'renderer/templates'),
 });
 
-var translator = resolveTree(resolve(__dirname, 'translator'), {
+const translator = resolveTree(resolve(__dirname, 'translator'), {
   translation: resolve(__dirname, 'translator/translation'),
-  locales: resolve(__dirname, 'translator/locales')
+  locales: resolve(__dirname, 'translator/locales'),
 });
 
-var tortilla = resolveTree(resolve(__dirname, '..'), {
+const tortilla = resolveTree(resolve(__dirname, '..'), {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
@@ -39,9 +39,9 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
   skeleton: 'https://github.com/Urigo/tortilla-skeleton.git',
-  ascii: ascii,
-  renderer: renderer,
-  translator: translator
+  ascii,
+  renderer,
+  translator,
 });
 
 // Makes the root path available in the branches object using a 'resolve()' method
@@ -49,70 +49,71 @@ var tortilla = resolveTree(resolve(__dirname, '..'), {
 function resolveTree(root, branches) {
   branches = branches || {};
 
-  return Object.keys(branches).reduce(function (tree, name) {
+  return Object.keys(branches).reduce((tree, name) => {
     tree[name] = branches[name];
     return tree;
   }, {
-    resolve: Path.resolve.bind(Path, root)
+    resolve: Path.resolve.bind(Path, root),
   });
 }
 
 // Resolves a bunch of paths to a given tortilla project path
 function resolveProject(cwd) {
-  if (!cwd)
-    throw TypeError('A project path must be provided');
+  if (!cwd) { throw TypeError('A project path must be provided'); }
 
-  if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) return cache[cwd];
+  if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) {
+    return cache[cwd];
+  }
 
-  var gitHeads = resolveTree(resolve(cwd, '.git/HEAD'), {
+  const gitHeads = resolveTree(resolve(cwd, '.git/HEAD'), {
     cherryPick: resolve(cwd, '.git/CHERRY_PICK_HEAD'),
     orig: resolve(cwd, '.git/ORIG_HEAD'),
-    revert: resolve(cwd, '.git/REVERT_HEAD')
+    revert: resolve(cwd, '.git/REVERT_HEAD'),
   });
 
-  var gitMessages = {
+  const gitMessages = {
     commit: resolve(cwd, '.git/COMMIT_EDITMSG'),
     merge: resolve(cwd, '.git/MERGE_MSG'),
-    squash: resolve(cwd, '.git/SQUASH_MSG')
+    squash: resolve(cwd, '.git/SQUASH_MSG'),
   };
 
-  var gitRefs = resolveTree(resolve(cwd, '.git/refs'), {
+  const gitRefs = resolveTree(resolve(cwd, '.git/refs'), {
     heads: resolve(cwd, '.git/refs/heads'),
     remotes: resolve(cwd, '.git/refs/remotes'),
-    tags: resolve(cwd, '.git/refs/tags')
+    tags: resolve(cwd, '.git/refs/tags'),
   });
 
-  var git = resolveTree(resolve(cwd, '.git'), {
+  const git = resolveTree(resolve(cwd, '.git'), {
     ignore: resolve(cwd, '.gitignore'),
     hooks: resolve(cwd, '.git/hooks'),
     rebaseApply: resolve(cwd, '.git/rebase-apply'),
     rebaseMerge: resolve(cwd, '.git/rebase-merge'),
     heads: gitHeads,
     messages: gitMessages,
-    refs: gitRefs
+    refs: gitRefs,
   });
 
-  var npm = {
+  const npm = {
     ignore: resolve(cwd, '.npmignore'),
     package: resolve(cwd, 'package.json'),
-    modules: resolve(cwd, 'node_modules')
+    modules: resolve(cwd, 'node_modules'),
   };
 
-  var manuals = resolveTree(resolve(cwd, '.tortilla/manuals'), {
+  const manuals = resolveTree(resolve(cwd, '.tortilla/manuals'), {
     templates: resolve(cwd, '.tortilla/manuals/templates'),
-    views: resolve(cwd, '.tortilla/manuals/views')
+    views: resolve(cwd, '.tortilla/manuals/views'),
   });
 
   return cache[cwd] = resolveTree(cwd, {
     readme: resolve(cwd, 'README.md'),
     locales: resolve(cwd, '.tortilla/locales'),
     storage: resolve(cwd, '.git/.tortilla'),
-    manuals: manuals,
-    tortilla: tortilla,
-    git: git,
-    npm: npm,
-    resolveTree: resolveTree,
-    resolveProject: resolveProject
+    manuals,
+    tortilla,
+    git,
+    npm,
+    resolveTree,
+    resolveProject,
   });
 }
 

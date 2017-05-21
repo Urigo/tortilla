@@ -1,10 +1,10 @@
-var Renderer = require('..');
-var Handlebars = require('handlebars');
-var ParseDiff = require('parse-diff');
-var Git = require('../../git');
-var Step = require('../../step');
-var Translator = require('../../translator');
-var Utils = require('../../utils');
+const Renderer = require('..');
+const Handlebars = require('handlebars');
+const ParseDiff = require('parse-diff');
+const Git = require('../../git');
+const Step = require('../../step');
+const Translator = require('../../translator');
+const Utils = require('../../utils');
 
 /**
   Renders step diff in a pretty markdown format. For example {{{ diffStep 1.1 }}}
@@ -36,25 +36,22 @@ var Utils = require('../../utils');
   very simple stuff
  */
 
-var t = Translator.translate.bind(Translator);
+const t = Translator.translate.bind(Translator);
 
 
-Renderer.registerHelper('diffStep', function (step, options) {
-  var pattern;
+Renderer.registerHelper('diffStep', (step, options) => {
+  let pattern;
 
   // Will print diff of multiple specified files
   // e.g. files="foo/a, bar/b"
-  if (options.hash.files)
-    pattern = new RegExp(options.hash.files
-      .replace(/\s*,\s*/g, '|')
-      .replace(/\./g, '\\.')
-    );
-  // Will print diff of all possible files
-  else
+  if (options.hash.files) {
+    pattern = new RegExp(options.hash.files.replace(/\s*,\s*/g, '|').replace(/\./g, '\\.'));
+  } else { // Will print diff of all possible files
     pattern = /.*/;
+  }
 
-  var stepData = Git.recentCommit([
-    '--grep=^Step ' + step + ':', '--format=%h %s'
+  const stepData = Git.recentCommit([
+    `--grep=^Step ${step}:`, '--format=%h %s',
   ]).split(' ')
     .filter(Boolean);
 
@@ -62,68 +59,67 @@ Renderer.registerHelper('diffStep', function (step, options) {
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
   if (!stepData.length) {
-    return '#### ' + t('step.commit.missing', { number: step });
+    return `#### ${t('step.commit.missing', { number: step })}`;
   }
 
-  var stepHash = stepData[0];
-  var stepMessage = stepData.slice(1).join(' ');
-  var commitReference = Renderer.resolve('~/commit', stepHash);
+  const stepHash = stepData[0];
+  let stepMessage = stepData.slice(1).join(' ');
+  const commitReference = Renderer.resolve('~/commit', stepHash);
 
   // Translate step message, if at all
   stepMessage = Renderer.call('stepMessage', {
-    commitMessage: stepMessage
+    commitMessage: stepMessage,
   });
 
   // If this is a relative path, we won't reference the commit
   if (commitReference.isRelative) {
-    var stepTitle = '#### ' + stepMessage;
-  }
-  else {
-    var stepTitle = '#### [' + stepMessage + '](' + commitReference + ')';
+    var stepTitle = `#### ${stepMessage}`;
+  } else {
+    var stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
-  var diff = Git(['diff', stepHash + '^', stepHash]);
+  const diff = Git(['diff', `${stepHash}^`, stepHash]);
 
   // Convert diff string to json format
-  var files = ParseDiff(diff).filter(function (file) {
+  const files = ParseDiff(diff).filter(file =>
     // Filter files which match the given pattern
-    return file.from.match(pattern) || file.to.match(pattern);
-  });
+     file.from.match(pattern) || file.to.match(pattern));
 
-  var mdDiffs = files
+  const mdDiffs = files
     .map(getMdDiff)
     .join('\n\n');
 
-  return stepTitle + '\n\n' + mdDiffs;
+  return `${stepTitle}\n\n${mdDiffs}`;
 }, {
-  mdWrap: true
+  mdWrap: true,
 });
 
 // Gets all diff chunks in a markdown format for a single file
 function getMdDiff(file) {
-  var fileTitle;
+  let fileTitle;
 
-  if (file.new)
-    fileTitle = '##### ' + t('diff.added', { path: file.to });
-  else if (file.deleted)
-    fileTitle = '##### ' + t('diff.deleted', { path: file.from });
-  else
-    fileTitle = '##### ' + t('diff.changed', { path: file.from });
+  if (file.new) {
+    fileTitle = `##### ${t('diff.added', { path: file.to })}`;
+  } else if (file.deleted) {
+    fileTitle = `##### ${t('diff.deleted', { path: file.from })}`;
+  } else {
+    fileTitle = `##### ${t('diff.changed', { path: file.from })}`;
+  }
 
-  var mdChunks = file.chunks
+  const mdChunks = file.chunks
     .map(getMdChunk)
     .join('\n');
 
-  return fileTitle + '\n' + mdChunks;
+  return `${fileTitle}\n${mdChunks}`;
 }
 
 // Gets diff in a markdown format for a single chunk
 function getMdChunk(chunk) {
   // Grab chunk data since it's followed by irrelevant content
-  var chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
-  var padLength = getPadLength(chunk.changes);
+  const chunkData = chunk.content.match(/^@@\s+\-(\d+),?(\d+)?\s+\+(\d+),?(\d+)?\s@@/)[0];
+  const padLength = getPadLength(chunk.changes);
 
-  var mdChanges = chunk.changes
+  const mdChanges = chunk.changes
     .map(getMdChange.bind(null, padLength))
     .join('\n')
     // Replace EOF flag with a pretty format and append it to the recent line
@@ -136,11 +132,13 @@ function getMdChunk(chunk) {
 // Gets line in a markdown format for a single change
 function getMdChange(padLength, change) {
   // No newline at end of file
-  if (change.content[0] == '\\') return change.content;
+  if (change.content[0] == '\\') {
+    return change.content;
+  }
 
-  var addLineNum = '';
-  var delLineNum = '';
-  var sign = '';
+  let addLineNum = '';
+  let delLineNum = '';
+  let sign = '';
 
   switch (change.type) {
     case 'add':
@@ -169,29 +167,25 @@ function getMdChange(padLength, change) {
 
 // Gets the pad length by the length of the max line number in changes
 function getPadLength(changes) {
-  var maxLineNumber = changes.reduce(function (maxLineNumber, change) {
-    return Math.max(maxLineNumber,
-      change.ln || 0,
-      change.ln1 || 0,
-      change.ln2 || 0
-    );
-  }, 1);
+  const maxLineNumber = changes.reduce((maxLineNumber, change) => (
+    Math.max(maxLineNumber, change.ln || 0, change.ln1 || 0, change.ln2 || 0)
+  ), 1);
 
   return maxLineNumber.toString().length;
 }
 
-Renderer.registerTransformation('medium', 'diffStep', function (view) {
-  var diffBlock = [
+Renderer.registerTransformation('medium', 'diffStep', (view) => {
+  const diffBlock = [
     '<i>╔══════╗</i>',
     '<i>║ diff ║</i>',
-    '<i>╚══════╝</i>'
+    '<i>╚══════╝</i>',
   ].join('\n');
 
   return view
-    .split(/```diff\n|\n```(?!diff)/).map(function (chunk, index) {
-      if (index % 2 == 0) return chunk;
+    .split(/```diff\n|\n```(?!diff)/).map((chunk, index) => {
+      if (index % 2 == 0) { return chunk; }
 
-      var content = Handlebars.escapeExpression(chunk)
+      const content = Handlebars.escapeExpression(chunk)
         // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic
         .replace(/^@.+$/m, diffBlock)
         // Remove removals
@@ -200,7 +194,7 @@ Renderer.registerTransformation('medium', 'diffStep', function (view) {
         .replace(/^(\+.+)$/mg, '<b>$&</b>');
 
       // Wrap with <pre> tag
-      return '<pre>\n' + content + '\n</pre>';
+      return `<pre>\n${content}\n</pre>`;
     })
     .join('');
 });

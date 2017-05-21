@@ -1,8 +1,8 @@
-var LocalStorage = require('node-localstorage').LocalStorage;
-var Minimist = require('minimist');
-var LocalCache = require('./local-cache');
-var Paths = require('./paths');
-var Utils = require('./utils');
+const LocalStorage = require('node-localstorage').LocalStorage;
+const Minimist = require('minimist');
+const LocalCache = require('./local-cache');
+const Paths = require('./paths');
+const Utils = require('./utils');
 
 /**
   A local storage whose storage dir is located under '.git/.tortilla'.
@@ -27,56 +27,68 @@ var Utils = require('./utils');
     which have just been bumed.
  */
 
-var localStorage = createLocalStorage(Paths.resolve());
-
-
-(function () {
-  if (require.main !== module) return;
-
-  var argv = Minimist(process.argv.slice(2), {
-    string: ['_']
-  });
-
-  var method = argv._[0];
-  var key = argv._[1];
-  var value = argv._[2];
-
-  switch (method) {
-    case 'set': return localStorage.setItem(key, value);
-    case 'remove': return localStorage.removeItem(key);
-  }
-})();
+let localStorage;
 
 // Creates a new instance of local-storage
 function createLocalStorage(cwd) {
-  var paths = cwd.resolve ? cwd : Paths.resolveProject(cwd);
+  const paths = cwd.resolve ? cwd : Paths.resolveProject(cwd);
 
   // If git dir exists use it as a local-storage dir
-  if (Utils.exists(paths.git.resolve()))
+  if (Utils.exists(paths.git.resolve())) {
     localStorage = new LocalStorage(paths.storage);
-  // Else, create local cache
-  else
+  } else { // Else, create local cache
     localStorage = new LocalCache();
+  }
 
   return Utils.extend(localStorage, {
     create: createLocalStorage,
-    assertTortilla: assertTortilla
+    assertTortilla,
   });
 }
 
 // Asserts if tortilla is initialized or not
 function assertTortilla(exists) {
-  var isInit = this.getItem('INIT');
+  const isInit = this.getItem('INIT');
 
-  if (exists && !isInit) throw Error([
-    'Tortilla essentials must be initialized!',
-    'Please run `$ tortilla init` before proceeding.'
-  ].join('\n'));
+  if (exists && !isInit) {
+    throw Error([
+      'Tortilla essentials must be initialized!',
+      'Please run `$ tortilla init` before proceeding.',
+    ].join('\n'));
+  }
 
-  if (!exists && isInit) throw Error([
-    'Tortilla essentials are already initialized!'
-  ].join('\n'));
+  if (!exists && isInit) {
+    throw Error([
+      'Tortilla essentials are already initialized!',
+    ].join('\n'));
+  }
 }
 
+localStorage = createLocalStorage(Paths.resolve());
+
+(() => {
+  if (require.main !== module) {
+    return;
+  }
+
+  const argv = Minimist(process.argv.slice(2), {
+    string: ['_'],
+  });
+
+  const method = argv._[0];
+  const key = argv._[1];
+  const value = argv._[2];
+
+  switch (method) {
+    case 'set':
+      localStorage.setItem(key, value);
+      break;
+    case 'remove':
+      localStorage.removeItem(key);
+      break;
+    default:
+      break;
+  }
+})();
 
 module.exports = localStorage;

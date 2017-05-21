@@ -1,11 +1,11 @@
-var i18n = require('i18next');
-var Path = require('path');
-var Paths = require('../paths');
-var Utils = require('../utils');
-var Translation = require('./translation');
+const i18n = require('i18next');
+const Path = require('path');
+const Paths = require('../paths');
+const Utils = require('../utils');
+const Translation = require('./translation');
 
 
-var superTranslate = i18n.t.bind(i18n);
+const superTranslate = i18n.t.bind(i18n);
 
 
 (function () {
@@ -14,10 +14,10 @@ var superTranslate = i18n.t.bind(i18n);
     initImmediate: true,
     resources: {
       en: { translation: getTranslationResource('en') },
-      he: { translation: getTranslationResource('he') }
-    }
+      he: { translation: getTranslationResource('he') },
+    },
   });
-})();
+}());
 
 // Gets a locale and returns the full resource object
 function getTranslationResource(locale) {
@@ -29,20 +29,19 @@ function getTranslationResource(locale) {
 
   paths = [
     // Static locales
-    Path.resolve(paths.tortilla.translator.locales, locale + '.json'),
+    Path.resolve(paths.tortilla.translator.locales, `${locale}.json`),
     // User defined locales
-    Path.resolve(paths.locales, locale + '.json')
+    Path.resolve(paths.locales, `${locale}.json`),
   ];
 
   // Unite all resources and return a single one
-  return paths.reduce(function (resource, path) {
+  return paths.reduce((resource, path) => {
     // Clear cache so files can be properly reloaded
     try {
       delete require.cache[require.resolve(path)];
-      var extension = require(path);
+      const extension = require(path);
       Utils.merge(resource, extension);
-    }
-    catch (err) {
+    } catch (err) {
     }
 
     return resource;
@@ -51,22 +50,23 @@ function getTranslationResource(locale) {
 
 // Returns i18n translation wrapped with some extra functionality
 function translate() {
-  var result = superTranslate.apply(null, arguments);
+  const result = superTranslate(...arguments);
 
   return result && new Translation(result);
 }
 
 // Any translation would be done using the provided locale
 function scopeLanguage(language, fn) {
-  if (!language) return fn();
+  if (!language) {
+    return fn();
+  }
 
-  var oldLanguage = i18n.translator.language;
+  const oldLanguage = i18n.translator.language;
 
   try {
     i18n.translator.changeLanguage(language);
     fn();
-  }
-  finally {
+  } finally {
     i18n.translator.changeLanguage(oldLanguage);
   }
 }
@@ -74,6 +74,6 @@ function scopeLanguage(language, fn) {
 
 // Shallow cloning i18n so it won't be changed
 module.exports = Utils.extend(i18n, {
-  translate: translate,
-  scopeLanguage: scopeLanguage
+  translate,
+  scopeLanguage,
 });

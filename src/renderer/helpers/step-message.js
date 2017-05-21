@@ -1,24 +1,24 @@
-var Renderer = require('..');
-var Step = require('../../step');
-var Translator = require('../../translator');
-var Utils = require('../../utils');
+const Renderer = require('..');
+const Step = require('../../step');
+const Translator = require('../../translator');
+const Utils = require('../../utils');
 
 /**
   Renders a step's commit message including its translation
  */
 
-var t = Translator.translate.bind(Translator);
+const t = Translator.translate.bind(Translator);
 
 
 Renderer.registerHelper('stepMessage', function (options) {
-  var params = Utils.extend({}, this, options.hash);
-  var commitMessage = params.commitMessage;
+  const params = Utils.extend({}, this, options.hash);
+  const commitMessage = params.commitMessage;
 
-  var stepDescriptor = Step.descriptor(commitMessage) || {};
-  var stepNumber = stepDescriptor.number || 'root';
-  stepDescriptor.message = t('step:' + stepNumber, {
+  const stepDescriptor = Step.descriptor(commitMessage) || {};
+  const stepNumber = stepDescriptor.number || 'root';
+  stepDescriptor.message = t(`step:${stepNumber}`, {
     defaultValue: stepDescriptor.message || commitMessage,
-    keySeparator: ':'
+    keySeparator: ':',
   });
 
   return Renderer.renderTemplateFile('step-message', stepDescriptor);
