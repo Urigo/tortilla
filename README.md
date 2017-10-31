@@ -339,7 +339,7 @@ Mark this step as finished and move on to the next one. This will increase the i
 
 **command:** `tortilla step edit [step]`
 
-Edits the specified step. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
+Edits the specified step/s. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
 
 - *option:* `--root` - Edit the root step (initial commit).
 

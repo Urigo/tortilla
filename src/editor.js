@@ -23,7 +23,8 @@ const Step = require('./step');
 
   // The first argument will be the rebase file path provided to us by git
   const method = argv._[0];
-  const rebaseFilePath = argv._[1];
+  const steps = argv._.slice(1, -1);
+  const rebaseFilePath = argv._[argv._.length - 1];
   const message = argv.message || argv.m;
   const prod = argv.prod;
   const dev = argv.dev;
@@ -41,7 +42,7 @@ const Step = require('./step');
   // The methods will manipulate the operations array.
   switch (method) {
     case 'edit': editStep(operations); break;
-    case 'sort': sortSteps(operations); break;
+    case 'sort': sortSteps(operations, steps); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
   }
@@ -52,8 +53,36 @@ const Step = require('./step');
 }());
 
 // Edit the last step in the rebase file
-function editStep(operations) {
-  operations[0].method = 'edit';
+function editStep(operations, steps) {
+  if (!steps) {
+    const descriptor = Step.descriptor(operations[0].message);
+    const step = (descriptor && descriptor.number) || 'root';
+
+    steps = [step];
+  }
+
+  // This way we can store data on each step string
+  steps = steps.map(step => new String(step));
+
+  // Edit each commit which is relevant to the specified steps
+  steps.forEach((step) => {
+    if (step == 'root') {
+      const operation = operations[0];
+      operation.method = 'edit';
+      step.operation = operation;
+    }
+    else {
+      const operation = operations.find((operation) => {
+        const descriptor = Step.descriptor(operations[0].message);
+        return descriptor && descriptor.number == step;
+      });
+
+      if (!operation) return;
+
+      operation.method = 'edit';
+      step.operation = operation;
+    }
+  });
 
   // Probably editing the recent step in which case no sortments are needed
   if (operations.length <= 1) {
@@ -74,10 +103,19 @@ function editStep(operations) {
 
   const editor = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
 
-  // Once we finish editing our step, sort the rest of the steps accordingly
-  operations.splice(1, 0, {
-    method: 'exec',
-    command: `${editor} git rebase --edit-todo`,
+  // Continue sorting the steps after step editing has been finished
+  steps.forEach((step) => {
+    const operation = step.operation;
+
+    if (!operation) return;
+
+    const index = operations.indexOf(operation);
+
+    // Insert the following operation AFTER the step's operation
+    operations.splice(index + 1, 0, {
+      method: 'exec',
+      command: `${editor} git rebase --edit-todo`,
+    });
   });
 }
 

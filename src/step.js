@@ -144,12 +144,35 @@ function getStepBase(step) {
 }
 
 // Edit the provided step
-function editStep(step) {
-  const base = getStepBase(step);
+function editStep(steps) {
+  if (steps instanceof Array) {
+    steps = steps.slice().sort((a, b) => {
+      const [superA, subA] = a.split('.');
+      const [superB, subB] = a.split('.');
+
+      // Always put the root on top
+      if (a == 'root') {
+        return -1;
+      }
+
+      // Put first steps first
+      return (
+        (superA - superB) ||
+        (subA - superB)
+      );
+    });
+  }
+  // A single step was provided
+  else {
+    steps = [steps];
+  }
+
+  // The would always have to start from the first step
+  const base = getStepBase(steps[0]);
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
-      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} edit`,
+      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} edit ${steps.join(' ')}`,
     },
   });
 }
