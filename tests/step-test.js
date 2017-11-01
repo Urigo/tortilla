@@ -295,6 +295,110 @@ describe('Step', function () {
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.2: target');
     });
+
+    it('should be able to edit multiple steps if specified to', function () {
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+
+      this.tortilla(['step', 'edit', '1.2', '1.4']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.2: target');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.4: target');
+    });
+
+    it('should be able to edit multiple steps in a random order', function () {
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+
+      this.tortilla(['step', 'edit', '1.4', '1.2']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.2: target');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.4: target');
+    });
+
+    it('should be able to edit multiple steps including the root commit', function () {
+      // Keep-empty is not allowed when using the --root flag
+      this.exec('touch', ['1.1']);
+
+      this.git(['add', '1.1']);
+
+      this.tortilla(['step', 'push', '-m', 'target']);
+
+      this.tortilla(['step', 'edit', '1.1', '--root']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      const commitHash = Git.recentCommit(['--format=%H']);
+      const rootHash = Git.rootHash();
+      expect(commitHash).to.equal(rootHash);
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.1: target');
+    });
+
+    it('should re-adjust indicies after editing multiple steps', function () {
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'pop', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+
+      this.tortilla(['step', 'edit', '1.2', '1.4']);
+
+      this.tortilla(['step', 'pop']);
+
+      Git(['rebase', '--continue']);
+
+      this.tortilla(['step', 'push', '-m', 'push', '--allow-empty']);
+
+      Git(['rebase', '--continue']);
+
+      const popMessage = Step.recentCommit('%s', '^Step 1.2');
+      expect(popMessage).to.equal('Step 1.2: dummy');
+
+      const pushMessage = Step.recentCommit('%s', '^Step 1.4');
+      expect(pushMessage).to.equal('Step 1.4: push');
+    });
   });
 
   describe('sort()', function () {

@@ -41,8 +41,8 @@ const Step = require('./step');
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
   switch (method) {
-    case 'edit': editStep(operations); break;
-    case 'sort': sortSteps(operations, steps); break;
+    case 'edit': editStep(operations, steps); break;
+    case 'sort': sortSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
   }
@@ -73,7 +73,7 @@ function editStep(operations, steps) {
     }
     else {
       const operation = operations.find((operation) => {
-        const descriptor = Step.descriptor(operations[0].message);
+        const descriptor = Step.descriptor(operation.message);
         return descriptor && descriptor.number == step;
       });
 

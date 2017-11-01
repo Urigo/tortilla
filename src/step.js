@@ -8,6 +8,7 @@ const Paths = require('./paths');
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
   if (typeof offset === 'string') {
+    grep = format;
     format = offset;
     offset = 0;
   }
@@ -148,17 +149,21 @@ function editStep(steps) {
   if (steps instanceof Array) {
     steps = steps.slice().sort((a, b) => {
       const [superA, subA] = a.split('.');
-      const [superB, subB] = a.split('.');
+      const [superB, subB] = b.split('.');
 
       // Always put the root on top
       if (a == 'root') {
         return -1;
       }
 
+      if (b == 'root') {
+        return 1;
+      }
+
       // Put first steps first
       return (
         (superA - superB) ||
-        (subA - superB)
+        (subA - subB)
       );
     });
   }
