@@ -377,6 +377,8 @@ describe('Step', function () {
     });
 
     it('should re-adjust indicies after editing multiple steps', function () {
+      this.slow(10000);
+
       this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       this.tortilla(['step', 'push', '-m', 'pop', '--allow-empty']);
       this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);

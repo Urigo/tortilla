@@ -1,10 +1,11 @@
 const Fs = require('fs-extra');
-const Path = require('path');
 const Minimist = require('minimist');
+const Path = require('path');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
 const Step = require('./step');
+const Utils = require('./utils');
 
 /**
   This is the editor for interactive rebases and amended commits. Instead of opening
@@ -42,6 +43,7 @@ const Step = require('./step');
   // The methods will manipulate the operations array.
   switch (method) {
     case 'edit': editStep(operations, steps); break;
+    case 'edit-head': editHead(operations); break;
     case 'sort': sortSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
@@ -131,6 +133,7 @@ function sortSteps(operations) {
   }
 
   const stepLimit = getStepLimit(oldStep, newStep);
+  let editFlag = false;
   let offset = 0;
 
   operations.slice().some((operation, index) => {
@@ -146,7 +149,7 @@ function sortSteps(operations) {
 
     // If limit reached
     if (currSuperStep > stepLimit) {
-      // prepend local storage item setting operation, this would be a flag which will be
+      // Prepend local storage item setting operation, this would be a flag which will be
       // used in git-hooks
       operations.splice(index + offset++, 0, {
         method: 'exec',
@@ -165,6 +168,36 @@ function sortSteps(operations) {
       });
     }
 
+    // If another step edit is pending, we will first perform the reword and only then
+    // we will proceed to the editing itself, since we wanna ensure that all the previous
+    // step indexes are already sorted
+    if (operation.method == 'edit') {
+      // Pick BEFORE edit
+      operations.splice(index + offset++, 0, Object.assign({}, operation, {
+        method: 'pick'
+      }));
+
+      // Update commit's step number
+      operations.splice(index + offset++, 0, {
+        method: 'exec',
+        command: `GIT_EDITOR=true node ${Paths.tortilla.rebase} reword`,
+      });
+
+      const editor = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} edit-head"`;
+
+      // Replace edited step with the reworded one
+      operations.splice(index + offset++, 0, {
+        method: 'exec',
+        command: `${editor} git rebase --edit-todo`,
+      });
+
+      operations.splice(index + offset, 1);
+
+      // The sorting process should continue after we've finished editing the step, for now
+      // we will need to abort the current sorting process
+      return editFlag = true;
+    }
+
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
@@ -172,10 +205,33 @@ function sortSteps(operations) {
     });
   });
 
-  // Remove hooks storage items so it won't affect post-rebase operations
+  // Remove hooks storage items so it won't affect post-rebase operations, but only if
+  // there are no any further step edits pending
+  if (!editFlag) {
+    operations.push({
+      method: 'exec',
+      command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
+    });
+  }
+}
+
+// Edit the commit which is presented as the current HEAD
+function editHead(operations) {
+  const head = Git.recentCommit(['--format=%h m']).split(' ');
+  const hash = head.shift();
+  const message = head.join(' ');
+
+  // Remove head commit so there won't be any conflicts
   operations.push({
     method: 'exec',
-    command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
+    command: 'git reset --hard HEAD~1'
+  });
+
+  // Re-pick and edit head commit
+  operations.push({
+    method: 'edit',
+    hash,
+    message
   });
 }
 

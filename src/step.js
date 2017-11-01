@@ -13,9 +13,14 @@ function getRecentCommit(offset, format, grep) {
     offset = 0;
   }
 
-  const argv = [`--grep=${grep}`];
+  const argv = [];
+
   if (format) {
     argv.push(`--format=${format}`);
+  }
+
+  if (grep) {
+    argv.push(`--grep=${grep}`);
   }
 
   return Git.recentCommit(offset, argv);
