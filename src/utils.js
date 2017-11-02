@@ -299,6 +299,32 @@ function delegateProperties(destination, source, modifiers) {
   return destination;
 }
 
+function isEqual(objA, objB) {
+  if (objA === objB) return true;
+  if (typeof objA != typeof objB) return false;
+  if (!(objA instanceof Object) || !(objB instanceof Object)) return false;
+  if (objA.__proto__ !== objB.__proto__) return false;
+
+  const objAKeys = Object.keys(objA);
+  const objBKeys = Object.keys(objB);
+
+  if (objAKeys.length != objBKeys.length) return;
+
+  objAKeys.sort();
+  objBKeys.sort();
+
+  return objAKeys.every((keyA, index) => {
+    const keyB = objBKeys[index];
+
+    if (keyA != keyB) return false;
+
+    const valueA = objA[keyA];
+    const valueB = objB[keyB];
+
+    return isEqual(valueA, valueB);
+  });
+}
+
 
 module.exports = {
   cwd,
@@ -320,4 +346,5 @@ module.exports = {
   upperFirst,
   words: splitWords,
   delegateProperties,
+  isEqual,
 };

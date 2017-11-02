@@ -8,13 +8,19 @@ const Paths = require('./paths');
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
   if (typeof offset === 'string') {
+    grep = format;
     format = offset;
     offset = 0;
   }
 
-  const argv = [`--grep=${grep}`];
+  const argv = [];
+
   if (format) {
     argv.push(`--format=${format}`);
+  }
+
+  if (grep) {
+    argv.push(`--grep=${grep}`);
   }
 
   return Git.recentCommit(offset, argv);
@@ -144,12 +150,39 @@ function getStepBase(step) {
 }
 
 // Edit the provided step
-function editStep(step) {
-  const base = getStepBase(step);
+function editStep(steps) {
+  if (steps instanceof Array) {
+    steps = steps.slice().sort((a, b) => {
+      const [superA, subA] = a.split('.');
+      const [superB, subB] = b.split('.');
+
+      // Always put the root on top
+      if (a == 'root') {
+        return -1;
+      }
+
+      if (b == 'root') {
+        return 1;
+      }
+
+      // Put first steps first
+      return (
+        (superA - superB) ||
+        (subA - subB)
+      );
+    });
+  }
+  // A single step was provided
+  else {
+    steps = [steps];
+  }
+
+  // The would always have to start from the first step
+  const base = getStepBase(steps[0]);
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
-      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} edit`,
+      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} edit ${steps.join(' ')}`,
     },
   });
 }

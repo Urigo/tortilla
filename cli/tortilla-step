@@ -35,13 +35,17 @@ Program
   });
 
 Program
-  .command('edit [step]')
-  .description('Edits the specified step')
+  .command('edit [steps...]')
+  .description('Edits the specified step/s')
   .option('--root [root]', 'Edit the root step (initial commit)')
-  .action((step, options) => {
+  .action((steps, options) => {
     LocalStorage.assertTortilla(true);
-    step = step || (options.root && 'root');
-    Step.edit(step);
+
+    if (options.root) {
+      steps.unshift('root')
+    }
+
+    Step.edit(steps);
   });
 
 Program
