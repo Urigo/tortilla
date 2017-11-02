@@ -217,6 +217,14 @@ function sortSteps(operations) {
 
 // Edit the commit which is presented as the current HEAD
 function editHead(operations) {
+  // Prepare meta-data for upcoming sortments
+  const descriptor = Step.descriptor(operations[0].message);
+
+  // Descriptor should always exist, but just in case
+  if (descriptor) {
+    LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+  }
+
   const head = Git.recentCommit(['--format=%h m']).split(' ');
   const hash = head.shift();
   const message = head.join(' ');
