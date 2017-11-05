@@ -42,7 +42,7 @@ const exec = Utils.exec;
 
   switch (method) {
     case 'create': return createProject(arg1, options);
-    case 'init': return initializeProject(arg1);
+    case 'ensure': return ensureTortilla(arg1);
   }
 }());
 
