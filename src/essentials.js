@@ -71,7 +71,7 @@ function createProject(projectName, options) {
   // Clone skeleton
   Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
   // Checkout desired release
-  Git.print(['checkout', '0.0.1-alpha.4'], { cwd: tmpDir.name });
+  Git(['checkout', '0.0.1-alpha.4'], { cwd: tmpDir.name });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
   Fs.removeSync(tmpPaths.git.resolve());
@@ -149,11 +149,28 @@ function ensureTortilla(projectDir) {
     Fs.chmodSync(hookPath, '755');
   });
 
+  const submodules = Git.submodules();
+
+  submodules.forEach((submodule) => {
+    // Initialize all submodule
+    Git.print(['submodule', 'init', submodule]);
+
+    // We want all git operations to perform under the submodule directory
+    Utils.scopeEnv(() => {
+      ensureTortilla(submodule);
+    }, {
+      TORTILLA_CWD: submodule,
+    });
+  });
+
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
   localStorage.setItem('USE_STRICT', true);
 
-  Ascii.print('ready');
+  // The art should be printed only if the operation finished for all submodules
+  if (!Git.isSubmodule()) {
+    Ascii.print('ready');
+  }
 }
 
 function overwriteTemplateFile(path, scope) {
