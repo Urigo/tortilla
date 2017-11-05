@@ -37,8 +37,9 @@ function tagExists(tag) {
 
 // Get the recent commit by the provided arguments. An offset can be specified which
 // means that the recent commit from several times back can be fetched as well
-function getRecentCommit(offset, argv) {
+function getRecentCommit(offset, argv, options) {
   if (offset instanceof Array) {
+    options = argv;
     argv = offset;
     offset = 0;
   } else {
@@ -49,7 +50,7 @@ function getRecentCommit(offset, argv) {
   const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
 
   argv = ['log', hash, '-1'].concat(argv);
-  return git(argv);
+  return git(argv, options);
 }
 
 // Gets a list of the modified files reported by git matching the provided pattern.
