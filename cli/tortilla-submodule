@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const Program = require('commander');
 const LocalStorage = require('../src/local-storage');
-const Submodule = require('../src/local-storage');
+const Submodule = require('../src/submodule');
 
 /**
   Submodule CLI.
@@ -16,7 +16,7 @@ Program
   });
 
 Program
-  .command('remove <submodules...>')
+  .command('remove [submodules...]')
   .description('Add submodules to the root commit')
   .action((submodules) => {
     LocalStorage.assertTortilla(true);

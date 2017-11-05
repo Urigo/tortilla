@@ -78,45 +78,6 @@ function getRootHash() {
   return git(['rev-list', '--max-parents=0', 'HEAD']);
 }
 
-// Returns a list of all Tortilla submodules
-function listSubmodules() {
-  const root = getRoot();
-
-  if (!root) return [];
-
-  // List all submodules
-  return git([
-    'config', '--file', '.gitmodules', '--name-only', '--get-regexp', 'path'
-  ])
-  // Compose full path
-  .map(() => {
-    return `${root}/${submodule}`;
-  })
-  // Filter only those who has a Tortilla directory
-  .filter((submodulePath) => {
-    const submoduleTortilla = `${submodulePath}/.tortilla`;
-
-    return Utils.exists(submoduleTortilla, 'dir');
-  });
-}
-
-function isSubmodule() {
-  const root = getRoot();
-
-  if (!root) return false;
-
-  // If the directory one level up the root is a git project then it means that
-  // the current directory is a git project as well
-  try {
-    // This command should only work if we're in a git project
-    return !!git(['rev-parse', '--show-toplevel'], {
-      cwd: Path.resolve(root, '..'),
-    });
-  } catch (e) {
-    return false;
-  }
-}
-
 function getRoot() {
   try {
     return git(['rev-parse', '--show-toplevel']);
@@ -136,7 +97,5 @@ module.exports = Utils.extend(git.bind(null), git, {
   stagedFiles: getStagedFiles,
   activeBranchName: getActiveBranchName,
   rootHash: getRootHash,
-  submodules: listSubmodules,
-  isSubmodule,
   root: getRoot,
 });

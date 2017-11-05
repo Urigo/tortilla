@@ -151,6 +151,7 @@ function ensureTortilla(projectDir) {
   });
 
   const submodules = Submodule.list();
+  const root = Git.root();
 
   submodules.forEach((submodule) => {
     // Initialize all submodule
@@ -158,7 +159,7 @@ function ensureTortilla(projectDir) {
 
     // We want all git operations to perform under the submodule directory
     Utils.scopeEnv(() => {
-      ensureTortilla(submodule);
+      ensureTortilla(`${root}/${submodule}`);
     }, {
       TORTILLA_CWD: submodule,
     });

@@ -3,6 +3,9 @@ const Step = require('./step');
 const Utils = require('./utils');
 
 
+const exec = Utils.exec;
+
+
 function addSubmodules(remotes) {
   const rebasing = Git.rebasing();
 
@@ -25,6 +28,8 @@ function addSubmodules(remotes) {
     Git.print(['add', getSubmoduleName(remote)]);
   });
 
+  Git.print(['add', '.gitmodules']);
+
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
     Git.print(['commit', '--amend'], {
@@ -37,7 +42,11 @@ function addSubmodules(remotes) {
 }
 
 // Source: https://github.com/tj/git-extras/blob/master/bin/git-delete-submodule
-function removeSubmodules(submodules = listSubmodules()) {
+function removeSubmodules(submodules) {
+  if (!submodules || submodules.length == 0) {
+    submodules = listSubmodules();
+  }
+
   const rebasing = Git.rebasing();
 
   // Submodule can only be removed from the root commit, therefore in case we're rebasing
@@ -56,16 +65,15 @@ function removeSubmodules(submodules = listSubmodules()) {
 
   submodules.forEach((submodule) => {
     Git.print(['submodule', 'deinit', '-f', submodule]);
-    exec('rmdir', submodule);
+    exec('rmdir', [submodule]);
     exec('rm', ['-rf', `.git/modules/${submodule}`]);
     Git([
-      'config', '--file=.gitmodules', '--remove-section', `submodule."${submodule}"`
+      'config', '--file=.gitmodules', '--remove-section', `submodule.${submodule}`
     ]);
+    Git(['add', '.gitmodules']);
     Git(['rm', '--cached', '-rf', submodule]);
     Git.print(['add', submodule]);
   });
-
-  Git(['add', '.gitmodules']);
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
@@ -83,19 +91,12 @@ function listSubmodules() {
 
   if (!root) return [];
 
-  // List all submodules
   return Git([
     'config', '--file', '.gitmodules', '--name-only', '--get-regexp', 'path'
   ])
-  // Compose full path
-  .map(() => {
-    return `${root}/${submodule}`;
-  })
-  // Filter only those who has a Tortilla directory
-  .filter((submodulePath) => {
-    const submoduleTortilla = `${submodulePath}/.tortilla`;
-
-    return Utils.exists(submoduleTortilla, 'dir');
+  .split('\n')
+  .map((submodule) => {
+    return submodule.split('.')[1];
   });
 }
 
@@ -121,14 +122,13 @@ function getSubmoduleName(remote) {
     .split('/')
     .pop()
     .split('.')
-    .shift().map(str => str.toLowerCase());
+    .shift();
 }
 
 
 module.exports = {
-  add: addSubmodule,
-  remove: removeSubmodule,
+  add: addSubmodules,
+  remove: removeSubmodules,
   list: listSubmodules,
   isOne: isSubmodule,
-  name: getSubmoduleName,
 };
