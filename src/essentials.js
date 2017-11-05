@@ -4,10 +4,11 @@ const Path = require('path');
 const ReadlineSync = require('readline-sync');
 const Tmp = require('tmp');
 const Ascii = require('./ascii');
-const Rebase = require('./rebase');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
+const Rebase = require('./rebase');
+const Submodule = require('./submodule');
 const Utils = require('./utils');
 
 /**
@@ -149,7 +150,7 @@ function ensureTortilla(projectDir) {
     Fs.chmodSync(hookPath, '755');
   });
 
-  const submodules = Git.submodules();
+  const submodules = Submodule.list();
 
   submodules.forEach((submodule) => {
     // Initialize all submodule
@@ -168,7 +169,7 @@ function ensureTortilla(projectDir) {
   localStorage.setItem('USE_STRICT', true);
 
   // The art should be printed only if the operation finished for all submodules
-  if (!Git.isSubmodule()) {
+  if (!Submodule.isOne()) {
     Ascii.print('ready');
   }
 }
