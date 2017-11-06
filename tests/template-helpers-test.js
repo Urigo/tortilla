@@ -1,4 +1,5 @@
 const Chai = require('chai');
+const Path = require('path');
 const Renderer = require('../src/renderer');
 const Translator = require('../src/translator');
 
@@ -66,7 +67,15 @@ describe('Template Helpers', function() {
     });
 
     it('should render step from the specified submodule', function () {
-      // TODO: Implement
+      this.slow(4000);
+
+      const repoDir = this.createRepo();
+
+      this.tortilla(['submodule', 'add', repoDir]);
+
+      const view = Renderer.renderTemplate(`{{{diffStep 1.1 module="${Path.basename(repoDir)}"}}}`);
+
+      expect(view).to.be.a.file('submodule-diff.md');
     });
 
     describe('render target set to Medium', function () {

@@ -47,15 +47,23 @@ before(function () {
 
   // Creates a new local repository with a single commit
   this.createRepo = (dir) => {
+    dir = dir || Tmp.dirSync({ unsafeCleanup: true }).name;
+
     Fs.removeSync(dir);
     Fs.removeSync(this.tempDir);
 
     this.git(['init', dir, '--bare']);
-    this.git(['clone', dir, this.tempDir]);
-    this.exec('touch', ['README.md'], { cwd: this.tempDir });
-    this.git(['add', 'README.md'], { cwd: this.tempDir });
-    this.git(['commit', '-m', 'Initial commit'], { cwd: this.tempDir });
+    this.tortilla(['create', this.tempDir, '-m', 'New Repo']);
+    this.git(['remote', 'add', 'origin', dir], { cwd: this.tempDir });
+    this.exec('sh', ['-c', 'echo "Hello World" > hello_world'], { cwd: this.tempDir });
+    this.git(['add', 'hello_world'], { cwd: this.tempDir });
+    this.tortilla(['step', 'push', '-m', 'Hello World'], {
+      cwd: this.tempDir,
+      env: { TORTILLA_CWD: this.tempDir }
+    });
     this.git(['push', 'origin', 'master'], { cwd: this.tempDir });
+
+    return dir;
   };
 });
 
