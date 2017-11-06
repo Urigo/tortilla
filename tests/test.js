@@ -67,3 +67,4 @@ require('./renderer-test');
 require('./template-helpers-test');
 require('./manual-test');
 require('./release-test');
+require('./submodule-test');

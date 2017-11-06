@@ -65,6 +65,10 @@ describe('Template Helpers', function() {
       expect(view).to.be.a.file('referenced-diff.md');
     });
 
+    it('should render step from the specified submodule', function () {
+      // TODO: Implement
+    });
+
     describe('render target set to Medium', function () {
       before(function () {
         process.env.TORTILLA_RENDER_TARGET = 'medium';
