@@ -170,7 +170,7 @@ Template helpers are used when writing a manual file to make our lives a bit eas
 ```
 *Here's how we should use template-helpers*
 
-{{{diff_step 1.1}}}
+{{{diffStep 1.1}}}
 ```
 
 Should be rendered to:
@@ -201,12 +201,13 @@ Should be rendered to:
 
 **🌟 Available {{{template helpers}}} 🌟**
 
-- `nav_step` - A navigation bar between step manuals. Will present two buttons - "Previous step" and "Next step". This template helper may receives the following options:
-  - `prev_ref` - The reference which we will be redirected to once pressed on "Previous step" button.
-  - `next_ref` - The reference which we will be redirected to once pressed on "Next step" button.
+- `navStep` - A navigation bar between step manuals. Will present two buttons - "Previous step" and "Next step". This template helper may receives the following options:
+  - `prevRef` - The reference which we will be redirected to once pressed on "Previous step" button.
+  - `nextRef` - The reference which we will be redirected to once pressed on "Next step" button.
 
-- `diff_step <step>` - Will run `git diff` for the specified step's commit. This template helper may receives the following options:
+- `diffStep <step>` - Will run `git diff` for the specified step's commit. This template helper may receives the following options:
   - `files` - A list of specific file paths separated by a comma (`,`) that we would like to present in our diff. The rest of the files in the diff will be ignored.
+  - `submodule` - The name of the submodule which contains the step we would like to reference.
 
 ### Releases
 
@@ -360,6 +361,18 @@ Prints whether strict mode is enabled or disabled.
 **command:** `tortilla strict set <mode>`
 
 Sets strict mode. Provided mode must be either a truthy value (e.g. `1`, `true`) or a falsy value (`0`, `false`).
+
+### tortilla-submodule CLI
+
+Submodules are useful whenever you would like to split the tutorial into different logical segments, e.g. we will have the repo with all the instructions manual referencing the backend repo and the frontend repo.
+
+**command:** `tortilla submodule add <submodules...>`
+
+Add a new submodules to the root commit.
+
+**command:** `tortilla submodule remove [submodules...]`
+
+Remove submodules from the root commit. If non was provided - will remove all submodules.
 
 ## License
 
