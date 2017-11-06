@@ -11,6 +11,7 @@ before(function () {
   this.plainDir = Tmp.dirSync({ unsafeCleanup: true }).name;
   this.testDir = Tmp.dirSync({ unsafeCleanup: true }).name;
   this.repoDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+  this.tempDir = Tmp.dirSync({ unsafeCleanup: true }).name;
 
   // Setup
   // Set environment from which Tortilla calculations are gonna be made from
@@ -42,6 +43,19 @@ before(function () {
   this.applyTestPatch = (patchName) => {
     const patchPath = Path.resolve(__dirname, 'fs-data/in', `${patchName}.patch`);
     return this.git(['am', patchPath]);
+  };
+
+  // Creates a new local repository with a single commit
+  this.createRepo = (dir) => {
+    Fs.removeSync(dir);
+    Fs.removeSync(this.tempDir);
+
+    this.git(['init', dir, '--bare']);
+    this.git(['clone', dir, this.tempDir]);
+    this.exec('touch', ['README.md'], { cwd: this.tempDir });
+    this.git(['add', 'README.md'], { cwd: this.tempDir });
+    this.git(['commit', '-m', 'Initial commit'], { cwd: this.tempDir });
+    this.git(['push', 'origin', 'master'], { cwd: this.tempDir });
   };
 });
 

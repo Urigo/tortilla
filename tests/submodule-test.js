@@ -3,6 +3,7 @@ const Fs = require('fs-extra');
 const Path = require('path');
 const Tmp = require('tmp');
 const Git = require('../src/git');
+const Submodule = require('../src/submodule');
 
 
 const expect = Chai.expect;
@@ -18,13 +19,9 @@ describe('Submodule', function () {
 
   beforeEach(function () {
     // Initializing repos
-    Fs.removeSync(this.fooModuleDir);
-    Fs.removeSync(this.barModuleDir);
-    Fs.removeSync(this.bazModuleDir);
-
-    this.git(['init', this.fooModuleDir, '--bare']);
-    this.git(['init', this.barModuleDir, '--bare']);
-    this.git(['init', this.bazModuleDir, '--bare']);
+    this.createRepo(this.fooModuleDir);
+    this.createRepo(this.barModuleDir);
+    this.createRepo(this.bazModuleDir);
   });
 
   describe('add()', function () {
@@ -74,7 +71,7 @@ describe('Submodule', function () {
 
       const stagedFiles = Git.stagedFiles();
 
-      expect(stagedFiles).to.equal([
+      expect(stagedFiles).to.have.all.members([
         Path.basename(this.fooModuleDir),
         Path.basename(this.barModuleDir),
         Path.basename(this.bazModuleDir),
@@ -84,6 +81,8 @@ describe('Submodule', function () {
   });
 
   describe('remove()', function () {
+    this.slow(2000);
+
     beforeEach(function () {
       this.tortilla(['submodule', 'add',
         this.fooModuleDir,
@@ -95,7 +94,7 @@ describe('Submodule', function () {
     it('should remove specified submodules from the root commit', function () {
       this.tortilla(['submodule', 'remove', Path.basename(this.fooModuleDir)]);
 
-      expect(Submodule.list()).to.equal([
+      expect(Submodule.list()).to.have.all.members([
         Path.basename(this.barModuleDir),
         Path.basename(this.bazModuleDir),
       ]);
@@ -104,22 +103,19 @@ describe('Submodule', function () {
     it('should remove all submodules from the root commit if non was specified', function () {
       this.tortilla(['submodule', 'remove']);
 
-      expect(Submodule.list()).to.equal([]);
+      expect(Submodule.list()).to.deep.equal([]);
     });
 
     it('should stage removed submodules if editing the root commit', function () {
       this.tortilla(['step', 'edit', '--root']);
-
-      this.tortilla(['submodule', 'remove',
-        this.fooModuleDir
-      ]);
+      this.tortilla(['submodule', 'remove', Path.basename(this.fooModuleDir)]);
 
       const isRebasing = Git.rebasing();
       expect(isRebasing).to.be.truthy;
 
       const stagedFiles = Git.stagedFiles();
 
-      expect(stagedFiles).to.equal([
+      expect(stagedFiles).to.have.all.members([
         Path.basename(this.fooModuleDir),
         '.gitmodules'
       ]);

@@ -91,11 +91,17 @@ function listSubmodules() {
 
   if (!root) return [];
 
-  return Git([
-    'config', '--file', '.gitmodules', '--name-only', '--get-regexp', 'path'
-  ])
-  .split('\n')
-  .map((submodule) => {
+  let configData;
+  try {
+    configData = Git([
+      'config', '--file', '.gitmodules', '--name-only', '--get-regexp', 'path'
+    ]);
+  // No submodules exit
+  } catch (e) {
+    return [];
+  }
+
+  return configData.split('\n').map((submodule) => {
     return submodule.split('.')[1];
   });
 }
