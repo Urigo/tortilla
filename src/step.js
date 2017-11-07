@@ -50,6 +50,7 @@ function getStepDescriptor(message) {
   return match && {
     number: match[1],
     message: match[2],
+    type: match[1].split('.')[1] ? 'sub' : 'super',
   };
 }
 
@@ -101,6 +102,14 @@ function popStep() {
 
   if (stepDescriptor) { // Meta-data for step editing
     LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
+
+    // Delete branch referencing the super step unless we're rebasing, in which case the
+    // branches will be reset automatically at the end of the rebase
+    if (stepDescriptor.type == 'super' && !Git.rebasing()) {
+      const branch = Git.activeBranchName();
+
+      Git(['branch', '-D', `${branch}-step${stepDescriptor.number}`]);
+    }
   } else {
     return console.warn('Removed commit was not a step');
   }
@@ -119,6 +128,13 @@ function tagStep(message) {
 
   Git(['add', manualTemplatePath]);
   commitStep(step, message);
+
+  // If we're in edit mode all the branches will be set after the rebase
+  if (!Git.rebasing()) {
+    const branch = Git.activeBranchName();
+    // This branch will be used to run integration testing
+    Git(['branch', `${branch}-step${step}`]);
+  }
 
   // Meta-data for step editing
   LocalStorage.setItem('REBASE_NEW_STEP', step);

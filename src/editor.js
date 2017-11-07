@@ -103,7 +103,7 @@ function editStep(operations, steps) {
     LocalStorage.setItem('REBASE_NEW_STEP', 'root');
   }
 
-  const editor = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
+  const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
 
   // Continue sorting the steps after step editing has been finished
   steps.forEach((step) => {
@@ -116,8 +116,16 @@ function editStep(operations, steps) {
     // Insert the following operation AFTER the step's operation
     operations.splice(index + 1, 0, {
       method: 'exec',
-      command: `${editor} git rebase --edit-todo`,
+      command: `${sort} git rebase --edit-todo`,
     });
+  });
+
+  const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} rebranch-super"`;
+
+  // After rebase has finished, update the brancehs referencing the super steps
+  operations.push({
+    method: 'exec',
+    command: `${rebranchSuper} git rebase --edit-todo`,
   });
 }
 

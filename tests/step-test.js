@@ -58,6 +58,26 @@ describe('Step', function () {
       const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(fileExists).to.be.falsy;
     });
+
+    it('should delete branch referencing super step', function () {
+      this.slow(3000);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.tortilla(['step', 'pop']);
+
+      let branchExists;
+      try {
+        branchExists = !!this.git(['rev-parse', 'master-step3']);
+      }
+      catch (e) {
+        branchExists = false;
+      }
+
+      expect(branchExists).to.be.falsy;
+    });
   });
 
   describe('tag()', function () {
@@ -86,6 +106,18 @@ describe('Step', function () {
 
       const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(fileExists).to.be.truthy;
+    });
+
+    it('should create a new branch referencing the tagged step', function () {
+      this.slow(3000);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      expect(this.git(['rev-parse', 'HEAD~0'])).to.equal(this.git(['rev-parse', 'master-step3']));
+      expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
+      expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
     });
   });
 
@@ -400,6 +432,30 @@ describe('Step', function () {
 
       const pushMessage = Step.recentCommit('%s', '^Step 1.4');
       expect(pushMessage).to.equal('Step 1.4: push');
+    });
+
+    it('should reset all branches referencing super steps', function () {
+      this.slow(10000);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.tortilla(['step', 'edit', '3']);
+
+      this.tortilla(['step', 'pop']);
+      this.tortilla(['step', 'pop']);
+      this.tortilla(['step', 'pop']);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
     });
   });
 
