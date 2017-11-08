@@ -5,7 +5,7 @@ const expect = Chai.expect;
 
 
 describe('Release', function () {
-  describe.only('bump()', function () {
+  describe('bump()', function () {
     this.slow(20000);
     this.timeout(30000);
 
@@ -209,6 +209,32 @@ describe('Release', function () {
       });
 
       expect(releaseDiff).to.be.a.file('release-update.diff');
+    });
+
+    it('should remove files which should not be included in the release', function () {
+      this.exec('touch', ['travis.yml']);
+      this.exec('touch', ['renovate.json']);
+      this.git(['add', 'travis.yml']);
+      this.git(['add', 'renovate.json']);
+      this.tortilla(['step', 'push', '-m', 'Add CI configurations']);
+      this.tortilla(['step', 'tag', '-m', 'First step']);
+      this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+
+      const travisPath = this.exec('realpath', ['travis.yml']);
+      const renovatePath = this.exec('realpath', ['renovate.json']);
+
+      expect(this.exists(travisPath)).to.be.truthy;
+      expect(this.exists(renovatePath)).to.be.truthy;
+
+      this.git(['checkout', 'master@1.0.0']);
+
+      expect(this.exists(travisPath)).to.be.falsy;
+      expect(this.exists(renovatePath)).to.be.falsy;
+
+      this.git(['checkout', 'master-history']);
+
+      expect(this.exists(travisPath)).to.be.falsy;
+      expect(this.exists(renovatePath)).to.be.falsy;
     });
 
     it('should re-render all manuals using an updated release tag', function () {
