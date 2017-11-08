@@ -121,4 +121,32 @@ describe('Submodule', function () {
       ]);
     });
   });
+
+  describe('update()', function () {
+    this.slow(2000);
+
+    beforeEach(function () {
+      this.tortilla(['submodule', 'add',
+        this.fooModuleDir,
+        this.barModuleDir,
+        this.bazModuleDir
+      ]);
+    });
+
+    it('should update specified submodules', function () {
+      this.tortilla(['step', 'edit', '--root']);
+
+      const fooPath = this.exec('realpath', [Path.basename(this.fooModuleDir)]);
+
+      this.git(['checkout', 'HEAD~1'], { cwd: fooPath });
+      this.git(['add', Path.basename(this.fooModuleDir)]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['submodule', 'update', Path.basename(this.fooModuleDir)]);
+
+      expect(this.exists(`${fooPath}/hello_world`)).to.be.truthy;
+    });
+  });
 });

@@ -86,7 +86,7 @@ function removeSubmodules(submodules) {
   }
 }
 
-function updateSubmodules() {
+function updateSubmodules(submodules) {
   if (!submodules || submodules.length == 0) {
     submodules = listSubmodules();
   }
