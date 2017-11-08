@@ -331,8 +331,9 @@ function getStepLimit(oldStep, newStep) {
 // Convert rebase file content to operations array
 function disassemblyOperations(rebaseFileContent) {
   const operations = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
+
   if (!operations) {
-    return;
+    return [];
   }
 
   return operations.map((line) => {
@@ -348,11 +349,13 @@ function disassemblyOperations(rebaseFileContent) {
 
 // Convert operations array to rebase file content
 function assemblyOperations(operations) {
-  return `${operations
+  return operations
     // Compose lines
-    .map(operation => Object.keys(operation)
-        .map(k => operation[k])
-        .join(' '))
+    .map(operation => Object
+      .keys(operation)
+      .map(k => operation[k])
+      .join(' ')
+    )
     // Connect lines
-    .join('\n')}\n`;
+    .join('\n') + '\n';
 }

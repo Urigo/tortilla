@@ -306,7 +306,8 @@ function deformatRelease(releaseString) {
 }
 
 function createReleaseTag(tag, dstHash, message) {
-  const srcHash = Git(['rev-parse', 'HEAD']);
+  let srcHash = Git.activeBranchName();
+  if (srcHash == 'HEAD') srcHash = git(['rev-parse', 'HEAD']);
 
   Git(['checkout', dstHash]);
 
@@ -320,10 +321,10 @@ function createReleaseTag(tag, dstHash, message) {
 
   // Provide a quick message
   if (typeof message == 'string') {
-    Git(['tag', tag, '-m', message]);
+    Git.print(['tag', tag, '-m', message]);
   // Open editor
-  } else if (typeof message == 'boolean') {
-    Git(['tag', tag, '-a']);
+  } else if (message === true) {
+    Git.print(['tag', tag, '-a']);
   // No message
   } else {
     Git(['tag', tag]);

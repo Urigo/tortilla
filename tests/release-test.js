@@ -5,9 +5,9 @@ const expect = Chai.expect;
 
 
 describe('Release', function () {
-  describe('bump()', function () {
-    this.slow(15000);
-    this.timeout(20000);
+  describe.only('bump()', function () {
+    this.slow(20000);
+    this.timeout(30000);
 
     it('should bump a major version', function () {
       this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
