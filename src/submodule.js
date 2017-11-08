@@ -86,6 +86,43 @@ function removeSubmodules(submodules) {
   }
 }
 
+function updateSubmodules() {
+  if (!submodules || submodules.length == 0) {
+    submodules = listSubmodules();
+  }
+
+  const rebasing = Git.rebasing();
+
+  // Submodule can only be removed from the root commit, therefore in case we're rebasing
+  // we should check whether we're editing the root or not
+  if (rebasing) {
+    const commitHash = Git.recentCommit(['--format=%H']);
+    const rootHash = Git.rootHash();
+
+    if (commitHash != rootHash) {
+      throw TypeError("Can't remove submodules from the middle of the stack");
+    }
+  }
+  else {
+    Step.edit('root');
+  }
+
+  submodules.forEach((submodule) => {
+    Git.print(['submodule', 'update', submodule]);
+    Git.print(['add', submodule]);
+  });
+
+  // If we're not in rebase mode, amend the changes
+  if (!rebasing) {
+    Git.print(['commit', '--amend'], {
+      env: {
+        GIT_EDITOR: true,
+      }
+    });
+    Git.print(['rebase', '--continue']);
+  }
+}
+
 function listSubmodules() {
   const root = Git.root();
 
@@ -135,6 +172,7 @@ function getSubmoduleName(remote) {
 module.exports = {
   add: addSubmodules,
   remove: removeSubmodules,
+  update: updateSubmodules,
   list: listSubmodules,
   isOne: isSubmodule,
 };

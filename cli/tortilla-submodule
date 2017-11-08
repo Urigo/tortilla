@@ -17,10 +17,18 @@ Program
 
 Program
   .command('remove [submodules...]')
-  .description('Add submodules to the root commit')
+  .description('Remove submodules from the root commit')
   .action((submodules) => {
     LocalStorage.assertTortilla(true);
     Submodule.remove(submodules);
+  });
+
+Program
+  .command('update [submodules...]')
+  .description('Update submodules in root commit')
+  .action((submodules) => {
+    LocalStorage.assertTortilla(true);
+    Submodule.update(submodules);
   });
 
 Program.parse(process.argv);
