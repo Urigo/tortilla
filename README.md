@@ -366,13 +366,17 @@ Sets strict mode. Provided mode must be either a truthy value (e.g. `1`, `true`)
 
 Submodules are useful whenever you would like to split the tutorial into different logical segments, e.g. we will have the repo with all the instructions manual referencing the backend repo and the frontend repo.
 
-**command:** `tortilla submodule add <submodules...>`
+**command:** `tortilla submodule add <remotes...>`
 
 Add a new submodules to the root commit.
 
 **command:** `tortilla submodule remove [submodules...]`
 
 Remove submodules from the root commit. If non was provided - will remove all submodules.
+
+**command:** `tortilla submodule update [submodules...]`
+
+Update submodules in the root commit. If non was provided - will update all submodules.
 
 ## License
 
