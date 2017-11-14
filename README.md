@@ -342,6 +342,7 @@ Mark this step as finished and move on to the next one. This will increase the i
 Edits the specified step/s. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
 
 - *option:* `--root` - Edit the root step (initial commit).
+- *option:* `--udiff` - Updates the `diffStep` template helpers of manuals being rebased. Note that manuals prior to the current step being edited won't be updated, since the rebasing process never looks backwards.
 
 **command:** `tortilla step reword [step]`
 

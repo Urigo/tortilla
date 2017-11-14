@@ -24,7 +24,10 @@ const Utils = require('./utils');
   - HOOK_STEP - Forcibly set the step number which should be used by Tortilla's
     git hooks.
   - POTENTIAL_RELEASE - Used by the renderer so it will be aware of the release
-    which have just been bumed.
+    which have just been bumped.
+  - STEP_MAP - A map of old steps and their new indexes which is being built during the
+    step editing process in order to be able to update the diffStep template helpers in
+    the manuals being rebased later on.
  */
 
 let localStorage;

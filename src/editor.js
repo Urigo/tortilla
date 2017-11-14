@@ -213,6 +213,12 @@ function sortSteps(operations) {
       command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
     });
   }
+
+  // Ensure step map is being disposed
+  operations.push({
+    method: 'exec',
+    command: `node ${Paths.tortilla.localStorage} remove STEP_MAP`,
+  });
 }
 
 // Edit the commit which is presented as the current HEAD

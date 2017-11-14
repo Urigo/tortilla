@@ -4,6 +4,7 @@ const Path = require('path');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
+const Utils = require('./utils');
 
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
@@ -100,7 +101,13 @@ function popStep() {
   Git.print(['reset', '--hard', 'HEAD~1']);
 
   if (stepDescriptor) { // Meta-data for step editing
-    LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
+    const step = getCurrentStep();
+    LocalStorage.setItem('REBASE_NEW_STEP', step);
+
+    // This will be used later on to update the manuals
+    if (ensureStepMap()) {
+      updateStepMap('remove', { step });
+    }
   } else {
     return console.warn('Removed commit was not a step');
   }
@@ -150,7 +157,7 @@ function getStepBase(step) {
 }
 
 // Edit the provided step
-function editStep(steps) {
+function editStep(steps, options = {}) {
   if (steps instanceof Array) {
     steps = steps.slice().sort((a, b) => {
       const [superA, subA] = a.split('.');
@@ -175,6 +182,11 @@ function editStep(steps) {
   // A single step was provided
   else {
     steps = [steps];
+  }
+
+  // Create initial step map
+  if (options.updateDiff) {
+    initializeStepMap();
   }
 
   // The would always have to start from the first step
@@ -351,6 +363,52 @@ function getNextSuperStep(offset) {
   return getNextStep(offset).split('.')[0];
 }
 
+function initializeStepMap() {
+  const map = Git([
+    'log', '--format=%s', '--grep="^Step [0-9]\\+"'
+  ])
+  .split('\n')
+  .reduce((map, subject) => {
+    const number = subject.getStepDescriptor(subject).number;
+    map[number] = number;
+    return map;
+  }, {});
+
+  LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+}
+
+function getStepMap() {
+  if (ensureStepMap()) {
+    return JSON.parse(LocalStorage.getItem('STEP_MAP'));
+  }
+}
+
+function ensureStepMap() {
+  return Utils.exists(Path.resolve(Paths.storage, 'STEP_MAP'), 'file');
+}
+
+function disposeStepMap() {
+  LocalStorage.deleteItem('STEP_MAP');
+}
+
+function updateStepMap(type, payload) {
+  const map = getStepMap();
+
+  switch (type) {
+    case 'remove':
+      delete map[payload.step];
+
+      break;
+
+    case 'reset':
+      map[payload.oldStep] = payload.newStep;
+
+      break;
+  }
+
+  LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+}
+
 /**
   Contains step related utilities.
  */
@@ -408,4 +466,9 @@ module.exports = {
   descriptor: getStepDescriptor,
   superDescriptor: getSuperStepDescriptor,
   subDescriptor: getSubStepDescriptor,
+  initializeStepMap,
+  getStepMap,
+  ensureStepMap,
+  disposeStepMap,
+  updateStepMap,
 };
