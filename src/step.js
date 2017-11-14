@@ -106,7 +106,7 @@ function popStep() {
 
     // This will be used later on to update the manuals
     if (ensureStepMap()) {
-      updateStepMap('remove', { step });
+      updateStepMap('remove', { step: stepDescriptor.number });
     }
   } else {
     return console.warn('Removed commit was not a step');
@@ -184,17 +184,18 @@ function editStep(steps, options = {}) {
     steps = [steps];
   }
 
-  // Create initial step map
-  if (options.updateDiff) {
-    initializeStepMap();
-  }
-
   // The would always have to start from the first step
   const base = getStepBase(steps[0]);
 
+  const argv = [Paths.tortilla.editor, 'edit', ...steps];
+
+  if (options.udiff) {
+    argv.push('--udiff');
+  }
+
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
-      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} edit ${steps.join(' ')}`,
+      GIT_SEQUENCE_EDITOR: `node ${argv.join(' ')}`,
     },
   });
 }
@@ -365,11 +366,12 @@ function getNextSuperStep(offset) {
 
 function initializeStepMap() {
   const map = Git([
-    'log', '--format=%s', '--grep="^Step [0-9]\\+"'
+    'log', '--format=%s', '--grep=^Step [0-9]\\+'
   ])
   .split('\n')
+  .filter(Boolean)
   .reduce((map, subject) => {
-    const number = subject.getStepDescriptor(subject).number;
+    const number = getStepDescriptor(subject).number;
     map[number] = number;
     return map;
   }, {});
@@ -420,7 +422,7 @@ function updateStepMap(type, payload) {
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
-    boolean: ['root', 'allow-empty'],
+    boolean: ['root', 'udiff', 'allow-empty'],
   });
 
   const method = argv._[0];
@@ -435,13 +437,14 @@ function updateStepMap(type, payload) {
 
   const options = {
     allowEmpty,
+    udiff,
   };
 
   switch (method) {
     case 'push': return pushStep(message, options);
     case 'pop': return popStep();
     case 'tag': return tagStep(message);
-    case 'edit': return editStep(step);
+    case 'edit': return editStep(step, options);
     case 'sort': return sortStep(step);
     case 'reword': return rewordStep(step, message);
   }

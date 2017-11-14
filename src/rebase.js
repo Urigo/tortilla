@@ -45,7 +45,7 @@ function rewordRecentStep(message) {
 
   // This will be used later on to update the manuals
   if (Step.ensureStepMap()) {
-    Step.updateStepMap('reset', { old: stepDescriptor.number, new: nextStep });
+    Step.updateStepMap('reset', { oldStep: stepDescriptor.number, newStep: nextStep });
   }
 
   // commit, let git hooks do the rest
@@ -67,6 +67,7 @@ function superPickStep(hash) {
   // Replace references for old manual files with new manual files
   let fixedPatch = patch.replace(stepFilePattern, (file, step, extension) => {
     step = Number(step) + diff;
+
     return `step${step}.${extension}`;
   });
 
@@ -80,7 +81,7 @@ function superPickStep(hash) {
       // In case step has been removed in the process, replace it with a meaningless placeholder
       const newStep = stepMap[oldStep] || 'XX.XX';
 
-      return helper.replace(/(diffStep\s+)\d+\.\d+/).replace(`$1${newStep}`);
+      return helper.replace(/(diffStep\s+)\d+\.\d+/, `$1${newStep}`);
     });
   }
 

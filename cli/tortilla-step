@@ -46,9 +46,7 @@ Program
       steps.unshift('root')
     }
 
-    Step.edit(steps, {
-      updateDiff: !!options.udiff
-    });
+    Step.edit(steps, options);
   });
 
 Program

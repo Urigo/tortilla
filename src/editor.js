@@ -20,6 +20,7 @@ const Utils = require('./utils');
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
+    boolean: ['udiff'],
   });
 
   // The first argument will be the rebase file path provided to us by git
@@ -27,8 +28,11 @@ const Utils = require('./utils');
   const steps = argv._.slice(1, -1);
   const rebaseFilePath = argv._[argv._.length - 1];
   const message = argv.message || argv.m;
-  const prod = argv.prod;
-  const dev = argv.dev;
+  const udiff = argv.udiff;
+
+  const options = {
+    udiff
+  };
 
   const rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
@@ -42,7 +46,7 @@ const Utils = require('./utils');
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
   switch (method) {
-    case 'edit': editStep(operations, steps); break;
+    case 'edit': editStep(operations, steps, options); break;
     case 'edit-head': editHead(operations); break;
     case 'sort': sortSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
@@ -55,7 +59,12 @@ const Utils = require('./utils');
 }());
 
 // Edit the last step in the rebase file
-function editStep(operations, steps) {
+function editStep(operations, steps, options) {
+  // Create initial step map
+  if (options.udiff) {
+    Step.initializeStepMap();
+  }
+
   if (!steps) {
     const descriptor = Step.descriptor(operations[0].message);
     const step = (descriptor && descriptor.number) || 'root';
@@ -212,13 +221,13 @@ function sortSteps(operations) {
       method: 'exec',
       command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
     });
-  }
 
-  // Ensure step map is being disposed
-  operations.push({
-    method: 'exec',
-    command: `node ${Paths.tortilla.localStorage} remove STEP_MAP`,
-  });
+    // Ensure step map is being disposed
+    operations.push({
+      method: 'exec',
+      command: `node ${Paths.tortilla.localStorage} remove STEP_MAP`,
+    });
+  }
 }
 
 // Edit the commit which is presented as the current HEAD
