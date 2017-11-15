@@ -38,6 +38,7 @@ Program
   .command('edit [steps...]')
   .description('Edits the specified step/s')
   .option('--root [root]', 'Edit the root step (initial commit)')
+  .option('--udiff [updateDiff]', 'Update step-diffs of manuals being rebased')
   .action((steps, options) => {
     LocalStorage.assertTortilla(true);
 
@@ -45,7 +46,7 @@ Program
       steps.unshift('root')
     }
 
-    Step.edit(steps);
+    Step.edit(steps, options);
   });
 
 Program

@@ -42,6 +42,12 @@ function rewordRecentStep(message) {
 
   // Specified step is gonna be used for when forming the commit message
   LocalStorage.setItem('HOOK_STEP', nextStep);
+
+  // This will be used later on to update the manuals
+  if (stepDescriptor && Step.ensureStepMap()) {
+    Step.updateStepMap('reset', { oldStep: stepDescriptor.number, newStep: nextStep });
+  }
+
   // commit, let git hooks do the rest
   Git.print(argv);
 }
@@ -55,15 +61,29 @@ function superPickStep(hash) {
 
   // Fetch patch data
   const diff = newStep - oldStep;
-  const pattern = /step(\d+)\.(md|tmpl)/g;
+  const stepFilePattern = /step(\d+)\.(md|tmpl)/g;
   const patch = Git(['format-patch', '-1', hash, '--stdout']);
 
   // Replace references for old manual files with new manual files
-  // so there would be no conflicts
-  const fixedPatch = patch.replace(pattern, (file, step, extension) => {
+  let fixedPatch = patch.replace(stepFilePattern, (file, step, extension) => {
     step = Number(step) + diff;
+
     return `step${step}.${extension}`;
   });
+
+  const stepMap = Step.getStepMap();
+
+  if (stepMap) {
+    const diffStepPattern = /\{\{\s*diffStep\s+(\d+\.\d+).*\}\}/g;
+
+    // Replace indexes presented in diffStep() template helpers
+    fixedPatch = fixedPatch.replace(diffStepPattern, (helper, oldStep) => {
+      // In case step has been removed in the process, replace it with a meaningless placeholder
+      const newStep = stepMap[oldStep] || 'XX.XX';
+
+      return helper.replace(/(diffStep\s+)\d+\.\d+/, `$1${newStep}`);
+    });
+  }
 
   // Apply patch
   Git(['am'], {
