@@ -430,6 +430,7 @@ function updateStepMap(type, payload) {
   const message = argv.message || argv.m;
   const root = argv.root;
   const allowEmpty = argv['allow-empty'];
+  const udiff = argv.udiff;
 
   if (!step && root) {
     step = 'root';

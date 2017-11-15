@@ -44,7 +44,7 @@ function rewordRecentStep(message) {
   LocalStorage.setItem('HOOK_STEP', nextStep);
 
   // This will be used later on to update the manuals
-  if (Step.ensureStepMap()) {
+  if (stepDescriptor && Step.ensureStepMap()) {
     Step.updateStepMap('reset', { oldStep: stepDescriptor.number, newStep: nextStep });
   }
 

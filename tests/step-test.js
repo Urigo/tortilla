@@ -1,4 +1,5 @@
 const Chai = require('chai');
+const Fs = require('fs-extra');
 const Git = require('../src/git');
 const Step = require('../src/step');
 
@@ -400,6 +401,92 @@ describe('Step', function () {
 
       const pushMessage = Step.recentCommit('%s', '^Step 1.4');
       expect(pushMessage).to.equal('Step 1.4: push');
+    });
+
+    it('should be able to update diffStep() template helpers indexes', function () {
+      this.slow(10000);
+
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Edit file']);
+
+      this.tortilla(['step', 'tag', '-m', 'File manipulation']);
+      this.tortilla(['step', 'edit', '1']);
+
+      const manualPath = this.exec('realpath', ['.tortilla/manuals/templates/step1.tmpl']);
+
+      Fs.writeFileSync(manualPath, [
+        'Create file:',
+        '',
+        '{{{diffStep 1.1}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.2}}}',
+      ].join('\n'));
+
+      this.git(['add', manualPath]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['step', 'edit', '1.1', '--udiff']);
+      this.tortilla(['step', 'pop']);
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.git(['add', 'file']);
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.1}}}',
+      ].join('\n'));
+
+      this.tortilla(['step', 'edit', '--root', '--udiff']);
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.2}}}',
+      ].join('\n'));
     });
   });
 
