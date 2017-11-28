@@ -112,7 +112,7 @@ function editStep(operations, steps, options) {
     LocalStorage.setItem('REBASE_NEW_STEP', 'root');
   }
 
-  const editor = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
+  const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
 
   // Continue sorting the steps after step editing has been finished
   steps.forEach((step) => {
@@ -125,8 +125,16 @@ function editStep(operations, steps, options) {
     // Insert the following operation AFTER the step's operation
     operations.splice(index + 1, 0, {
       method: 'exec',
-      command: `${editor} git rebase --edit-todo`,
+      command: `${sort} git rebase --edit-todo`,
     });
+  });
+
+  const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} rebranch-super"`;
+
+  // After rebase has finished, update the brancehs referencing the super steps
+  operations.push({
+    method: 'exec',
+    command: `${rebranchSuper} git rebase --edit-todo`,
   });
 }
 
@@ -338,8 +346,9 @@ function getStepLimit(oldStep, newStep) {
 // Convert rebase file content to operations array
 function disassemblyOperations(rebaseFileContent) {
   const operations = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
+
   if (!operations) {
-    return;
+    return [];
   }
 
   return operations.map((line) => {
@@ -355,11 +364,13 @@ function disassemblyOperations(rebaseFileContent) {
 
 // Convert operations array to rebase file content
 function assemblyOperations(operations) {
-  return `${operations
+  return operations
     // Compose lines
-    .map(operation => Object.keys(operation)
-        .map(k => operation[k])
-        .join(' '))
+    .map(operation => Object
+      .keys(operation)
+      .map(k => operation[k])
+      .join(' ')
+    )
     // Connect lines
-    .join('\n')}\n`;
+    .join('\n') + '\n';
 }
