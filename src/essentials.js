@@ -150,20 +150,9 @@ function ensureTortilla(projectDir) {
     Fs.chmodSync(hookPath, '755');
   });
 
-  const submodules = Submodule.list();
-  const root = Git.root();
-
-  submodules.forEach((submodule) => {
-    // Initialize all submodule
-    Git.print(['submodule', 'init', submodule]);
-
-    // We want all git operations to perform under the submodule directory
-    Utils.scopeEnv(() => {
-      ensureTortilla(`${root}/${submodule}`);
-    }, {
-      TORTILLA_CWD: submodule,
-    });
-  });
+  // Ensure submodules are initialized
+  Git.print(['submodule', 'init']);
+  Git.print(['submodule', 'update']);
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
