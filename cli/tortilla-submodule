@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+const Program = require('commander');
+const LocalStorage = require('../src/local-storage');
+const Submodule = require('../src/submodule');
+
+/**
+  Submodule CLI.
+ */
+
+Program
+  .command('add <remotes...>')
+  .description('Add submodules to the root commit')
+  .action((remotes) => {
+    LocalStorage.assertTortilla(true);
+    Submodule.add(remotes);
+  });
+
+Program
+  .command('remove [submodules...]')
+  .description('Remove submodules from the root commit')
+  .action((submodules) => {
+    LocalStorage.assertTortilla(true);
+    Submodule.remove(submodules);
+  });
+
+Program
+  .command('update [submodules...]')
+  .description('Update submodules in root commit')
+  .action((submodules) => {
+    LocalStorage.assertTortilla(true);
+    Submodule.update(submodules);
+  });
+
+Program.parse(process.argv);

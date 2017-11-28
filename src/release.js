@@ -93,10 +93,10 @@ function bumpRelease(releaseType, options) {
 
   // Create a tag with the provided message which will reference to HEAD
   // e.g. 'master@1.0.1'
-  if (options.message) { 
-    Git.print(['tag', tag, 'HEAD', '-m', options.message]); 
+  if (options.message) {
+    Git.print(['tag', tag, 'HEAD', '-m', options.message]);
   } else { // If no message provided, open the editor
-    Git.print(['tag', tag, 'HEAD', '-a']); 
+    Git.print(['tag', tag, 'HEAD', '-a']);
   }
 
   createDiffReleasesBranch();

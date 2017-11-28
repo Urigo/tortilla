@@ -37,8 +37,9 @@ function tagExists(tag) {
 
 // Get the recent commit by the provided arguments. An offset can be specified which
 // means that the recent commit from several times back can be fetched as well
-function getRecentCommit(offset, argv) {
+function getRecentCommit(offset, argv, options) {
   if (offset instanceof Array) {
+    options = argv;
     argv = offset;
     offset = 0;
   } else {
@@ -49,7 +50,7 @@ function getRecentCommit(offset, argv) {
   const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
 
   argv = ['log', hash, '-1'].concat(argv);
-  return git(argv);
+  return git(argv, options);
 }
 
 // Gets a list of the modified files reported by git matching the provided pattern.
@@ -77,6 +78,15 @@ function getRootHash() {
   return git(['rev-list', '--max-parents=0', 'HEAD']);
 }
 
+function getRoot() {
+  try {
+    return git(['rev-parse', '--show-toplevel']);
+  // Not a git project
+  } catch (e) {
+    return '';
+  }
+}
+
 
 module.exports = Utils.extend(git.bind(null), git, {
   rebasing: isRebasing,
@@ -87,4 +97,5 @@ module.exports = Utils.extend(git.bind(null), git, {
   stagedFiles: getStagedFiles,
   activeBranchName: getActiveBranchName,
   rootHash: getRootHash,
+  root: getRoot,
 });
