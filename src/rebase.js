@@ -97,7 +97,7 @@ function rebranchSuperSteps(rootBranch) {
   rootBranch = rootBranch || Git.activeBranchName();
 
   Git(['branch']).split('\n').filter((branch) => {
-    return branch.match(new RegExp(`${rootBranch}_step\\d+`));
+    return branch.match(new RegExp(`${rootBranch}-step\\d+`));
   })
   .forEach((branch) => {
     Git(['branch', '-D', branch]);
