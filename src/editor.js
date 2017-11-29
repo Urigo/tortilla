@@ -40,8 +40,6 @@ const Utils = require('./utils');
 
   // Set flag just in case recent rebase was aborted
   LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
-  // Set current branch name so it can be retrieved during rebase
-  LocalStorage.setItem('REBASE_BRANCH', Git(['rev-parse', '--abbrev-ref', 'HEAD']));
 
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
@@ -129,7 +127,7 @@ function editStep(operations, steps, options) {
     });
   });
 
-  const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} rebranch-super"`;
+  const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.rebase} rebranch-super"`;
 
   // After rebase has finished, update the brancehs referencing the super steps
   operations.push({

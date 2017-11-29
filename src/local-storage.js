@@ -20,7 +20,6 @@ const Utils = require('./utils');
   - REBASE_OLD_STEP - Used by the editor to set the old step before rebasing.
   - REBASE_NEW_STEP - Will be set any time we run a step operation and is used by the
     editor so it can rebase our changes correctly.
-  - REBASE_BRANCH - Set before rebasing step so the editor will know branch of ORIG_HEAD.
   - HOOK_STEP - Forcibly set the step number which should be used by Tortilla's
     git hooks.
   - POTENTIAL_RELEASE - Used by the renderer so it will be aware of the release

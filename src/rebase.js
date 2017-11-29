@@ -23,7 +23,7 @@ const Step = require('./step');
   switch (method) {
     case 'reword': return rewordRecentStep(arg1);
     case 'super-pick': return superPickStep(arg1);
-    case 'rebranch-super': return rebranchSuperSteps(arg1);
+    case 'rebranch-super': return rebranchSuperSteps();
   }
 }());
 
@@ -93,29 +93,32 @@ function superPickStep(hash) {
 }
 
 // Updates the branches referencing all super steps
-function rebranchSuperSteps(rootBranch) {
-  rootBranch = rootBranch || Git.activeBranchName();
+function rebranchSuperSteps() {
+  const rootBranch = Git.activeBranchName();
 
   Git(['branch']).split('\n').filter((branch) => {
     return branch.match(new RegExp(`${rootBranch}-step\\d+`));
   })
   .forEach((branch) => {
-    Git(['branch', '-D', branch]);
+    Git(['branch', '-D', branch.trim()]);
   });
 
-  Git(['log', '--format="%H %m"', '--grep="^Step [0-9]\\+:"']).split('\n').map((log) => {
-    let message = log.split(' ');
-    const hash = log.shift();
-    message = message.join(' ');
+  Git(['log', '--format=%H %s', '--grep=^Step [0-9]\\+:'])
+    .split('\n')
+    .filter(Boolean)
+    .map((log) => {
+      let message = log.split(' ');
+      const hash = message.shift();
+      message = message.join(' ');
 
-    return {
-      number: Step.descriptor(message).number,
-      hash,
-    };
-  })
-  .forEach((step) => {
-    Git(['branch', `${rootBranch}-step${step.number}`, step.hash]);
-  });
+      return {
+        number: Step.descriptor(message).number,
+        hash,
+      };
+    })
+    .forEach((step) => {
+      Git(['branch', `${rootBranch}-step${step.number}`, step.hash]);
+    });
 }
 
 // Calculate the next step dynamically based on its super flag

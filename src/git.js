@@ -1,3 +1,4 @@
+const Fs = require('fs-extra');
 const Path = require('path');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
@@ -65,12 +66,15 @@ function getStagedFiles(pattern) {
 
 // Gets active branch name
 function getActiveBranchName() {
-  // If rebasing, return stored branch name
-  if (isRebasing()) {
-    return LocalStorage.getItem('REBASE_BRANCH');
+  if (!isRebasing()) {
+    return git(['rev-parse', '--abbrev-ref', 'HEAD']);
   }
 
-  return git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  const branchHash = git(['rev-parse', 'ORIG_HEAD']);
+
+  return Fs.readdirSync(Paths.git.refs.heads).find((branchName) => {
+    return git(['rev-parse', branchName]) == branchHash;
+  });
 }
 
 // Gets the root hash of HEAD
