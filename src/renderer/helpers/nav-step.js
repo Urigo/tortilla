@@ -29,7 +29,7 @@ Renderer.registerHelper('navStep', (options) => {
     return Renderer.renderTemplateFile('nav-step', {
       nextOnly: true,
       text: t('nav.begin'),
-      ref: options.hash.ref || Renderer.resolve('.tortilla/manuals/views/step1.md'),
+      ref: options.hash.ref || Renderer.resolve('step1.md'),
     });
   }
 
@@ -38,7 +38,7 @@ Renderer.registerHelper('navStep', (options) => {
 
   // Get an array of all super steps in the current tutorial
   const superSteps = Git([
-    'log', 'ORIG_HEAD',
+    'log', Git.activeBranchName(),
     '--grep', '^Step [0-9]\\+:',
     '--format=%s',
   ]).split('\n')
@@ -56,11 +56,22 @@ Renderer.registerHelper('navStep', (options) => {
 
   // If this is the last step
   if (step === recentSuperStep) {
-    return Renderer.renderTemplateFile('nav-step', {
-      prevOnly: true,
-      text: t('nav.prev'),
-      ref: options.hash.ref || Renderer.resolve(`step${step - 1}.md`),
-    });
+    // If we only have a single step
+    if (step == 1) {
+      return Renderer.renderTemplateFile('nav-step', {
+        prevOnly: true,
+        text: t('nav.intro'),
+        ref: options.hash.ref || Renderer.resolve(`../../../README.md`),
+      });
+    }
+    // If we have more than a single step
+    else {
+      return Renderer.renderTemplateFile('nav-step', {
+        prevOnly: true,
+        text: t('nav.prev'),
+        ref: options.hash.ref || Renderer.resolve(`step${step - 1}.md`),
+      });
+    }
   }
 
   // If this is the first super step

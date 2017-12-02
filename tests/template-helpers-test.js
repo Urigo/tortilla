@@ -263,6 +263,14 @@ describe('Template Helpers', function() {
       expect(view).to.be.a.file('nav-steps-ref.md');
     });
 
+    it('should create a single button referencing the README.md file', function () {
+      this.tortilla(['step', 'pop']);
+      this.tortilla(['step', 'pop']);
+
+      const view = Renderer.renderTemplate('{{{navStep}}}');
+      expect(view).to.be.a.file('prev-root.md');
+    });
+
     describe('render target set to Medium', function () {
       before(function () {
         process.env.TORTILLA_RENDER_TARGET = 'medium';
@@ -305,6 +313,14 @@ describe('Template Helpers', function() {
 
         const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
         expect(view).to.be.a.file('medium/nav-steps-ref.md');
+      });
+
+      it('should create a single button referencing the README.md file', function () {
+        this.tortilla(['step', 'pop']);
+        this.tortilla(['step', 'pop']);
+
+        const view = Renderer.renderTemplate('{{{navStep}}}');
+        expect(view).to.be.a.file('medium/prev-root.md');
       });
     });
 
@@ -358,6 +374,14 @@ describe('Template Helpers', function() {
 
         const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
         expect(view).to.be.a.file('he/nav-steps-ref.md');
+      });
+
+      it('should create a single button referencing the README.md file', function () {
+        this.tortilla(['step', 'pop']);
+        this.tortilla(['step', 'pop']);
+
+        const view = Renderer.renderTemplate('{{{navStep}}}');
+        expect(view).to.be.a.file('he/prev-root.md');
       });
     });
   });
