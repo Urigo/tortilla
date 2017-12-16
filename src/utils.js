@@ -325,6 +325,18 @@ function isEqual(objA, objB) {
   });
 }
 
+function escapeBrackets(str) {
+  return str
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/\</g, '\\<')
+    .replace(/\>/g, '\\>');
+}
+
 
 module.exports = {
   cwd,
@@ -347,4 +359,5 @@ module.exports = {
   words: splitWords,
   delegateProperties,
   isEqual,
+  escapeBrackets,
 };
