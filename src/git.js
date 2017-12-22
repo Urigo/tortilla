@@ -70,8 +70,21 @@ function getActiveBranchName() {
     return git(['rev-parse', '--abbrev-ref', 'HEAD']);
   }
 
-  const branchHash = git(['rev-parse', 'ORIG_HEAD']);
+  // Getting a reference for the hash of which the rebase have started
+  const branchHash = git(['reflog', '--format=%gd %gs'])
+    .split('\n')
+    .filter(Boolean)
+    .map(line => line.split(' '))
+    .map(split => [split.shift(), split.join(' ')])
+    .find(([ref, msg]) => msg.match(/^rebase -i \(start\)/))
+    .shift()
+    .match(/^HEAD@\{(\d+)\}$/)
+    .slice(1)
+    .map(i => `HEAD@{${++i}}`)
+    .map(ref => git(['rev-parse', ref]))
+    .pop();
 
+  // Comparing the found hash to each of the branches' hashes
   return Fs.readdirSync(Paths.git.refs.heads).find((branchName) => {
     return git(['rev-parse', branchName]) == branchHash;
   });
