@@ -4,6 +4,7 @@ const Path = require('path');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
+const Submodule = require('./submodule');
 const Utils = require('./utils');
 
 // Get recent commit by specified arguments
@@ -214,6 +215,24 @@ function editStep(steps, options = {}) {
       GIT_SEQUENCE_EDITOR: `node ${argv.join(' ')}`,
     },
   });
+
+  // Ensure submodules are set to the right branches when picking the new super step
+  const checkouts = Submodule.checkouts();
+
+  Object.keys(checkouts).forEach((submodule) => {
+    // Getting hash for root step
+    const hash = checkouts[submodule].hashes[0];
+
+    Utils.scopeEnv(() => {
+      Git(['checkout', hash]);
+    }, {
+      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    });
+
+    Git(['add', submodule]);
+  });
+
+  Git(['commit', '--amend'], { GIT_EDITOR: true });
 }
 
 // Adjust all the step indexes from the provided step
