@@ -190,15 +190,6 @@ function getSubmoduleCheckouts(whiteList) {
   const submodules = listSubmodules();
   const checkouts = Utils.exists(Paths.checkouts) ? require(Paths.checkouts) : {};
 
-  // Applying defaults
-  submodules.forEach((submodule) => {
-    // Create an empty map for that specific submodule to prevent potential future
-    // conflicts
-    if (!checkouts[submodule]) {
-      checkouts[submodule] = [];
-    }
-  });
-
   Object.keys(checkouts).forEach((coSubmodule) => {
     // Filter based on white list
     if (whiteList && !whiteList.includes(coSubmodule)) {
@@ -210,25 +201,43 @@ function getSubmoduleCheckouts(whiteList) {
       throw Error(`Submodule ${coSubmodule} not found`);
     }
 
-    const submoduleCheckouts = checkouts[coSubmodule];
+    const { head, steps } = checkouts[coSubmodule];
+
+    if (head) {
+      throw Error(`Submodule ${coSubmodule} head specified`);
+    }
+
+    if (steps) {
+      throw Error(`Submodule ${coSubmodule} steps specified`);
+    }
+
+    const hashes = checkouts[coSubmodule].hashes = {};
 
     // Execution commands will run against the current submodule
-    Utils.scopeEnv(() => submoduleCheckouts.forEach((coSuperIndex, superIndex) => {
-      let coSuperHash;
+    Utils.scopeEnv(() => {
+      const origHead = Git(['rev-parse', 'HEAD']);
 
-      if (coSuperIndex == 'root') {
-        coSuperHash = Git.rootHash();
-      }
-      else {
-        const coSuperHash = Step.recentSuperCommit(coSuperIndex, '%h');
+      Git(['checkout', head]);
 
-        if (!coSuperHash) {
-          throw Error(`Super step ${coSuperIndex} in submodule ${submodule} not found`);
+      steps.forEach((coSuperIndex, superIndex) => {
+        let coSuperHash;
+
+        if (coSuperIndex == 'root') {
+          coSuperHash = Git.rootHash();
         }
-      }
+        else {
+          const coSuperHash = Step.recentSuperCommit(coSuperIndex, '%h');
 
-      submoduleCheckouts[superIndex] = coSuperHash;
-    }), {
+          if (!coSuperHash) {
+            throw Error(`Super step ${coSuperIndex} in submodule ${submodule} not found`);
+          }
+        }
+
+        hashes[superIndex] = coSuperHash;
+      });
+
+      Git(['checkout', origHead]);
+    }, {
       TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
     });
   });

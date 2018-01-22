@@ -102,7 +102,9 @@ function editStep(operations, steps, options) {
     if (descriptor) {
       LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
       LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
-    } else { // Probably root commit
+    }
+    // Probably root commit
+    else {
       LocalStorage.setItem('REBASE_OLD_STEP', 'root');
       LocalStorage.setItem('REBASE_NEW_STEP', 'root');
     }

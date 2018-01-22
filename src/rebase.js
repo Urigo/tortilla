@@ -2,6 +2,8 @@ const Minimist = require('minimist');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Step = require('./step');
+const Submodule = require('./submodule');
+const Utils = require('./utils');
 
 /**
   The rebase module is responsible for performing tasks done by the editor using an
@@ -92,6 +94,23 @@ function superPickStep(hash) {
   Git(['am'], {
     input: fixedPatch,
   });
+
+  // Ensure submodules are set to the right branches when picking the new super step
+  const checkouts = Submodule.checkouts();
+
+  Object.keys(checkouts).forEach((submodule) => {
+    const hash = checkouts[submodule].hashes[newStep];
+
+    Utils.scopeEnv(() => {
+      Git(['checkout', hash]);
+    }, {
+      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    });
+
+    Git(['add', submodule]);
+  });
+
+  Git(['commit', '--amend'], { GIT_EDITOR: true });
 }
 
 // Updates the branches referencing all super steps
