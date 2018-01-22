@@ -214,10 +214,17 @@ function getSubmoduleCheckouts(whiteList) {
 
     // Execution commands will run against the current submodule
     Utils.scopeEnv(() => submoduleCheckouts.forEach((coSuperIndex, superIndex) => {
-      const coSuperHash = Step.recentSuperCommit(coSuperIndex, '%h');
+      let coSuperHash;
 
-      if (!coSuperHash) {
-        throw Error(`Super step ${coSuperIndex} in submodule ${submodule} not found`);
+      if (coSuperIndex == 'root') {
+        coSuperHash = Git.rootHash();
+      }
+      else {
+        const coSuperHash = Step.recentSuperCommit(coSuperIndex, '%h');
+
+        if (!coSuperHash) {
+          throw Error(`Super step ${coSuperIndex} in submodule ${submodule} not found`);
+        }
       }
 
       submoduleCheckouts[superIndex] = coSuperHash;
