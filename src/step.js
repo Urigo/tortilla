@@ -135,6 +135,20 @@ function tagStep(message) {
   Fs.writeFileSync(manualTemplatePath, '');
 
   Git(['add', manualTemplatePath]);
+
+  // Ensure submodules are set to the right branches when picking the new super step
+  Object.keys(Submodule.checkouts()).forEach((submodule) => {
+    const hash = checkouts[submodule].hashes[step];
+
+    Utils.scopeEnv(() => {
+      Git(['checkout', hash]);
+    }, {
+      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    });
+
+    Git(['add', submodule]);
+  });
+
   commitStep(step, message);
 
   // If we're in edit mode all the branches will be set after the rebase
