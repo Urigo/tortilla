@@ -1,4 +1,5 @@
 const Git = require('./git');
+const Paths = require('./paths');
 const Step = require('./step');
 const Utils = require('./utils');
 
@@ -181,6 +182,53 @@ function isSubmodule() {
   }
 }
 
+function getSubmoduleCheckouts(whiteList) {
+  if (whiteList) {
+    whiteList = [].concat(whiteList);
+  }
+
+  const submodules = listSubmodules();
+  const checkouts = Utils.exists(Paths.checkouts) ? require(Paths.checkouts) : {};
+
+  // Applying defaults
+  submodules.forEach((submodule) => {
+    // Create an empty map for that specific submodule to prevent potential future
+    // conflicts
+    if (!checkouts[submodule]) {
+      checkouts[submodule] = [];
+    }
+  });
+
+  Object.keys(checkouts).forEach((coSubmodule) => {
+    // Filter based on white list
+    if (whiteList && !whiteList.includes(coSubmodule)) {
+      delete checkouts[coSubmodule];
+      return;
+    }
+
+    if (!submodules.includes(coSubmodule)) {
+      throw Error(`Submodule ${coSubmodule} not found`);
+    }
+
+    const submoduleCheckouts = checkouts[coSubmodule];
+
+    // Execution commands will run against the current submodule
+    Utils.scopeEnv(() => submoduleCheckouts.forEach((coSuperIndex, superIndex) => {
+      const coSuperHash = Step.recentSuperCommit(coSuperIndex, '%h');
+
+      if (!coSuperHash) {
+        throw Error(`Super step ${coSuperIndex} in submodule ${submodule} not found`);
+      }
+
+      submoduleCheckouts[superIndex] = coSuperHash;
+    }), {
+      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    });
+  });
+
+  return checkouts;
+}
+
 function getSubmoduleName(remote) {
   return remote
     .split('/')
@@ -196,4 +244,5 @@ module.exports = {
   update: updateSubmodules,
   list: listSubmodules,
   isOne: isSubmodule,
+  checkouts: getSubmoduleCheckouts,
 };
