@@ -121,6 +121,10 @@ describe('Step', function () {
       expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
       expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
+
+    it('should set submodule to right revision based on checkouts file', function () {
+
+    });
   });
 
   describe('reword()', function () {
@@ -545,6 +549,14 @@ describe('Step', function () {
       expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
       expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
       expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
+    });
+
+    it('should set all submodules to the right revision based on checkouts file', function () {
+
+    });
+
+    it('should set root commit to the right revision right after submitting command', function () {
+
     });
   });
 

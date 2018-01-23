@@ -242,25 +242,27 @@ function editStep(steps, options = {}) {
   });
 
   // Ensure submodules are set to the right branches when picking the new super step
-  const checkouts = Submodule.checkouts();
+  if (steps[0] == 'root') {
+    const checkouts = Submodule.checkouts();
 
-  Object.keys(checkouts).forEach((submodule) => {
-    // Getting hash for root step
-    const hash = checkouts[submodule].hashes[0];
+    Object.keys(checkouts).forEach((submodule) => {
+      // Getting hash for root step
+      const hash = checkouts[submodule].hashes[0];
 
-    Git(['checkout', hash], {
-      cwd: `${Utils.cwd()}/${submodule}`
+      Git(['checkout', hash], {
+        cwd: `${Utils.cwd()}/${submodule}`
+      });
+
+      Git(['add', submodule]);
     });
 
-    Git(['add', submodule]);
-  });
-
-  Git(['commit', '--amend', '--allow-empty'], {
-    env: {
-      TORTILLA_CHILD_PROCESS: true,
-      GIT_EDITOR: true
-    }
-  });
+    Git(['commit', '--amend', '--allow-empty'], {
+      env: {
+        TORTILLA_CHILD_PROCESS: true,
+        GIT_EDITOR: true
+      }
+    });
+  }
 }
 
 // Adjust all the step indexes from the provided step
