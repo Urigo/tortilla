@@ -604,7 +604,7 @@ describe('Step', function () {
       this.git(['add', testFilePath], { cwd: testModulePath });
       this.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
 
-      const checkoutsPath = this.exec('realpath', ['.tortilla/checkouts.json']);
+      const checkoutsPath = Path.resolve(this.testDir, '.tortilla/checkouts.json');
       Fs.writeFileSync(checkoutsPath, JSON.stringify({
         [testModuleName]: {
           head: 'master',

@@ -133,6 +133,22 @@ function editStep(operations, steps, options) {
     });
   }
 
+  operations.slice().reduce((offset, { message }, index) => {
+    if (!message) return offset;
+
+    const superStep = Step.superDescriptor(message);
+
+    if (!superStep) return offset;
+
+    // Ensure submodules hashes at root
+    operations.splice(index + ++offset, 0, {
+      method: 'exec',
+      command: `node ${Paths.tortilla.submodule} ensure ${superStep.number}`,
+    });
+
+    return offset;
+  }, 0);
+
   // Whether we edit the most recent step or not, rebranching process should be initiated
   const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.rebase} rebranch-super"`;
 
