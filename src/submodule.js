@@ -1,3 +1,4 @@
+const Minimist = require('minimist');
 const Git = require('./git');
 const Paths = require('./paths');
 const Step = require('./step');
@@ -6,6 +7,23 @@ const Utils = require('./utils');
 
 const exec = Utils.exec;
 
+
+(function () {
+  if (require.main !== module) {
+    return;
+  }
+
+  const argv = Minimist(process.argv.slice(2), {
+    string: ['_'],
+  });
+
+  const method = argv._[0];
+  const arg1 = argv._[1];
+
+  switch (method) {
+    case 'ensure': return ensureSubmodules(arg1);
+  }
+}());
 
 function addSubmodules(remotes) {
   // remote-name mapping loop
@@ -51,8 +69,6 @@ function addSubmodules(remotes) {
   });
 
   Git.print(['add', '.gitmodules']);
-
-  Submodule.ensure('root');
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
@@ -186,6 +202,8 @@ function isSubmodule() {
   }
 }
 
+// Ensures that all submodules are set to the current hash based on the checkouts file
+// and the provided step index
 function ensureSubmodules(step) {
   if (step == 'root') {
     step = 0;
@@ -253,7 +271,7 @@ function getSubmoduleCheckouts(whiteList) {
       }
       else {
         coSuperHash = Git([
-          'log', head, `--grep=^Step ${coSuperIndex}:`, '--format=%h'
+          'log', head, `--grep=^Step ${coSuperIndex}:`, '--format=%H'
         ], { cwd });
       }
 

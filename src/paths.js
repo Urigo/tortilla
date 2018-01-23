@@ -36,6 +36,7 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
   paths: resolve(__dirname, 'paths.js'),
   release: resolve(__dirname, 'release.js'),
   step: resolve(__dirname, 'step.js'),
+  submodule: resolve(__dirname, 'submodule.js'),
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
   skeleton: 'https://github.com/Urigo/tortilla-skeleton.git',

@@ -79,6 +79,12 @@ function editStep(operations, steps, options) {
       const operation = operations[0];
       operation.method = 'edit';
       step.operation = operation;
+
+      // Ensure submodules hashes at root
+      operations.splice(1, 0, {
+        method: 'exec',
+        command: `node ${Paths.tortilla.submodule} ensure root`,
+      });
     }
     else {
       const operation = operations.find((operation) => {

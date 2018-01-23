@@ -583,12 +583,41 @@ describe('Step', function () {
       expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
 
-    it('should set all submodules to the right revision based on checkouts file', function () {
+    it('should adjust submodules on the run when editing a step', function () {
+      this.slow(15000);
 
-    });
+      this.tortilla(['step', 'tag', '-m', 'foo']);
+      this.tortilla(['step', 'tag', '-m', 'bar']);
 
-    it('should set root commit to the right revision right after submitting command', function () {
+      this.tortilla(['step', 'edit', '--root']);
 
+      const testRemote = this.createRepo();
+      const testModuleName = 'test_submodule';
+
+      this.git(['submodule', 'add', testRemote, testModuleName]);
+      this.git(['add', testModuleName]);
+
+      const testModulePath = Path.resolve(this.testDir, testModuleName);
+      const testFilePath = `${testModulePath}/test.txt`;
+
+      Fs.writeFileSync(testFilePath, '');
+      this.git(['add', testFilePath], { cwd: testModulePath });
+      this.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
+
+      const checkoutsPath = this.exec('realpath', ['.tortilla/checkouts.json']);
+      Fs.writeFileSync(checkoutsPath, JSON.stringify({
+        [testModuleName]: {
+          head: 'master',
+          steps: [1, 1, 'root'],
+        }
+      }));
+      this.git(['add', checkoutsPath]);
+
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      const msg = this.git(['log', '--format=%s', '-1'], { cwd: testModulePath });
+      expect(msg).to.equal('New Repo');
     });
   });
 
