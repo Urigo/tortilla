@@ -52,6 +52,8 @@ function addSubmodules(remotes) {
 
   Git.print(['add', '.gitmodules']);
 
+  Submodule.ensure('root');
+
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
     Git.print(['commit', '--amend'], {
@@ -96,6 +98,8 @@ function removeSubmodules(submodules) {
     Git(['rm', '--cached', '-rf', submodule]);
     Git.print(['add', submodule]);
   });
+
+  Submodule.ensure('root');
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
@@ -182,6 +186,32 @@ function isSubmodule() {
   }
 }
 
+function ensureSubmodules(step) {
+  if (step == 'root') {
+    step = 0;
+  }
+
+  // Ensure submodules are set to the right branches when picking the new super step
+  const checkouts = getSubmoduleCheckouts();
+
+  Object.keys(checkouts).forEach((submodule) => {
+    const hash = checkouts[submodule].hashes[step];
+
+    Git(['checkout', hash], {
+      cwd: `${Utils.cwd()}/${submodule}`
+    });
+
+    Git(['add', submodule]);
+  });
+
+  Git(['commit', '--amend', '--allow-empty'], {
+    env: {
+      TORTILLA_CHILD_PROCESS: true,
+      GIT_EDITOR: true
+    }
+  });
+}
+
 function getSubmoduleCheckouts(whiteList) {
   if (whiteList) {
     whiteList = [].concat(whiteList);
@@ -215,15 +245,16 @@ function getSubmoduleCheckouts(whiteList) {
 
     // Execution commands will run against the current submodule
     steps.forEach((coSuperIndex, superIndex) => {
+      const cwd = `${Utils.cwd()}/${coSubmodule}`;
       let coSuperHash;
 
       if (coSuperIndex == 'root') {
-        coSuperHash = Git.rootHash();
+        coSuperHash = Git(['rev-list', '--max-parents=0', 'HEAD'], { cwd });
       }
       else {
-        coSuperHash = Git(['log', head, `--grep=^Step ${coSuperIndex}:`, '--format=%h'], {
-          cwd: `${Utils.cwd()}/${coSubmodule}`
-        });
+        coSuperHash = Git([
+          'log', head, `--grep=^Step ${coSuperIndex}:`, '--format=%h'
+        ], { cwd });
       }
 
       if (!coSuperHash) {
@@ -252,5 +283,5 @@ module.exports = {
   update: updateSubmodules,
   list: listSubmodules,
   isOne: isSubmodule,
-  checkouts: getSubmoduleCheckouts,
+  ensure: ensureSubmodules,
 };

@@ -140,27 +140,7 @@ function tagStep(message) {
 
   // Note that first we need to commit the new step and only then read the checkouts file
   // so we can have an updated hash list
-  const checkouts = Submodule.checkouts();
-
-  // Ensure submodules are set to the right branches when picking the new super step
-  Object.keys(checkouts).forEach((submodule) => {
-    const hash = checkouts[submodule].hashes[step];
-
-    if (!hash) return;
-
-    Git(['checkout', hash], {
-      cwd: `${Utils.cwd()}/${submodule}`
-    });
-
-    Git(['add', submodule]);
-  });
-
-  Git(['commit', '--amend', '--allow-empty'], {
-    env: {
-      TORTILLA_CHILD_PROCESS: true,
-      GIT_EDITOR: true
-    }
-  });
+  Submodule.ensure(step);
 
   // If we're in edit mode all the branches will be set after the rebase
   if (!Git.rebasing()) {
@@ -243,25 +223,7 @@ function editStep(steps, options = {}) {
 
   // Ensure submodules are set to the right branches when picking the new super step
   if (steps[0] == 'root') {
-    const checkouts = Submodule.checkouts();
-
-    Object.keys(checkouts).forEach((submodule) => {
-      // Getting hash for root step
-      const hash = checkouts[submodule].hashes[0];
-
-      Git(['checkout', hash], {
-        cwd: `${Utils.cwd()}/${submodule}`
-      });
-
-      Git(['add', submodule]);
-    });
-
-    Git(['commit', '--amend', '--allow-empty'], {
-      env: {
-        TORTILLA_CHILD_PROCESS: true,
-        GIT_EDITOR: true
-      }
-    });
+    Submodule.ensure('root');
   }
 }
 

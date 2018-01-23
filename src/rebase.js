@@ -95,25 +95,7 @@ function superPickStep(hash) {
     input: fixedPatch,
   });
 
-  // Ensure submodules are set to the right branches when picking the new super step
-  const checkouts = Submodule.checkouts();
-
-  Object.keys(checkouts).forEach((submodule) => {
-    const hash = checkouts[submodule].hashes[newStep];
-
-    Git(['checkout', hash], {
-      cwd: `${Utils.cwd()}/${coSubmodule}`
-    });
-
-    Git(['add', submodule]);
-  });
-
-  Git(['commit', '--amend', '--allow-empty'], {
-    env: {
-      TORTILLA_CHILD_PROCESS: true,
-      GIT_EDITOR: true
-    }
-  });
+  Submodule.ensure(newStep);
 }
 
 // Updates the branches referencing all super steps
