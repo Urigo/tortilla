@@ -4,8 +4,8 @@ const Path = require('path');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
-const Submodule = require('./submodule');
 const Utils = require('./utils');
+let Submodule;
 
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
@@ -136,20 +136,30 @@ function tagStep(message) {
 
   Git(['add', manualTemplatePath]);
 
+  commitStep(step, message);
+
+  // Note that first we need to commit the new step and only then read the checkouts file
+  // so we can have an updated hash list
+  const checkouts = Submodule.checkouts();
+
   // Ensure submodules are set to the right branches when picking the new super step
-  Object.keys(Submodule.checkouts()).forEach((submodule) => {
+  Object.keys(checkouts).forEach((submodule) => {
     const hash = checkouts[submodule].hashes[step];
 
-    Utils.scopeEnv(() => {
-      Git(['checkout', hash]);
-    }, {
-      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    if (!hash) return;
+
+    Git(['checkout', hash], {
+      cwd: `${Utils.cwd()}/${submodule}`
     });
 
     Git(['add', submodule]);
   });
 
-  commitStep(step, message);
+  Git(['commit', '--amend'], {
+    env: {
+      GIT_EDITOR: true
+    }
+  });
 
   // If we're in edit mode all the branches will be set after the rebase
   if (!Git.rebasing()) {
@@ -237,16 +247,18 @@ function editStep(steps, options = {}) {
     // Getting hash for root step
     const hash = checkouts[submodule].hashes[0];
 
-    Utils.scopeEnv(() => {
-      Git(['checkout', hash]);
-    }, {
-      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    Git(['checkout', hash], {
+      cwd: `${Utils.cwd()}/${submodule}`
     });
 
     Git(['add', submodule]);
   });
 
-  Git(['commit', '--amend'], { GIT_EDITOR: true });
+  Git(['commit', '--amend'], {
+    env: {
+      GIT_EDITOR: true
+    }
+  });
 }
 
 // Adjust all the step indexes from the provided step
@@ -525,3 +537,5 @@ module.exports = {
   disposeStepMap,
   updateStepMap,
 };
+
+Submodule = require('./submodule');

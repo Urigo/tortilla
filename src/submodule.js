@@ -198,47 +198,39 @@ function getSubmoduleCheckouts(whiteList) {
     }
 
     if (!submodules.includes(coSubmodule)) {
-      throw Error(`Submodule ${coSubmodule} not found`);
+      throw Error(`Submodule "${coSubmodule}" not found`);
     }
 
     const { head, steps } = checkouts[coSubmodule];
 
-    if (head) {
-      throw Error(`Submodule ${coSubmodule} head specified`);
+    if (!head) {
+      throw Error(`Submodule "${coSubmodule}" head not specified`);
     }
 
-    if (steps) {
-      throw Error(`Submodule ${coSubmodule} steps specified`);
+    if (!steps) {
+      throw Error(`Submodule "${coSubmodule}" steps not specified`);
     }
 
-    const hashes = checkouts[coSubmodule].hashes = {};
+    const hashes = checkouts[coSubmodule].hashes = [];
 
     // Execution commands will run against the current submodule
-    Utils.scopeEnv(() => {
-      const origHead = Git(['rev-parse', 'HEAD']);
+    steps.forEach((coSuperIndex, superIndex) => {
+      let coSuperHash;
 
-      Git(['checkout', head]);
+      if (coSuperIndex == 'root') {
+        coSuperHash = Git.rootHash();
+      }
+      else {
+        coSuperHash = Git(['log', head, `--grep=^Step ${coSuperIndex}:`, '--format=%h'], {
+          cwd: `${Utils.cwd()}/${coSubmodule}`
+        });
+      }
 
-      steps.forEach((coSuperIndex, superIndex) => {
-        let coSuperHash;
+      if (!coSuperHash) {
+        throw Error(`Super step ${coSuperIndex} in submodule "${coSubmodule}" not found`);
+      }
 
-        if (coSuperIndex == 'root') {
-          coSuperHash = Git.rootHash();
-        }
-        else {
-          const coSuperHash = Step.recentSuperCommit(coSuperIndex, '%h');
-
-          if (!coSuperHash) {
-            throw Error(`Super step ${coSuperIndex} in submodule ${submodule} not found`);
-          }
-        }
-
-        hashes[superIndex] = coSuperHash;
-      });
-
-      Git(['checkout', origHead]);
-    }, {
-      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+      hashes.push(coSuperHash);
     });
   });
 
