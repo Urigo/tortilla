@@ -101,16 +101,19 @@ function superPickStep(hash) {
   Object.keys(checkouts).forEach((submodule) => {
     const hash = checkouts[submodule].hashes[newStep];
 
-    Utils.scopeEnv(() => {
-      Git(['checkout', hash]);
-    }, {
-      TORTILLA_CWD: `${Utils.cwd()}/${coSubmodule}`
+    Git(['checkout', hash], {
+      cwd: `${Utils.cwd()}/${coSubmodule}`
     });
 
     Git(['add', submodule]);
   });
 
-  Git(['commit', '--amend'], { GIT_EDITOR: true });
+  Git(['commit', '--amend', '--allow-empty'], {
+    env: {
+      TORTILLA_CHILD_PROCESS: true,
+      GIT_EDITOR: true
+    }
+  });
 }
 
 // Updates the branches referencing all super steps

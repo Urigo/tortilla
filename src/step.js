@@ -155,8 +155,9 @@ function tagStep(message) {
     Git(['add', submodule]);
   });
 
-  Git(['commit', '--amend'], {
+  Git(['commit', '--amend', '--allow-empty'], {
     env: {
+      TORTILLA_CHILD_PROCESS: true,
       GIT_EDITOR: true
     }
   });
@@ -254,8 +255,9 @@ function editStep(steps, options = {}) {
     Git(['add', submodule]);
   });
 
-  Git(['commit', '--amend'], {
+  Git(['commit', '--amend', '--allow-empty'], {
     env: {
+      TORTILLA_CHILD_PROCESS: true,
       GIT_EDITOR: true
     }
   });
