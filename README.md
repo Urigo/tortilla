@@ -37,6 +37,8 @@ See:
 - [releases](#releases)
   - [release-tags](#release-tags)
   - [history-branches](#history-branches)
+- [submodules](#submodules)
+  - [checkouts](#checkouts)
 
 ### Steps
 
@@ -241,6 +243,31 @@ The history is specific for a certain branch. Its name should end with `history`
     master@1.0.0: Add favorites page
     master@0.0.2: Update step 2
     master@0.0.1: Initial tutorial creation
+
+### Submodules
+
+Often times, we would like to have a single repository where we include all the manual files, and the implementation logic would be implemented in different repositories which will be referenced from the main repository using git's submodules architecture; E.g. a single repository that includes submodules referencing the client and the server. Another advantage for that architecture is that we can implement similar applications using different stacks, or having a single back-end for multiple front-end applications, with almost identical instructions.
+
+**Related CLI:** [tortilla-submodule CLI](#tortilla-submodule-cli)
+
+#### Checkouts
+
+There would be cases where submodule's steps won't be correlated to the same step indices in the main repository; E.g. in manual file for step 3 the client would be set to step 1 and the server would be et to step 2. In-order to specify which steps should be checked out in the submodules for each step in the main repository, we would need to specify a `checkouts.json` file under the `.tortilla` directory. Here's an example checkouts file:
+
+```json
+{
+  "server": {
+    "head": "master",
+    "steps": ["root", "root", 1, 1]
+  },
+  "client": {
+    "head": "master",
+    "steps": ["root", 1, 1, 2]
+  }
+}
+```
+
+Each key represents a submodule name. The `head` property represents which branch should be checked out before looking for the steps at each submodule, and the `steps` property represents the steps that should be checked out at the submodule at each step at the main repository (e.g. "root" would be checked out at the server and step number 1 would be checked out in the client for step 1 in the main repository). Needless to say that submodules should be defined beforehand.
 
 ## Quick Startup
 
