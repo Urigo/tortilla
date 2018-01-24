@@ -13,7 +13,7 @@ let node;
 
 (function () {
   // Defaults to process's current working dir
-  cwd = process.cwd();
+  cwd = process.env.TORTILLA_CWD || process.cwd();
 
   try {
     cwd = ChildProcess.execFileSync('git', [

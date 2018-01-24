@@ -1,5 +1,7 @@
 const Chai = require('chai');
+const Fs = require('fs');
 const Path = require('path');
+const Pack = require('../package.json');
 const Renderer = require('../src/renderer');
 const Translator = require('../src/translator');
 
@@ -58,6 +60,12 @@ describe('Template Helpers', function() {
 
     it('should reference commit if repo URL is defined in package.json', function () {
       this.applyTestPatch('add-file');
+
+      const packPath = this.exec('realpath', ['package.json']);
+      const pack = JSON.parse(Fs.readFileSync(packPath).toString());
+
+      pack.repository = Pack.repository;
+      Fs.writeFileSync(packPath, JSON.stringify(pack));
 
       const view = Renderer.renderTemplate('{{{diffStep 1.1}}}', {
         viewPath: 'dummy'

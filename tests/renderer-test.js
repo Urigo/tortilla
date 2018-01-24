@@ -122,7 +122,7 @@ describe('Renderer', function () {
   });
 
   describe('resolve()', function () {
-    it('should resolve path relatively to the current rendered view file path and git host', function () {
+    it('should resolve path relatively to the current rendered view file path', function () {
       Renderer.registerHelper('testHelper', function () {
         return Renderer.resolve('../templates/step1.md');
       });
@@ -131,9 +131,7 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal([
-        'https://github.com/Urigo/tortilla/tree/master@0.0.0/.tortilla/manuals/templates/step1.md'
-      ].join('\n'));
+      expect(view).to.equal('../templates/step1.md');
     });
 
     it('should replace tilde (~) with root', function () {
@@ -145,9 +143,7 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal([
-        'https://github.com/Urigo/tortilla/commit/abc0xyz'
-      ].join('\n'));
+      expect(view).to.equal('~/commit/abc0xyz');
     });
   });
 

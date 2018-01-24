@@ -103,7 +103,8 @@ function registerHelper(name, helper, options) {
       handlebars.call = oldCall;
     }
 
-    if (typeof out !== 'string') {
+    if (typeof out !== 'string' &&
+        !(out instanceof String)) {
       throw Error([
         'Template helper', name, 'must return a string!',
         'Instead it returned', out,

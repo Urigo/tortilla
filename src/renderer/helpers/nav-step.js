@@ -1,7 +1,10 @@
+const Path = require('path');
 const Renderer = require('..');
 const Git = require('../../git');
+const Paths = require('../../paths');
 const Step = require('../../step');
 const Translator = require('../../translator');
+const Utils = require('../../utils');
 
 /**
   Provides a navigation bar between steps. The navigation bar should be rendered
@@ -26,10 +29,14 @@ Renderer.registerHelper('navStep', (options) => {
       return '';
     }
 
+    const ref = options.hash.ref || Path.relative(
+      Utils.cwd(), Path.resolve(Paths.manuals.views, 'step1.md')
+    );
+
     return Renderer.renderTemplateFile('nav-step', {
       nextOnly: true,
       text: t('nav.begin'),
-      ref: options.hash.ref || Renderer.resolve('step1.md'),
+      ref,
     });
   }
 
