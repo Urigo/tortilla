@@ -369,7 +369,7 @@ Submodules are useful whenever you would like to split the tutorial into differe
 
 **command:** `tortilla submodule add <remotes...>`
 
-Add a new submodules to the root commit.
+Add a new submodules to the root commit. We can either provide a set of remotes or a remote following by its submodule name. A remote and a submodule will be differentiated based on whether they contain a `/` character or not, which indicates that a remote path was provided.
 
 **command:** `tortilla submodule remove [submodules...]`
 

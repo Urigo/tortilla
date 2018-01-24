@@ -7,6 +7,27 @@ const exec = Utils.exec;
 
 
 function addSubmodules(remotes) {
+  // remote-name mapping loop
+  for (let i = 0; i < remotes.length; i++) {
+    const remote = remotes[i];
+    let name = remotes[i + 1];
+
+    // No remote name was provided, but yet another remote
+    if (name && !name.includes('/')) {
+      remotes[i++] = { remote, name };
+
+      continue;
+    }
+
+    name = getSubmoduleName(remote);
+
+    if (!remote.includes('/')) {
+      throw Error('Provided remote is not a path');
+    }
+
+    remotes[i] = { remote, name };
+  }
+
   const rebasing = Git.rebasing();
 
   // Submodule can only be added in the root commit, therefore in case we're rebasing
@@ -23,9 +44,9 @@ function addSubmodules(remotes) {
     Step.edit('root');
   }
 
-  remotes.forEach((remote) => {
-    Git.print(['submodule', 'add', remote]);
-    Git.print(['add', getSubmoduleName(remote)]);
+  remotes.forEach(({ remote, name }) => {
+    Git.print(['submodule', 'add', remote, name]);
+    Git.print(['add', name]);
   });
 
   Git.print(['add', '.gitmodules']);
