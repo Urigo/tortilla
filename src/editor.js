@@ -94,39 +94,38 @@ function editStep(operations, steps, options) {
   });
 
   // Probably editing the recent step in which case no sortments are needed
-  if (operations.length <= 1) {
-    return;
-  }
+  if (operations.length > 1) {
+    // Prepare meta-data for upcoming sortments
+    const descriptor = Step.descriptor(operations[0].message);
 
-  // Prepare meta-data for upcoming sortments
-  const descriptor = Step.descriptor(operations[0].message);
+    // Step exists
+    if (descriptor) {
+      LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+      LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
+    } else { // Probably root commit
+      LocalStorage.setItem('REBASE_OLD_STEP', 'root');
+      LocalStorage.setItem('REBASE_NEW_STEP', 'root');
+    }
 
-  // Step exists
-  if (descriptor) {
-    LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
-    LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
-  } else { // Probably root commit
-    LocalStorage.setItem('REBASE_OLD_STEP', 'root');
-    LocalStorage.setItem('REBASE_NEW_STEP', 'root');
-  }
+    const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
 
-  const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
+    // Continue sorting the steps after step editing has been finished
+    steps.forEach((step) => {
+      const operation = step.operation;
 
-  // Continue sorting the steps after step editing has been finished
-  steps.forEach((step) => {
-    const operation = step.operation;
+      if (!operation) return;
 
-    if (!operation) return;
+      const index = operations.indexOf(operation);
 
-    const index = operations.indexOf(operation);
-
-    // Insert the following operation AFTER the step's operation
-    operations.splice(index + 1, 0, {
-      method: 'exec',
-      command: `${sort} git rebase --edit-todo`,
+      // Insert the following operation AFTER the step's operation
+      operations.splice(index + 1, 0, {
+        method: 'exec',
+        command: `${sort} git rebase --edit-todo`,
+      });
     });
-  });
+  }
 
+  // Whether we edit the most recent step or not, rebranching process should be initiated
   const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.rebase} rebranch-super"`;
 
   // After rebase has finished, update the brancehs referencing the super steps

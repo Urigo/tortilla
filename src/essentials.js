@@ -116,6 +116,7 @@ function ensureTortilla(projectDir) {
 
   const projectPaths = projectDir.resolve ? projectDir : Paths.resolveProject(projectDir);
   const localStorage = LocalStorage.create(projectPaths);
+  const cwd = projectPaths.resolve();
 
   // If tortilla is already initialized don't do anything
   const isInitialized = localStorage.getItem('INIT');
@@ -150,9 +151,18 @@ function ensureTortilla(projectDir) {
     Fs.chmodSync(hookPath, '755');
   });
 
+  // Create root branch reference for continues integration testing
+  const activeBranchName = Git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd });
+  try {
+    Git(['rev-parse', `${activeBranchName}-root`], { cwd });
+  }
+  catch (e) {
+    Git(['branch', `${activeBranchName}-root`, activeBranchName], { cwd });
+  }
+
   // Ensure submodules are initialized
-  Git.print(['submodule', 'init']);
-  Git.print(['submodule', 'update']);
+  Git.print(['submodule', 'init'], { cwd });
+  Git.print(['submodule', 'update'], { cwd });
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);

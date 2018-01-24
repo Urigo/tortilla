@@ -119,6 +119,7 @@ describe('Step', function () {
       expect(this.git(['rev-parse', 'HEAD~0'])).to.equal(this.git(['rev-parse', 'master-step3']));
       expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
       expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
+      expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
   });
 
@@ -540,9 +541,10 @@ describe('Step', function () {
 
       this.git(['rebase', '--continue']);
 
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      expect(this.git(['rev-parse', 'HEAD~0'])).to.equal(this.git(['rev-parse', 'master-step3']));
+      expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
+      expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
+      expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
   });
 

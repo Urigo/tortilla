@@ -20,6 +20,8 @@ const Step = require('./step');
   const method = argv._[0];
   const arg1 = argv._[1];
 
+  LocalStorage.setItem('DEBUG', argv.toString());
+
   switch (method) {
     case 'reword': return rewordRecentStep(arg1);
     case 'super-pick': return superPickStep(arg1);
@@ -96,6 +98,15 @@ function superPickStep(hash) {
 function rebranchSuperSteps() {
   const rootBranch = Git.activeBranchName();
 
+  // Delete root
+  try {
+    Git(['branch', '-D', `${rootBranch}-root`]);
+  }
+  catch (e) {
+    // Ignore
+  }
+
+  // Delete steps
   Git(['branch']).split('\n').filter((branch) => {
     return branch.match(new RegExp(`${rootBranch}-step\\d+`));
   })
@@ -103,6 +114,10 @@ function rebranchSuperSteps() {
     Git(['branch', '-D', branch.trim()]);
   });
 
+  // Branch root
+  Git(['branch', `${rootBranch}-root`, Git.rootHash()]);
+
+  // Branch steps
   Git(['log', '--format=%H %s', '--grep=^Step [0-9]\\+:'])
     .split('\n')
     .filter(Boolean)
