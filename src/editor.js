@@ -87,8 +87,9 @@ function editStep(operations, steps, options) {
       });
     }
     else {
-      const operation = operations.find((operation) => {
-        const descriptor = Step.descriptor(operation.message);
+      const operation = operations.find(({ message }) => {
+        if (!message) return;
+        const descriptor = Step.descriptor(message);
         return descriptor && descriptor.number == step;
       });
 
