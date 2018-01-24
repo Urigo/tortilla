@@ -30,7 +30,7 @@
     "chai": "3.5.0",
     "escape-string-regexp": "1.0.5",
     "eslint": "3.19.0",
-    "eslint-config-airbnb-base": "11.3.2",
+    "eslint-config-airbnb-base": "12.1.0",
     "eslint-plugin-import": "2.8.0",
     "mocha": "3.5.3"
   },
