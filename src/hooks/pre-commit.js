@@ -62,7 +62,9 @@ const Utils = require('../utils');
 
       throw Error(`Staged files must be one of:\n${filesList}`);
     }
-  } else if (stepDescriptor) { // Else, if this is not root commit prohibit manual files modifications
+  }
+  // Else, if this is not root commit prohibit manual files modifications
+  else if (stepDescriptor) {
     stagedFiles = Git.stagedFiles(/^\.tortilla\/manuals\//);
 
     if (stagedFiles.length) {

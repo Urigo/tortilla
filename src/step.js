@@ -289,7 +289,9 @@ function commitStep(step, message, options = {}) {
   try {
     // commit
     Git.print(argv);
-  } catch (err) { // Can't use finally because local-storage also uses try-catch
+  }
+  // Can't use finally because local-storage also uses try-catch
+  catch (err) {
     // Clearing storage to prevent conflicts with upcoming commits
     LocalStorage.removeItem('HOOK_STEP');
     throw err;

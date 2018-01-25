@@ -1,5 +1,6 @@
 const Fs = require('fs-extra');
 const Path = require('path');
+const Tmp = require('tmp');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
 const Utils = require('./utils');
@@ -8,7 +9,9 @@ const Utils = require('./utils');
   Contains general git utilities.
  */
 
+const exec = Utils.exec;
 const git = Utils.git;
+const conflict = /\n<<<<<<< .+(\n(?:.|\n)+)\n=======(\n(?:.|\n)+)\n>>>>>>> .+/;
 
 
 // Tells if rebasing or not
@@ -104,8 +107,47 @@ function getRoot() {
   }
 }
 
+function edit(initialContent) {
+  const editor = getEditor();
+  const file = Tmp.fileSync({ unsafeCleanup: true });
+
+  Fs.writeFileSync(file.name, initialContent);
+  exec.print(editor, [file.name]);
+
+  const content = Fs.readFileSync(file.name).toString();
+  file.removeCallback();
+
+  return content;
+}
+
+// https://github.com/git/git/blob/master/git-rebase--interactive.sh#L257
+function getEditor() {
+  let editor = process.env.GIT_EDITOR;
+
+  if (!editor) try {
+    editor = git(['config', 'core.editor']);
+  }
+  catch (e) {
+    // Ignore
+  }
+
+  if (!editor) try {
+    editor = git(['var', 'GIT_EDITOR']);
+  }
+  catch (e) {
+    // Ignore
+  }
+
+  if (!editor) {
+    throw Error('Git editor could not be found');
+  }
+
+  return editor;
+}
+
 
 module.exports = Utils.extend(git.bind(null), git, {
+  conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,
   gonnaAmend,
@@ -115,4 +157,6 @@ module.exports = Utils.extend(git.bind(null), git, {
   activeBranchName: getActiveBranchName,
   rootHash: getRootHash,
   root: getRoot,
+  edit,
+  editor: getEditor,
 });

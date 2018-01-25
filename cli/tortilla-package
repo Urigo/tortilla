@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+const Program = require('commander');
+const LocalStorage = require('../src/local-storage');
+const Package = require('../src/package');
+
+/**
+  Package CLI.
+ */
+
+Program
+  .command('udeps')
+  .description('Updates dependencies and auto-solves conflicts')
+  .option('-s, --src [src]', 'A predefined file with the updated dependencies')
+  .action((options) => {
+    LocalStorage.assertTortilla(true);
+    Package.updateDependencies(options.src);
+  });
+
+Program.parse(process.argv);

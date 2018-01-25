@@ -3,7 +3,6 @@ const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Step = require('./step');
 const Submodule = require('./submodule');
-const Utils = require('./utils');
 
 /**
   The rebase module is responsible for performing tasks done by the editor using an
@@ -16,7 +15,7 @@ const Utils = require('./utils');
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_'],
+    string: ['_']
   });
 
   const method = argv._[0];
