@@ -1,6 +1,7 @@
 const Fs = require('fs-extra');
 const Path = require('path');
 const Git = require('./git');
+const Manual = require('./manual');
 const Paths = require('./paths');
 const Step = require('./step');
 const Uitls = require('./utils');
@@ -35,7 +36,7 @@ function updateDependencies(updatedDeps) {
     let initialContent =
       "# Please pick the new versions of the project's dependencies\n\n";
 
-     initialContent += Object.keys(deps).sort().map((dep) => {
+    initialContent += Object.keys(deps).sort().map((dep) => {
       return `${dep} ${deps[dep]}`;
     }).join('\n');
 
@@ -65,13 +66,16 @@ function updateDependencies(updatedDeps) {
   ]).split('\n')
     .map(line => Step.descriptor(line).number);
 
+  const minPackSuperStep = Math.min.apply(Math, packSteps).toFixed();
+
   const missingSuperSteps = Git([
     'log',
     '--format=%s',
     '--grep=^Step [0-9]\\+\\.[0-9]\\+:'
   ]).split('\n')
     .map(line => Step.descriptor(line).number.toString())
-    .filter(step => packSteps.includes(step));
+    .filter(step => packSteps.includes(step))
+    .filter(step => step >= minPackSuperStep);
 
   const steps = []
     .concat(packSteps)
@@ -150,6 +154,14 @@ function updateDependencies(updatedDeps) {
 
     Git.print(['add', Paths.npm.package]);
     Git.print(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+
+    // If this is root commit or a super-step, re-render the correlated manual
+    const commitMsg = Git.recentCommit(['--format=%s']);
+    const isSubStep = !!Step.subDescriptor(commitMsg);
+
+    if (!isSubStep) {
+      Manual.render();
+    }
 
     try {
       Git.print(['rebase', '--continue']);
