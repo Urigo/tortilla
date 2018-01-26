@@ -112,7 +112,7 @@ function edit(initialContent) {
   const file = Tmp.fileSync({ unsafeCleanup: true });
 
   Fs.writeFileSync(file.name, initialContent);
-  exec.print(editor, [file.name]);
+  exec.print('sh', ['-c', `${editor} ${file.name}`]);
 
   const content = Fs.readFileSync(file.name).toString();
   file.removeCallback();

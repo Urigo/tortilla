@@ -410,9 +410,9 @@ Update submodules in the root commit. If non was provided - will update all subm
 
 `package.json` related commands are useful when we wanna update our dependencies' versions all across the tutorial, without needing to deal with any conflicts across the process.
 
-**command:** `tortilla pacakge update-deps [src]`
+**command:** `tortilla pacakge update-deps`
 
-This will start the dependencies updating process by creating a temporary file will contain a list of all our dependencies (merged with dev and peer) where we can specify the new versions that we would like to use in our tutorial. Once this file has been saved and closed Tortilla will handle the rebasing process. An optional argument can be provided to specify the path of a pre-defined file with a list of all the new versions.
+This will start the dependencies updating process by creating a temporary file will contain a list of all our dependencies (merged with dev and peer) where we can specify the new versions that we would like to use in our tutorial. Once this file has been saved and closed Tortilla will handle the rebasing process.
 
 ## License
 

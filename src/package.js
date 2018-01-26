@@ -15,12 +15,7 @@ const Uitls = require('./utils');
 // the manifest on the run. Rebase conflicts will be resolved automatically
 function updateDependencies(updatedDeps) {
   if (updatedDeps) {
-    if (typeof updatedDeps == 'string') {
-      const src = Path.absolute(Utils.cwd(), updatedDeps);
-
-      updatedDeps = Fs.readFileSync(src).toString();
-    }
-    else if (!(updatedDeps instanceof Object)) {
+    if (!(updatedDeps instanceof Object)) {
       throw TypeError('New dependencies must be described using an object');
     }
   }
@@ -40,17 +35,13 @@ function updateDependencies(updatedDeps) {
       return `${dep} ${deps[dep]}`;
     }).join('\n');
 
-    updatedDeps = Git.edit(initialContent);
-  }
-
-  // Raw content from file
-  if (typeof updatedDeps == 'string') {
-    updatedDeps = updatedDeps
+    updatedDeps = Git.edit(initialContent)
+      .trim()
       .replace(/# .+/g, '')
       .split('\n')
       .map(line => line.trim())
       .filter(Boolean)
-      .map(line => line.split(' '))
+      .map(line => line.split(/\s+/))
       .reduce((updatedDeps, [dep, version]) => {
         updatedDeps[dep] = version;
         return updatedDeps;

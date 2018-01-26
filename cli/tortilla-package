@@ -10,10 +10,9 @@ const Package = require('../src/package');
 Program
   .command('update-deps')
   .description('Updates dependencies and auto-solves conflicts')
-  .option('-s, --src [src]', 'A predefined file with the updated dependencies')
   .action((options) => {
     LocalStorage.assertTortilla(true);
-    Package.updateDependencies(options.src);
+    Package.updateDependencies();
   });
 
 Program.parse(process.argv);
