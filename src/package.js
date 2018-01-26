@@ -17,7 +17,7 @@ function updateDependencies(updatedDeps) {
     if (typeof updatedDeps == 'string') {
       const src = Path.absolute(Utils.cwd(), updatedDeps);
 
-      updatedDeps = JSON.parse(Fs.readFileSync(src).toString());
+      updatedDeps = Fs.readFileSync(src).toString();
     }
     else if (!(updatedDeps instanceof Object)) {
       throw TypeError('New dependencies must be described using an object');
@@ -26,18 +26,34 @@ function updateDependencies(updatedDeps) {
   else {
     const pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
 
-    let deps = Object.assign({},
+    const deps = Object.assign({},
       pack.dependencies,
       pack.devDependencies,
       pack.peerDependencies
     );
 
-    deps = Object.keys(deps).sort().reduce((sortedDeps, key) => {
-      sortedDeps[key] = deps[key];
-      return sortedDeps;
-    }, {});
+    let initialContent =
+      "# Please pick the new versions of the project's dependencies\n\n";
 
-    updatedDeps = JSON.parse(Git.edit(JSON.stringify(deps, null, 2)));
+     initialContent += Object.keys(deps).sort().map((dep) => {
+      return `${dep} ${deps[dep]}`;
+    }).join('\n');
+
+    updatedDeps = Git.edit(initialContent);
+  }
+
+  // Raw content from file
+  if (typeof updatedDeps == 'string') {
+    updatedDeps = updatedDeps
+      .replace(/# .+/g, '')
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.split(' '))
+      .reduce((updatedDeps, [dep, version]) => {
+        updatedDeps[dep] = version;
+        return updatedDeps;
+      }, {});
   }
 
   const packSteps = Git([
