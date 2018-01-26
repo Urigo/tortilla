@@ -8,7 +8,7 @@ const Package = require('../src/package');
  */
 
 Program
-  .command('udeps')
+  .command('update-deps')
   .description('Updates dependencies and auto-solves conflicts')
   .option('-s, --src [src]', 'A predefined file with the updated dependencies')
   .action((options) => {
