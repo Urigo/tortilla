@@ -77,10 +77,18 @@ function superPickStep(hash) {
   const stepMap = Step.getStepMap();
 
   if (stepMap) {
+    // The submodule cwd was given from another process of tortilla
+    const submodule = Submodule.getLocalName(process.env.TORTILLA_SUBMODULE_CWD);
     const diffStepPattern = /\{\{\s*diffStep\s+(\d+\.\d+).*\}\}/g;
 
     // Replace indexes presented in diffStep() template helpers
     fixedPatch = fixedPatch.replace(diffStepPattern, (helper, oldStep) => {
+      let helperSubmodule = helper.match(/module="?([^\s"]+)"?/);
+      helperSubmodule = helperSubmodule ? helperSubmodule[1] : '';
+
+      // Don't replace anything if submodules don't match
+      if (helperSubmodule != submodule) return helper;
+
       // In case step has been removed in the process, replace it with a meaningless placeholder
       const newStep = stepMap[oldStep] || 'XX.XX';
 

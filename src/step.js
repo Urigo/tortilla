@@ -396,13 +396,33 @@ function initializeStepMap() {
 }
 
 function getStepMap() {
+  let localStorage;
+
+  // In case this process was launched from a submodule
+  if (process.env.TORTILLA_SUBMODULE_CWD) {
+    localStorage = LocalStorage.create(process.env.TORTILLA_SUBMODULE_CWD);
+  }
+  else {
+    localStorage = LocalStorage;
+  }
+
   if (ensureStepMap()) {
-    return JSON.parse(LocalStorage.getItem('STEP_MAP'));
+    return JSON.parse(localStorage.getItem('STEP_MAP'));
   }
 }
 
 function ensureStepMap() {
-  return Utils.exists(Path.resolve(Paths.storage, 'STEP_MAP'), 'file');
+  let paths;
+
+  // In case this process was launched from a submodule
+  if (process.env.TORTILLA_SUBMODULE_CWD) {
+    paths = Paths.resolve(process.env.TORTILLA_SUBMODULE_CWD);
+  }
+  else {
+    paths = Paths;
+  }
+
+  return Utils.exists(Path.resolve(paths.storage, 'STEP_MAP'), 'file');
 }
 
 function disposeStepMap() {

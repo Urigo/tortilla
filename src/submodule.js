@@ -1,4 +1,7 @@
+const Fs = require('fs');
+const Path = require('path');
 const Git = require('./git');
+const Paths = require('./paths');
 const Step = require('./step');
 const Utils = require('./utils');
 
@@ -19,7 +22,7 @@ function addSubmodules(remotes) {
       continue;
     }
 
-    name = getSubmoduleName(remote);
+    name = getRemoteSubmoduleName(remote);
 
     if (!remote.includes('/')) {
       throw Error('Provided remote is not a path');
@@ -181,12 +184,28 @@ function isSubmodule() {
   }
 }
 
-function getSubmoduleName(remote) {
+function getRemoteSubmoduleName(remote) {
   return remote
     .split('/')
     .pop()
     .split('.')
     .shift();
+}
+
+function getLocalSubmoduleName(path) {
+  if (!path) return '';
+
+  const givenPackPath = Paths.resolve(path).npm.package;
+  const givenPackName = JSON.parse(Fs.readFileSync(givenPackPath)).name;
+
+  const submoduleName = listSubmodules().find((submoduleName) => {
+    const submodulePackPath = Paths.resolve(path).npm.package;
+    const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath)).name;
+
+    return submoduleName;
+  });
+
+  return submoduleName || '';
 }
 
 
@@ -196,4 +215,6 @@ module.exports = {
   update: updateSubmodules,
   list: listSubmodules,
   isOne: isSubmodule,
+  getRemoteName: getRemoteSubmoduleName,
+  getLocalName: getLocalSubmoduleName,
 };

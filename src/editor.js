@@ -19,8 +19,7 @@ const Utils = require('./utils');
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm'],
-    boolean: ['udiff'],
+    string: ['_', 'message', 'm', 'udiff'],
   });
 
   // The first argument will be the rebase file path provided to us by git
@@ -59,7 +58,8 @@ const Utils = require('./utils');
 // Edit the last step in the rebase file
 function editStep(operations, steps, options) {
   // Create initial step map
-  if (options.udiff) {
+  // Note that udiff is a string, since it may very well specify a module path
+  if (options.udiff != null) {
     Step.initializeStepMap();
   }
 
@@ -226,6 +226,22 @@ function sortSteps(operations) {
       method: 'exec',
       command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
     });
+
+    // If specified udiff is a path to another tortilla repo
+    if (options.udiff) {
+      // Update the specified repo's manual files
+      operations.push({
+        method: 'exec',
+        command: `
+          TORTILLA_SUBMODULE_CWD=${Utils.cwd()}
+          TORTILLA_CWD=${Path.resolve(Utils.cwd(), options.udiff)}
+
+          if tortilla step edit --root ; then
+            git --git-dir ${Utils.cwd()} rebase --continue
+          fi
+        `,
+      });
+    }
 
     // Ensure step map is being disposed
     operations.push({
