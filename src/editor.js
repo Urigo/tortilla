@@ -150,8 +150,18 @@ function sortSteps(operations) {
   let editFlag = false;
   let offset = 0;
 
+  // Disable git-hooks upfront if we not we not gonna need them
+  if (process.env.TORTILLA_SUBMODULE_CWD) {
+    // Prepend local storage item setting operation, this would be a flag which will be
+    // used in git-hooks
+    operations.unshift({
+      method: 'exec',
+      command: `node ${Paths.tortilla.localStorage} set REBASE_HOOKS_DISABLED 1`,
+    });
+  }
+
   operations.slice().some((operation, index) => {
-    const currStepDescriptor = Step.descriptor(operation.message);
+    const currStepDescriptor = Step.descriptor(operation.message || '');
     // Skip commits which are not step commits
     if (!currStepDescriptor) {
       return;
@@ -161,8 +171,17 @@ function sortSteps(operations) {
     const currSuperStep = currStepSplit[0];
     const currSubStep = currStepSplit[1];
 
+    if (process.env.TORTILLA_SUBMODULE_CWD) {
+      // If this is a super step, replace pick operation with the super pick
+      if (!currSubStep) {
+        operations.splice(index + offset, 1, {
+          method: 'exec',
+          command: `node ${Paths.tortilla.rebase} super-pick ${operation.hash}`,
+        });
+      }
+    }
     // If limit reached
-    if (currSuperStep > stepLimit) {
+    else if (currSuperStep > stepLimit) {
       // Prepend local storage item setting operation, this would be a flag which will be
       // used in git-hooks
       operations.splice(index + offset++, 0, {
