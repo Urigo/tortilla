@@ -214,7 +214,7 @@ function editStep(steps, options = {}) {
 
   // Update diffSteps in another repo
   if (options.udiff) {
-    argv.push(options.udiff);
+    argv.push(options.udiff.toString());
   }
 
   // Storing locally so it can be used in further processes

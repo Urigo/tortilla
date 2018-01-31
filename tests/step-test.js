@@ -438,7 +438,8 @@ describe('Step', function () {
     });
 
     it('should be able to update diffStep() template helpers indexes', function () {
-      this.slow(10000);
+      this.timeout(30000);
+      this.slow(20000);
 
       this.exec('sh', ['-c', 'echo foo > file']);
       this.git(['add', 'file']);
@@ -525,8 +526,9 @@ describe('Step', function () {
       ].join('\n'));
     });
 
-    it.only('should update all diffStep template helpers in manuals repo', function () {
-      this.slow(10000);
+    it('should update all diffStep template helpers in manuals repo', function () {
+      this.timeout(35000);
+      this.slow(25000);
 
       this.exec('sh', ['-c', 'echo foo > file']);
       this.git(['add', 'file']);
@@ -592,34 +594,34 @@ describe('Step', function () {
         '{{{diffStep 1.1 module="submodule"}}}',
       ].join('\n'));
 
-      // this.tortilla(['step', 'edit', '--root', '--udiff']);
-      // this.exec('sh', ['-c', 'echo foo > file']);
-      // this.git(['add', 'file']);
-      // this.tortilla(['step', 'push', '-m', 'Create file']);
-      // try {
-      //   this.git(['rebase', '--continue']);
-      // }
-      // catch (e) {
-      // }
+      this.tortilla(['step', 'edit', '--root', `--udiff=${textRepoDir}`]);
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
 
-      // this.exec('sh', ['-c', 'echo bar > file']);
-      // this.git(['add', 'file']);
-      // this.git(['rebase', '--continue'], {
-      //   env: {
-      //     TORTILLA_CHILD_PROCESS: '',
-      //     GIT_EDITOR: true
-      //   }
-      // });
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
 
-      // expect(Fs.readFileSync(manualPath).toString()).to.equal([
-      //   'Create file:',
-      //   '',
-      //   '{{{diffStep XX.XX}}}',
-      //   '',
-      //   'Edit file:',
-      //   '',
-      //   '{{{diffStep 1.2}}}',
-      // ].join('\n'));
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX module="submodule"}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.2 module="submodule"}}}',
+      ].join('\n'));
     });
 
     it('should reset all branches referencing super steps', function () {

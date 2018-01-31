@@ -29,9 +29,14 @@ const Utils = require('./utils');
   const message = argv.message || argv.m;
   const udiff = argv.udiff;
 
+  // Rebase file path will always be appended at the end of the arguments vector,
+  // therefore udiff has to have a value, otherwise it will be matched with the wrong
+  // argument
   const options = {
-    udiff
+    udiff: udiff === 'true' ? '' : udiff
   };
+
+  console.log(argv)
 
   const rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with

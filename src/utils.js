@@ -122,10 +122,12 @@ function exec(file, argv, options) {
     TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
 
-  return ChildProcess
-    .execFileSync(file, argv, options)
-    .toString()
-    .trim();
+  const out = ChildProcess.execFileSync(file, argv, options);
+
+  // In case of stdio inherit
+  if (!out) return '';
+
+  return out.toString().trim();
 }
 
 // Tells if entity exists or not by an optional document type
