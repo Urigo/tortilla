@@ -254,9 +254,13 @@ function sortSteps(operations, options) {
       const cwd = Path.resolve(Utils.cwd(), options.udiff)
 
       // Update the specified repo's manual files
+      // Note that TORTILLA_CHILD_PROCESS and TORTILLA_CWD flags are set to
+      // prevent external interventions, mostly because of tests
       operations.push({
         method: 'exec',
         command: `
+          export TORTILLA_CHILD_PROCESS=true
+          export TORTILLA_CWD=${cwd}
           export TORTILLA_SUBMODULE_CWD=${subCwd}
 
           cd ${cwd}
