@@ -94,7 +94,9 @@ function popStep() {
   const headHash = Git(['rev-parse', 'HEAD']);
   const rootHash = Git.rootHash();
 
-  if (headHash == rootHash) { throw Error('Can\'t remove root'); }
+  if (headHash == rootHash) {
+    throw Error('Can\'t remove root');
+  }
 
   const removedCommitMessage = Git.recentCommit(['--format=%s']);
   const stepDescriptor = getStepDescriptor(removedCommitMessage);
@@ -205,8 +207,20 @@ function editStep(steps, options = {}) {
 
   const argv = [Paths.tortilla.editor, 'edit', ...steps];
 
-  if (options.udiff) {
+  // Update diffSteps
+  if (options.udiff != null) {
     argv.push('--udiff');
+  }
+
+  // Update diffSteps in another repo
+  if (options.udiff) {
+    argv.push(options.udiff);
+  }
+
+  // Storing locally so it can be used in further processes
+  // Indicates that this operation is hooked into a submodule
+  if (process.env.TORTILLA_SUBMODULE_CWD) {
+    LocalStorage.setItem('SUBMODULE_CWD', process.env.TORTILLA_SUBMODULE_CWD);
   }
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
@@ -380,7 +394,8 @@ function getNextSuperStep(offset) {
   return getNextStep(offset).split('.')[0];
 }
 
-function initializeStepMap() {
+// Pending flag indicates that this step map will be used in another tortilla repo
+function initializeStepMap(pending) {
   const map = Git([
     'log', '--format=%s', '--grep=^Step [0-9]\\+'
   ])
@@ -393,30 +408,47 @@ function initializeStepMap() {
   }, {});
 
   LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+
+  if (pending) {
+    LocalStorage.setItem('STEP_MAP_PENDING', true);
+  }
+  // Removing, just in case an error was thrown in the previous process and storage
+  // was not cleared properly
+  else {
+    LocalStorage.removeItem('STEP_MAP_PENDING');
+  }
 }
 
-function getStepMap() {
+// First argument represents the module we would like to read the steps map from
+function getStepMap(submoduleCwd, checkPending) {
   let localStorage;
 
   // In case this process was launched from a submodule
-  if (process.env.TORTILLA_SUBMODULE_CWD) {
-    localStorage = LocalStorage.create(process.env.TORTILLA_SUBMODULE_CWD);
+  if (submoduleCwd) {
+    localStorage = LocalStorage.create(submoduleCwd);
   }
   else {
     localStorage = LocalStorage;
   }
 
-  if (ensureStepMap()) {
+  if (ensureStepMap(submoduleCwd, checkPending)) {
     return JSON.parse(localStorage.getItem('STEP_MAP'));
   }
 }
 
-function ensureStepMap() {
+// Provided argument will run an extra condition to check whether the pending flag
+// exists or not
+function ensureStepMap(submoduleCwd, checkPending) {
+  // Step map shouldn't be used in this process
+  if (checkPending && LocalStorage.getItem('STEP_MAP_PENDING')) {
+    return false;
+  }
+
   let paths;
 
   // In case this process was launched from a submodule
-  if (process.env.TORTILLA_SUBMODULE_CWD) {
-    paths = Paths.resolve(process.env.TORTILLA_SUBMODULE_CWD);
+  if (submoduleCwd) {
+    paths = Paths.resolveProject(submoduleCwd);
   }
   else {
     paths = Paths;
@@ -427,6 +459,7 @@ function ensureStepMap() {
 
 function disposeStepMap() {
   LocalStorage.deleteItem('STEP_MAP');
+  LocalStorage.deleteItem('STEP_MAP_PENDING');
 }
 
 function updateStepMap(type, payload) {

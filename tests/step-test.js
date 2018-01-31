@@ -1,5 +1,6 @@
 const Chai = require('chai');
 const Fs = require('fs-extra');
+const Tmp = require('tmp');
 const Git = require('../src/git');
 const Step = require('../src/step');
 
@@ -468,6 +469,7 @@ describe('Step', function () {
 
       this.tortilla(['step', 'edit', '1.1', '--udiff']);
       this.tortilla(['step', 'pop']);
+      // Expected conflict
       try {
         this.git(['rebase', '--continue']);
       }
@@ -496,6 +498,7 @@ describe('Step', function () {
       this.exec('sh', ['-c', 'echo foo > file']);
       this.git(['add', 'file']);
       this.tortilla(['step', 'push', '-m', 'Create file']);
+      // Expected conflict
       try {
         this.git(['rebase', '--continue']);
       }
@@ -520,6 +523,103 @@ describe('Step', function () {
         '',
         '{{{diffStep 1.2}}}',
       ].join('\n'));
+    });
+
+    it.only('should update all diffStep template helpers in manuals repo', function () {
+      this.slow(10000);
+
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Edit file']);
+
+      this.tortilla(['step', 'tag', '-m', 'File manipulation']);
+
+      const textRepoDir = Tmp.tmpNameSync();
+      this.tortilla(['create', textRepoDir, '-m', 'Manuals Repo']);
+
+      let manualPath;
+      this.scopeEnv(() => {
+        this.tortilla(['step', 'tag', '-m', 'File manipulation']);
+        this.tortilla(['submodule', 'add', this.cwd(), 'submodule']);
+
+        manualPath = this.exec('realpath', ['.tortilla/manuals/templates/step1.tmpl']);
+
+        Fs.writeFileSync(manualPath, [
+          'Create file:',
+          '',
+          '{{{diffStep 1.1 module="submodule"}}}',
+          '',
+          'Edit file:',
+          '',
+          '{{{diffStep 1.2 module="submodule"}}}',
+        ].join('\n'));
+
+        this.git(['add', manualPath]);
+        this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      }, {
+        TORTILLA_CWD: textRepoDir
+      });
+
+      this.tortilla(['step', 'edit', '1.1', `--udiff=${textRepoDir}`]);
+      this.tortilla(['step', 'pop']);
+      // Expected conflict
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.git(['add', 'file']);
+
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX module="submodule"}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.1 module="submodule"}}}',
+      ].join('\n'));
+
+      // this.tortilla(['step', 'edit', '--root', '--udiff']);
+      // this.exec('sh', ['-c', 'echo foo > file']);
+      // this.git(['add', 'file']);
+      // this.tortilla(['step', 'push', '-m', 'Create file']);
+      // try {
+      //   this.git(['rebase', '--continue']);
+      // }
+      // catch (e) {
+      // }
+
+      // this.exec('sh', ['-c', 'echo bar > file']);
+      // this.git(['add', 'file']);
+      // this.git(['rebase', '--continue'], {
+      //   env: {
+      //     TORTILLA_CHILD_PROCESS: '',
+      //     GIT_EDITOR: true
+      //   }
+      // });
+
+      // expect(Fs.readFileSync(manualPath).toString()).to.equal([
+      //   'Create file:',
+      //   '',
+      //   '{{{diffStep XX.XX}}}',
+      //   '',
+      //   'Edit file:',
+      //   '',
+      //   '{{{diffStep 1.2}}}',
+      // ].join('\n'));
     });
 
     it('should reset all branches referencing super steps', function () {

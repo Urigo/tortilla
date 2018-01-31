@@ -2,6 +2,7 @@ const Minimist = require('minimist');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Step = require('./step');
+const Submodule = require('./submodule');
 
 /**
   The rebase module is responsible for performing tasks done by the editor using an
@@ -74,11 +75,12 @@ function superPickStep(hash) {
     return `step${step}.${extension}`;
   });
 
-  const stepMap = Step.getStepMap();
+  const submoduleCwd = LocalStorage.getItem('SUBMODULE_CWD');
+  const stepMap = Step.getStepMap(submoduleCwd, true);
 
   if (stepMap) {
     // The submodule cwd was given from another process of tortilla
-    const submodule = Submodule.getLocalName(process.env.TORTILLA_SUBMODULE_CWD);
+    const submodule = Submodule.getLocalName(submoduleCwd);
     const diffStepPattern = /\{\{\s*diffStep\s+(\d+\.\d+).*\}\}/g;
 
     // Replace indexes presented in diffStep() template helpers

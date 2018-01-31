@@ -44,6 +44,15 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
   translator,
 });
 
+const cli = resolveTree(resolve(__dirname, '../cli'), {
+  tortilla: resolve(__dirname, '../cli/tortilla'),
+  tortillaManual: resolve(__dirname, '../cli/tortilla-manual'),
+  tortillaRelease: resolve(__dirname, '../cli/tortilla-release'),
+  tortillaStep: resolve(__dirname, '../cli/tortilla-step'),
+  tortillaStrict: resolve(__dirname, '../cli/tortilla-strict'),
+  tortillaSubmodule: resolve(__dirname, '../cli/tortilla-submodule'),
+});
+
 // Makes the root path available in the branches object using a 'resolve()' method
 // e.g. ('foo', { bar: 'bar' }) -> { resolve() -> 'foo', bar: 'bar' }
 function resolveTree(root, branches) {
@@ -112,6 +121,7 @@ function resolveProject(cwd) {
     storage: resolve(cwd, '.git/.tortilla'),
     manuals,
     tortilla,
+    cli,
     git,
     npm,
     resolveTree,

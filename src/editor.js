@@ -45,7 +45,7 @@ const Utils = require('./utils');
   switch (method) {
     case 'edit': editStep(operations, steps, options); break;
     case 'edit-head': editHead(operations); break;
-    case 'sort': sortSteps(operations); break;
+    case 'sort': sortSteps(operations, options); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
   }
@@ -60,7 +60,8 @@ function editStep(operations, steps, options) {
   // Create initial step map
   // Note that udiff is a string, since it may very well specify a module path
   if (options.udiff != null) {
-    Step.initializeStepMap();
+    // Providing pending flag
+    Step.initializeStepMap(!!options.udiff);
   }
 
   if (!steps) {
@@ -107,7 +108,14 @@ function editStep(operations, steps, options) {
       LocalStorage.setItem('REBASE_NEW_STEP', 'root');
     }
 
-    const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
+    // Building sort command
+    let sort = `node ${Paths.tortilla.editor} sort`;
+
+    if (options.udiff) {
+      sort = `${sort} --udiff=${options.udiff}`;
+    }
+
+    sort = `GIT_SEQUENCE_EDITOR="${sort}"`;
 
     // Continue sorting the steps after step editing has been finished
     steps.forEach((step) => {
@@ -136,29 +144,23 @@ function editStep(operations, steps, options) {
 }
 
 // Adjusts upcoming step numbers in rebase
-function sortSteps(operations) {
+function sortSteps(operations, options) {
   // Grab meta-data
   const oldStep = LocalStorage.getItem('REBASE_OLD_STEP');
   const newStep = LocalStorage.getItem('REBASE_NEW_STEP');
+  const submoduleCwd = LocalStorage.getItem('SUBMODULE_CWD');
 
   // If delta is 0 no sortments are needed
   if (oldStep == newStep) {
-    return LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+    LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+
+    // Escape unless we need to update stepDiffs for submodules
+    if (!submoduleCwd) return;
   }
 
   const stepLimit = getStepLimit(oldStep, newStep);
   let editFlag = false;
   let offset = 0;
-
-  // Disable git-hooks upfront if we not we not gonna need them
-  if (process.env.TORTILLA_SUBMODULE_CWD) {
-    // Prepend local storage item setting operation, this would be a flag which will be
-    // used in git-hooks
-    operations.unshift({
-      method: 'exec',
-      command: `node ${Paths.tortilla.localStorage} set REBASE_HOOKS_DISABLED 1`,
-    });
-  }
 
   operations.slice().some((operation, index) => {
     const currStepDescriptor = Step.descriptor(operation.message || '');
@@ -171,7 +173,7 @@ function sortSteps(operations) {
     const currSuperStep = currStepSplit[0];
     const currSubStep = currStepSplit[1];
 
-    if (process.env.TORTILLA_SUBMODULE_CWD) {
+    if (submoduleCwd) {
       // If this is a super step, replace pick operation with the super pick
       if (!currSubStep) {
         operations.splice(index + offset, 1, {
@@ -248,24 +250,35 @@ function sortSteps(operations) {
 
     // If specified udiff is a path to another tortilla repo
     if (options.udiff) {
+      const subCwd = Utils.cwd();
+      const cwd = Path.resolve(Utils.cwd(), options.udiff)
+
       // Update the specified repo's manual files
       operations.push({
         method: 'exec',
         command: `
-          TORTILLA_SUBMODULE_CWD=${Utils.cwd()}
-          TORTILLA_CWD=${Path.resolve(Utils.cwd(), options.udiff)}
+          export TORTILLA_SUBMODULE_CWD=${subCwd}
 
-          if tortilla step edit --root ; then
-            git --git-dir ${Utils.cwd()} rebase --continue
+          cd ${cwd}
+
+          if ${Paths.cli.tortilla} step edit --root ; then
+            git rebase --continue
+          else
+            git rebase --abort
           fi
-        `,
+
+          cd ${subCwd}
+        `.trim()
+         .replace(/\n+/g, ';')
+         .replace(/\s+/g, ' ')
+         .trim()
       });
     }
 
     // Ensure step map is being disposed
     operations.push({
       method: 'exec',
-      command: `node ${Paths.tortilla.localStorage} remove STEP_MAP`,
+      command: `node ${Paths.tortilla.localStorage} remove STEP_MAP STEP_MAP_PENDING`,
     });
   }
 }
