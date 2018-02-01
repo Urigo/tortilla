@@ -10,7 +10,7 @@ let Submodule;
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
   if (typeof offset === 'string') {
-    grep = format;
+    if (!grep) grep = format;
     format = offset;
     offset = 0;
   }
@@ -208,6 +208,12 @@ function editStep(steps, options = {}) {
 
   // The would always have to start from the first step
   const base = getStepBase(steps[0]);
+
+  // '--root' might be fetched in case no steps where provided. We need to fill up
+  // this missing information in the steps array
+  if (!steps.length && base == '--root') {
+    steps[0] = 'root';
+  }
 
   const argv = [Paths.tortilla.editor, 'edit', ...steps];
 

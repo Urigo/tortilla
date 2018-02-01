@@ -1,4 +1,4 @@
-const Fs = require('fs');
+const Fs = require('fs-extra');
 const Git = require('../git');
 const LocalStorage = require('../local-storage');
 const Paths = require('../paths');

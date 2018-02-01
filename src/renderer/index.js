@@ -54,7 +54,7 @@ function renderTemplate(template, scope) {
   if (scope.viewPath) {
     // Relative path of view dir
     // e.g. manuals/views
-    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.viewPath));
+    var viewDir = Path.dirname(scope.viewPath);
   }
 
   const oldResolve = handlebars.resolve;
@@ -64,7 +64,8 @@ function renderTemplate(template, scope) {
     // resolve function below still won't work
     handlebars.resolve = resolvePath.bind(null, viewDir);
     return template(scope);
-  } finally {
+  }
+  finally {
     // Either if an error was thrown or not, unbind it
     handlebars.resolve = oldResolve;
   }
@@ -228,7 +229,7 @@ function resolvePath(/* reserved path, user defined path */) {
     return defaultPath;
   }
 
-  const repository = require(Paths.npm.package).repository;
+  const repository = Fs.readJsonSync(Paths.npm.package).repository;
 
   // If no repository was defined, or
   // repository type is not git, or
@@ -239,9 +240,16 @@ function resolvePath(/* reserved path, user defined path */) {
     return defaultPath;
   }
 
+  const currentRelease = Release.format(Release.current());
+
+  // Any release is yet to exist
+  if (currentRelease == '0.0.0') {
+    return defaultPath;
+  }
+
   // Compose branch path for current release tree
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
-  const releaseTag = `${Git.activeBranchName()}@${Release.format(Release.current())}`;
+  const releaseTag = `${Git.activeBranchName()}@${currentRelease}`;
   const repositoryUrl = repository.url.replace('.git', '');
   const branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
   const protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];

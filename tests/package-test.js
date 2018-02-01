@@ -1,5 +1,5 @@
 const Chai = require('chai');
-const Fs = require('fs');
+const Fs = require('fs-extra');
 const Paths = require('../src/paths');
 
 
@@ -13,7 +13,7 @@ describe('Package', function () {
 
       let pack;
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
@@ -53,7 +53,7 @@ describe('Package', function () {
         }
       });
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       expect(pack.dependencies).to.deep.equal({
         a: '0.1.0',
@@ -68,7 +68,7 @@ describe('Package', function () {
 
       let pack;
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
@@ -99,7 +99,7 @@ describe('Package', function () {
         }
       });
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       expect(pack.dependencies).to.deep.equal({
         a: '0.1.0',
@@ -113,7 +113,7 @@ describe('Package', function () {
 
       let pack;
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
@@ -181,7 +181,7 @@ describe('Package', function () {
         }
       });
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       expect(pack.dependencies).to.deep.equal({
         a: '0.1.0',
@@ -210,7 +210,7 @@ describe('Package', function () {
 
       let pack;
 
-      pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+      pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',

@@ -1,3 +1,4 @@
+const Fs = require('fs-extra');
 const Minimist = require('minimist');
 const Git = require('./git');
 const Paths = require('./paths');
@@ -115,7 +116,7 @@ function removeSubmodules(submodules) {
     Git.print(['add', submodule]);
   });
 
-  Submodule.ensure('root');
+  ensureSubmodules('root');
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
@@ -236,7 +237,8 @@ function getSubmoduleCheckouts(whiteList) {
   }
 
   const submodules = listSubmodules();
-  const checkouts = Utils.exists(Paths.checkouts) ? require(Paths.checkouts) : {};
+  const checkouts = Utils.exists(Paths.checkouts) ?
+    Fs.readJsonSync(Paths.checkouts) : {};
 
   Object.keys(checkouts).forEach((coSubmodule) => {
     // Filter based on white list

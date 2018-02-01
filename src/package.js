@@ -20,7 +20,7 @@ function updateDependencies(updatedDeps) {
     }
   }
   else {
-    const pack = JSON.parse(Fs.readFileSync(Paths.npm.package).toString());
+    const pack = Fs.readJsonSync(Paths.npm.package);
 
     const deps = Object.assign({},
       pack.dependencies,
