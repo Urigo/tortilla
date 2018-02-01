@@ -226,6 +226,16 @@ function pad(str, length, char) {
   return chars.substr(0, chars.length - str.length) + str;
 }
 
+// Like pad() only from the right
+// '1' -> '10000'
+function padRight(str, length, char) {
+  str = str.toString();
+  char = char || ' ';
+  const chars = Array(length + 1).join(char);
+
+  return str + chars.substr(0, chars.length - str.length);
+}
+
 // foo_barBaz -> foo-bar-baz
 function toKebabCase(str) {
   return splitWords(str)
@@ -352,6 +362,7 @@ module.exports = {
   contract,
   pluck,
   pad,
+  padRight,
   kebabCase: toKebabCase,
   startCase: toStartCase,
   lowerFirst,

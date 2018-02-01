@@ -4,7 +4,7 @@ const Git = require('./git');
 const Manual = require('./manual');
 const Paths = require('./paths');
 const Step = require('./step');
-const Uitls = require('./utils');
+const Utils = require('./utils');
 
 /**
   This module contains package.json related methods
@@ -28,14 +28,22 @@ function updateDependencies(updatedDeps) {
       pack.peerDependencies
     );
 
+    const versionColumn = Object.keys(deps).reduce((depLength, dep) => {
+      return depLength < dep.length ? dep.length : depLength;
+    }, 0);
+
     let initialContent =
       "# Please pick the new versions of the project's dependencies\n\n";
 
     initialContent += Object.keys(deps).sort().map((dep) => {
-      return `${dep} ${deps[dep]}`;
+      return `${Utils.padRight(dep, versionColumn)} ${deps[dep]}`;
     }).join('\n');
 
-    updatedDeps = Git.edit(initialContent)
+    const editedContent = Git.edit(initialContent);
+
+    if (initialContent == editedContent) return;
+
+    updatedDeps = editedContent
       .trim()
       .replace(/# .+/g, '')
       .split('\n')

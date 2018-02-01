@@ -7,7 +7,7 @@ const expect = Chai.expect;
 
 
 describe('Package', function () {
-  describe.only('updateDependencies()', function () {
+  describe('updateDependencies()', function () {
     it('should update the dependencies at each commit without having conflicts', function () {
       this.slow(7000);
 
