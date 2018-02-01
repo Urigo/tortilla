@@ -11,7 +11,8 @@ const Utils = require('./utils');
 
 const exec = Utils.exec;
 const git = Utils.git;
-const conflict = /\n<<<<<<< .+(\n(?:.|\n)+)\n=======(\n(?:.|\n)+)\n>>>>>>> .+/;
+// This RegExp will help us pluck the versions in a conflict and solve it
+const conflict = /\n\s*<<<<<<< [^\n]+(\n(?:.|\n)+?)\n\s*=======(\n(?:.|\n)+?)\n\s*>>>>>>> [^\n]+/;
 
 
 // Tells if rebasing or not

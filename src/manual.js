@@ -43,12 +43,17 @@ const Utils = require('./utils');
 function renderManual(step) {
   if (step) {
     const isSuperStep = !step.split('.')[1];
+
     if (!isSuperStep) {
       throw TypeError('Provided step must be a super step');
     }
-  } else { // Grab recent super step by default
-    const superMessage = Step.recentSuperCommit('%s');
-    step = superMessage ? Step.descriptor(superMessage).number : 'root';
+  }
+  // Grab recent super step by default
+  else {
+    const superMessage = Step.recentSuperCommit('%s') || '';
+    const stepDescriptor = Step.descriptor(superMessage) || {};
+
+    step = stepDescriptor.number || 'root';
   }
 
   // Convert all manuals since the beginning of history

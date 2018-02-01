@@ -182,8 +182,8 @@ function getStepBase(step) {
 function editStep(steps, options = {}) {
   if (steps instanceof Array) {
     steps = steps.slice().sort((a, b) => {
-      const [superA, subA] = a.split('.');
-      const [superB, subB] = b.split('.');
+      const [superA, subA] = a.split('.').concat('Infinity');
+      const [superB, subB] = b.split('.').concat('Infinity');
 
       // Always put the root on top
       if (a == 'root') {

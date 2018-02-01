@@ -55,6 +55,7 @@ function updateDependencies(updatedDeps) {
     '--',
     Paths.npm.package,
   ]).split('\n')
+    .filter(Boolean)
     .map(line => Step.descriptor(line).number);
 
   const minPackSuperStep = Math.min.apply(Math, packSteps).toFixed();
@@ -62,16 +63,16 @@ function updateDependencies(updatedDeps) {
   const missingSuperSteps = Git([
     'log',
     '--format=%s',
-    '--grep=^Step [0-9]\\+\\.[0-9]\\+:'
+    '--grep=^Step [0-9]\\+:',
   ]).split('\n')
+    .filter(Boolean)
     .map(line => Step.descriptor(line).number.toString())
-    .filter(step => packSteps.includes(step))
+    .filter(step => !packSteps.includes(step))
     .filter(step => step >= minPackSuperStep);
 
   const steps = []
     .concat(packSteps)
-    .concat(missingSuperSteps)
-    .sort();
+    .concat(missingSuperSteps);
 
   // Checking if the root commit has affected the package.json, since it has been
   // filtered in the last operation
@@ -80,7 +81,7 @@ function updateDependencies(updatedDeps) {
   ]).includes('package.json');
 
   if (shouldEditRoot) {
-    steps.push('--root');
+    steps.push('root');
   }
 
   Step.edit(steps);
@@ -148,9 +149,9 @@ function updateDependencies(updatedDeps) {
 
     // If this is root commit or a super-step, re-render the correlated manual
     const commitMsg = Git.recentCommit(['--format=%s']);
-    const isSubStep = !!Step.subDescriptor(commitMsg);
+    const isSuperStep = !!Step.superDescriptor(commitMsg);
 
-    if (!isSubStep) {
+    if (isSuperStep) {
       Manual.render();
     }
 
