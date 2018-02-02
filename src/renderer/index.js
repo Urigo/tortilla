@@ -224,8 +224,10 @@ function resolvePath(/* reserved path, user defined path */) {
   // or a relative path
   defaultPath.isRelative = true;
 
+  const cwd = paths.shift()
+
   // If function is unbound, return default path
-  if (typeof paths[0] !== 'string') {
+  if (typeof cwd != 'string') {
     return defaultPath;
   }
 
@@ -258,7 +260,9 @@ function resolvePath(/* reserved path, user defined path */) {
   // If we use tilde (~) at the beginning of the path, we will be referenced to the
   // repo's root URL. This is useful when we want to compose links which are
   // completely disconnected from the current state, like commits, issues and PRs
-  paths = paths.map(path => path.replace(/~/g, Path.resolve(branchPath, '../..')));
+  paths = paths
+    .map(path => path.replace(/~/g, Path.resolve(branchPath, '../..')))
+    .map(path => Path.isAbsolute(path) ? Path.relative(cwd, path) : Path.resolve(branchPath, Path.join(cwd, path)));
 
   // Resolve full path
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1

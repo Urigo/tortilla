@@ -447,7 +447,7 @@ describe('Step', function () {
     });
 
     it('should re-adjust indicies after editing multiple steps', function () {
-      this.slow(10000);
+      this.slow(20000);
 
       this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       this.tortilla(['step', 'push', '-m', 'pop', '--allow-empty']);
@@ -465,10 +465,10 @@ describe('Step', function () {
 
       Git(['rebase', '--continue']);
 
-      const popMessage = Step.recentCommit('%s', '^Step 1.2');
+      const popMessage = this.git(['log', '--format=%s', '--grep=^Step 1.2']);
       expect(popMessage).to.equal('Step 1.2: dummy');
 
-      const pushMessage = Step.recentCommit('%s', '^Step 1.4');
+      const pushMessage = this.git(['log', '--format=%s', '--grep=^Step 1.4']);
       expect(pushMessage).to.equal('Step 1.4: push');
     });
 
