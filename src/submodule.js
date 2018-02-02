@@ -112,11 +112,11 @@ function removeSubmodules(submodules) {
       'config', '--file=.gitmodules', '--remove-section', `submodule.${submodule}`
     ]);
     Git(['add', '.gitmodules']);
+    // This will also stage the submodule
     Git(['rm', '--cached', '-rf', submodule]);
-    Git.print(['add', submodule]);
   });
 
-  ensureSubmodules('root');
+  ensureSubmodules('root', rebasing);
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
@@ -205,7 +205,7 @@ function isSubmodule() {
 
 // Ensures that all submodules are set to the current hash based on the checkouts file
 // and the provided step index
-function ensureSubmodules(step) {
+function ensureSubmodules(step, rebasing) {
   if (step == 'root') {
     step = 0;
   }
@@ -223,12 +223,15 @@ function ensureSubmodules(step) {
     Git(['add', submodule]);
   });
 
-  Git(['commit', '--amend', '--allow-empty'], {
-    env: {
-      TORTILLA_CHILD_PROCESS: true,
-      GIT_EDITOR: true
-    }
-  });
+  // If not rebasing to begin with, amend the changes
+  if (!rebasing) {
+    Git(['commit', '--amend', '--allow-empty'], {
+      env: {
+        TORTILLA_CHILD_PROCESS: true,
+        GIT_EDITOR: true
+      }
+    });
+  }
 }
 
 function getSubmoduleCheckouts(whiteList) {
