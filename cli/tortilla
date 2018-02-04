@@ -37,6 +37,14 @@ Program
   });
 
 Program
+  .command('dump [out]')
+  .description('Dumps tutorial data as a JSON file')
+  .action((out) => {
+    LocalStorage.assertTortilla(true);
+    Essentials.dump(out);
+  });
+
+Program
   .command('manual <command...>', 'Manage manual files')
   .command('package <command...>', 'Manage package.json')
   .command('release <command...>', 'Manage tutorial releases')

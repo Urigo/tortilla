@@ -8,6 +8,7 @@ const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
 const Rebase = require('./rebase');
+const Step = require('./step');
 const Submodule = require('./submodule');
 const Utils = require('./utils');
 
@@ -19,6 +20,7 @@ const Utils = require('./utils');
 const tmpDir = Tmp.dirSync({ unsafeCleanup: true });
 const tmpPaths = Paths.resolveProject(tmpDir.name);
 const exec = Utils.exec;
+const defaultDumpFileName = 'tutorial.json';
 
 
 (function () {
@@ -174,6 +176,107 @@ function ensureTortilla(projectDir) {
   }
 }
 
+// Dumps tutorial into a JSON file
+// Output path defaults to cwd
+function dumpProject(out = Utils.cwd()) {
+  // Output path is relative to cwd
+  out = Path.resolve(Utils.cwd(), out);
+
+  // If provided output path is a dir assume the dump file should be created inside of it
+  if (Utils.exists(out, 'dir')) {
+    out = Path.join(out, defaultDumpFileName);
+  }
+
+  // Will recursively ensure dirs as well
+  Fs.ensureFileSync(out);
+
+  // Run command once
+  const tagNames = Git(['tag', '-l'])
+    .split('\n')
+    .filter(Boolean);
+
+  const dump = tagNames
+    .filter((tagName) => {
+      return /^[^@]+?@\d+\.\d+\.\d+$/.test(tagName);
+    })
+    .map((tagName) => {
+      return tagName.split('@')[0];
+    })
+    .map((branchName) => {
+      const historyBranchName = `${branchName}-history`;
+
+      // Run command once
+      const releaseVersions = tagNames
+        .map((tagName) => {
+          return tagName.match(new RegExp(`${branchName}@(\\d+\\.\\d+\\.\\d+)`));
+        })
+        .filter(Boolean)
+        .map((match) => {
+          return match[1];
+        });
+
+      const recentRelease = releaseVersions.reduce((recentRelease, currentRelease) => {
+        const recentVersions = recentRelease.split('.').map(Number);
+        const currentVersions = currentRelease.split('.').map(Number);
+
+        if (recentVersions[0] > currentVersions[0]) return recentRelease;
+        if (currentVersions[0] > recentVersions[0]) return currentRelease;
+        if (recentVersions[1] > currentVersions[1]) return recentRelease;
+        if (currentVersions[1] > recentVersions[1]) return currentRelease;
+        if (recentVersions[2] > currentVersions[2]) return recentRelease;
+        if (currentVersions[2] > recentVersions[2]) return currentRelease;
+
+        return recentRelease;
+      });
+
+      const releases = releaseVersions.map((version) => {
+        const tagName = `${branchName}@${version}`;
+        const tagRevision = Git(['rev-parse', tagName]);
+
+        const historyRevision = Git([
+          'log', historyBranchName, `--grep=^${tagName}:`, '--format=%H'
+        ]).split('\n')
+          .filter(Boolean)
+          .pop();
+
+        // TODO: Remove header and footer
+        const manuals = Fs.readDirSync(Paths.views).map((manualName, stepIndex) => {
+          const format = '%H %s';
+          const manualPath = Paths.views.resolve(manualName);
+          const stepLog = (
+            Step.recentSuperCommit(stepIndex, format) ||
+            Git(['log', Git.rootHash(), `--format=${format}`]);
+          ).split(' ')
+          const stepRevision = stepLog.shift();
+          const name = stepLog.join(' ');
+
+          return {
+            name,
+            stepIndex,
+            stepRevision,
+            content: Fs.readFileSync(manualPath).toString(),
+          };
+        });
+
+        return {
+          version,
+          tagName,
+          tagRevision,
+          historyRevision,
+        };
+      });
+
+      return {
+        branchName,
+        historyBranchName,
+        recentRelease,
+        releases,
+      };
+    });
+
+  Fs.writeJsonSync(out, dump);
+}
+
 function overwriteTemplateFile(path, scope) {
   const templateContent = Fs.readFileSync(path, 'utf8');
   const viewContent = Handlebars.compile(templateContent)(scope);
@@ -185,4 +288,5 @@ function overwriteTemplateFile(path, scope) {
 module.exports = {
   create: createProject,
   ensure: ensureTortilla,
+  dump: dumpProject,
 };

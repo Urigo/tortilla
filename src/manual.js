@@ -146,9 +146,7 @@ function renderManual(step) {
 
 // Renders manual template into informative view
 function renderManualView(manual, scope) {
-  let header,
-    body,
-    footer;
+  let header, body, footer;
 
   Translator.scopeLanguage(scope.language, () => {
     header = Renderer.renderTemplateFile('header', scope);

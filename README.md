@@ -301,6 +301,7 @@ See:
   - [tortilla-release](#tortilla-release-cli)
   - [tortilla-step](#tortilla-step-cli)
   - [tortilla-strict](#tortilla-strict-cli)
+  - [tortilla-package](#tortilla-package-cli)
 
 ### tortilla CLI
 
@@ -315,6 +316,36 @@ Creates a new Tortilla project with the provided name.
 **command:** `tortilla init [name]`
 
 Initializes Tortilla essentials in the provided project.
+
+**command:** `tortilla dump [out]`
+
+Dumps tutorial data as a JSON file. The default dump file name would be `tutorial.json`, although an optional output path might be provided. Here's a brief description of the schema of the generated dump file:
+
+```json
+[
+  {
+    "branchName": "Current branch",
+    "historyBranchName": "History branch matching current branch",
+    "latestRelease": "x.x.x",
+    "releases": [
+      {
+        "version": "x.x.x",
+        "tagName": "The name of the tag",
+        "tagRevision": "The revision of the tag",
+        "historyRevision": "Commit hash based on history branch",
+        "manuals": [
+          {
+            "name": "Step commit message",
+            "stepRevision": "Step commit revision",
+            "stepIndex": "Super step number",
+            "content": "Manual view content"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
 
 ### tortilla-manual CLI
 
