@@ -112,3 +112,4 @@ require('./manual-test');
 require('./release-test');
 require('./submodule-test');
 require('./package-test');
+require('./dump-test');

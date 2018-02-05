@@ -64,7 +64,7 @@ function createProject(projectName, options) {
   // In case dir already exists verify the user's decision
   if (Utils.exists(options.output)) {
     options.override = options.override || ReadlineSync.keyInYN([
-      'Output path already eixsts.',
+      'Output path already exists.',
       'Would you like to override it and continue?',
     ].join('\n'));
 
@@ -198,6 +198,17 @@ function dumpProject(out = Utils.cwd(), options = {}) {
   // If provided output path is a dir assume the dump file should be created inside of it
   if (Utils.exists(out, 'dir')) {
     out = Path.join(out, defaultDumpFileName);
+  }
+
+  if (Utils.exists(out, 'file')) {
+    options.override = options.override || ReadlineSync.keyInYN([
+      'Output path already exists.',
+      'Would you like to override it and continue?',
+    ].join('\n'));
+
+    if (!options.override) {
+      return;
+    }
   }
 
   console.log();

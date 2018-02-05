@@ -41,6 +41,7 @@ Program
   .description('Dumps tutorial data as a JSON file')
   .option('--filter [filter]', 'Filter branches')
   .option('--reject [reject]', 'Reject branches')
+  .option('--override', 'Override project file if already exists')
   .action((out, options) => {
     Essentials.dump(out, {
       filter: options.filter && options.filter.split(/\s+/),
