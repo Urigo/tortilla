@@ -20,7 +20,10 @@ const Utils = require('./utils');
 const tmpDir = Tmp.dirSync({ unsafeCleanup: true });
 const tmpPaths = Paths.resolveProject(tmpDir.name);
 const exec = Utils.exec;
+
 const defaultDumpFileName = 'tutorial.json';
+const headEnd = '[//]: # (head-end)\n';
+const footStart = '[//]: # (foot-start)\n';
 
 
 (function () {
@@ -260,7 +263,6 @@ function dumpProject(out = Utils.cwd(), options = {}) {
         .filter(Boolean)
         .pop();
 
-      // TODO: Remove header and footer
       const manuals = Fs.readdirSync(Paths.manuals.views).map((manualName, stepIndex) => {
         const format = '%H %s';
         let stepLog, manualPath;
@@ -287,13 +289,21 @@ function dumpProject(out = Utils.cwd(), options = {}) {
 
         // Removing header and footer, since the view should be used externally on a
         // different host which will make sure to show these two
-        const manualView = Git(['show', `${stepRevision}:${manualPath}`])
-          .split('[//]: # (head-end)\n')
-          .slice(1)
-          .join('')
-          .split('[//]: # (foot-start)\n')
-          .slice(0, -1)
-          .join('');
+        let manualView = Git(['show', `${stepRevision}:${manualPath}`]);
+
+        if (manualView.includes(headEnd)) {
+          manualView = manualView
+            .split(headEnd)
+            .slice(1)
+            .join(headEnd);
+        }
+
+        if (manualView.includes(footStart)) {
+          manualView = manualView
+            .split(footStart)
+            .slice(0, -1)
+            .join(footStart);
+        }
 
         return {
           manualTitle,
