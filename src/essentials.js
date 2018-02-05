@@ -285,10 +285,20 @@ function dumpProject(out = Utils.cwd(), options = {}) {
         const stepRevision = stepLog.shift();
         const manualTitle = stepLog.join(' ');
 
+        // Removing header and footer, since the view should be used externally on a
+        // different host which will make sure to show these two
+        const manualView = Git(['show', `${stepRevision}:${manualPath}`])
+          .split('[//]: # (head-end)\n')
+          .slice(1)
+          .join('')
+          .split('[//]: # (foot-start)\n')
+          .slice(0, -1)
+          .join('');
+
         return {
           manualTitle,
           stepRevision,
-          manualView: Git(['show', `${stepRevision}:${manualPath}`]),
+          manualView,
         };
       });
 
