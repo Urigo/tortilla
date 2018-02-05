@@ -40,7 +40,6 @@ Program
   .command('dump [out]')
   .description('Dumps tutorial data as a JSON file')
   .action((out) => {
-    LocalStorage.assertTortilla(true);
     Essentials.dump(out);
   });
 

@@ -195,84 +195,92 @@ function dumpProject(out = Utils.cwd()) {
     .split('\n')
     .filter(Boolean);
 
-  const dump = tagNames
+  const branchNames = tagNames
     .filter((tagName) => {
       return /^[^@]+?@\d+\.\d+\.\d+$/.test(tagName);
     })
     .map((tagName) => {
       return tagName.split('@')[0];
     })
-    .map((branchName) => {
-      const historyBranchName = `${branchName}-history`;
+    .reduce((branchNames, branchName) => {
+      if (!branchNames.includes(branchName)) {
+        branchNames.push(branchName);
+      }
 
-      // Run command once
-      const releaseVersions = tagNames
-        .map((tagName) => {
-          return tagName.match(new RegExp(`${branchName}@(\\d+\\.\\d+\\.\\d+)`));
-        })
+      return branchNames;
+    }, []);
+
+  const dump = branchNames.map((branchName) => {
+    const historyBranchName = `${branchName}-history`;
+
+    // Run command once
+    const releaseVersions = tagNames
+      .map((tagName) => {
+        return tagName.match(new RegExp(`${branchName}@(\\d+\\.\\d+\\.\\d+)`));
+      })
+      .filter(Boolean)
+      .map((match) => {
+        return match[1];
+      })
+      .reverse()
+
+    const releases = releaseVersions.map((releaseVersion) => {
+      const tagName = `${branchName}@${releaseVersion}`;
+      const tagRevision = Git(['rev-parse', tagName]);
+
+      const historyRevision = Git([
+        'log', historyBranchName, `--grep=^${tagName}:`, '--format=%H'
+      ]).split('\n')
         .filter(Boolean)
-        .map((match) => {
-          return match[1];
-        });
+        .pop();
 
-      const recentRelease = releaseVersions.reduce((recentRelease, currentRelease) => {
-        const recentVersions = recentRelease.split('.').map(Number);
-        const currentVersions = currentRelease.split('.').map(Number);
+      // TODO: Remove header and footer
+      const manuals = Fs.readdirSync(Paths.manuals.views).map((manualName, stepIndex) => {
+        const format = '%H %s';
+        let stepLog, manualPath;
 
-        if (recentVersions[0] > currentVersions[0]) return recentRelease;
-        if (currentVersions[0] > recentVersions[0]) return currentRelease;
-        if (recentVersions[1] > currentVersions[1]) return recentRelease;
-        if (currentVersions[1] > recentVersions[1]) return currentRelease;
-        if (recentVersions[2] > currentVersions[2]) return recentRelease;
-        if (currentVersions[2] > recentVersions[2]) return currentRelease;
+        // Step
+        if (stepIndex) {
+          manualPath = Path.resolve(Paths.manuals.views, manualName);
+          stepLog = Git([
+            'log', branchName, `--grep=^Step ${stepIndex}:`, `--format=${format}`
+          ]);
+        }
+        // Root
+        else {
+          manualPath = Paths.readme;
+          stepLog = Git([
+            'log', Git.rootHash(branchName), `--format=${format}`
+          ]);
+        }
 
-        return recentRelease;
-      });
-
-      const releases = releaseVersions.map((version) => {
-        const tagName = `${branchName}@${version}`;
-        const tagRevision = Git(['rev-parse', tagName]);
-
-        const historyRevision = Git([
-          'log', historyBranchName, `--grep=^${tagName}:`, '--format=%H'
-        ]).split('\n')
-          .filter(Boolean)
-          .pop();
-
-        // TODO: Remove header and footer
-        const manuals = Fs.readDirSync(Paths.views).map((manualName, stepIndex) => {
-          const format = '%H %s';
-          const manualPath = Paths.views.resolve(manualName);
-          const stepLog = (
-            Step.recentSuperCommit(stepIndex, format) ||
-            Git(['log', Git.rootHash(), `--format=${format}`]);
-          ).split(' ')
-          const stepRevision = stepLog.shift();
-          const name = stepLog.join(' ');
-
-          return {
-            name,
-            stepIndex,
-            stepRevision,
-            content: Fs.readFileSync(manualPath).toString(),
-          };
-        });
+        manualPath = Path.relative(Utils.cwd(), manualPath);
+        stepLog = stepLog.split(' ');
+        const stepRevision = stepLog.shift();
+        const manualTitle = stepLog.join(' ');
 
         return {
-          version,
-          tagName,
-          tagRevision,
-          historyRevision,
+          manualTitle,
+          stepRevision,
+          manualView: Git(['show', `${stepRevision}:${manualPath}`]),
         };
       });
 
       return {
-        branchName,
-        historyBranchName,
-        recentRelease,
-        releases,
+        releaseVersion,
+        tagName,
+        tagRevision,
+        historyRevision,
+        manuals,
       };
     });
+
+    return {
+      branchName,
+      historyBranchName,
+      releases,
+    };
+  });
 
   Fs.writeJsonSync(out, dump);
 }

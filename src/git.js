@@ -95,8 +95,8 @@ function getActiveBranchName() {
 }
 
 // Gets the root hash of HEAD
-function getRootHash() {
-  return git(['rev-list', '--max-parents=0', 'HEAD']);
+function getRootHash(head = 'HEAD') {
+  return git(['rev-list', '--max-parents=0', head]);
 }
 
 function getRoot() {
