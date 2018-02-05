@@ -23,7 +23,8 @@ let node;
       stdio: ['pipe', 'pipe', 'ignore'],
     }).toString()
       .trim();
-  } catch (err) {
+  }
+  catch (err) {
     // If no git-exists nor git-failed use default value instead
   }
 

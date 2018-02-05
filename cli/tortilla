@@ -39,8 +39,13 @@ Program
 Program
   .command('dump [out]')
   .description('Dumps tutorial data as a JSON file')
-  .action((out) => {
-    Essentials.dump(out);
+  .option('--filter [filter]', 'Filter branches')
+  .option('--reject [reject]', 'Reject branches')
+  .action((out, options) => {
+    Essentials.dump(out, {
+      filter: options.filter && options.filter.split(/\s+/),
+      reject: options.reject && options.reject.split(/\s+/),
+    });
   });
 
 Program

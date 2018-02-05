@@ -317,7 +317,7 @@ Creates a new Tortilla project with the provided name.
 
 Initializes Tortilla essentials in the provided project.
 
-**command:** `tortilla dump [out]`
+**command:** `tortilla dump [out] --filter [filter] --reject [reject]`
 
 Dumps tutorial data as a JSON file. The default dump file name would be `tutorial.json`, although an optional output path might be provided. Here's a brief description of the schema of the generated dump file:
 
@@ -326,19 +326,17 @@ Dumps tutorial data as a JSON file. The default dump file name would be `tutoria
   {
     "branchName": "Current branch",
     "historyBranchName": "History branch matching current branch",
-    "latestRelease": "x.x.x",
     "releases": [
       {
-        "version": "x.x.x",
+        "ReleaseVersion": "x.x.x",
         "tagName": "The name of the tag",
         "tagRevision": "The revision of the tag",
         "historyRevision": "Commit hash based on history branch",
         "manuals": [
           {
-            "name": "Step commit message",
+            "manualTitle": "Step commit message",
             "stepRevision": "Step commit revision",
-            "stepIndex": "Super step number",
-            "content": "Manual view content"
+            "manualView": "Manual view content"
           }
         ]
       }
@@ -346,6 +344,9 @@ Dumps tutorial data as a JSON file. The default dump file name would be `tutoria
   }
 ]
 ```
+
+- *option:* `--filter [filter]` - A list of branches we would like to filter separated with spaces.
+- *option:* `--reject [reject]` - A list of branches we would like to reject separated with spaces.
 
 ### tortilla-manual CLI
 

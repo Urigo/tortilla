@@ -178,7 +178,17 @@ function ensureTortilla(projectDir) {
 
 // Dumps tutorial into a JSON file
 // Output path defaults to cwd
-function dumpProject(out = Utils.cwd()) {
+function dumpProject(out = Utils.cwd(), options = {}) {
+  if (out instanceof Object && !(out instanceof String)) {
+    options = out;
+    out = Utils.cwd();
+  }
+
+  options = Object.assign({
+    filter: options.filter,
+    reject: options.reject,
+  }, options);
+
   // Output path is relative to cwd
   out = Path.resolve(Utils.cwd(), out);
 
@@ -186,6 +196,10 @@ function dumpProject(out = Utils.cwd()) {
   if (Utils.exists(out, 'dir')) {
     out = Path.join(out, defaultDumpFileName);
   }
+
+  console.log();
+  console.log(`Dumping into ${out}...`);
+  console.log();
 
   // Will recursively ensure dirs as well
   Fs.ensureFileSync(out);
@@ -195,7 +209,7 @@ function dumpProject(out = Utils.cwd()) {
     .split('\n')
     .filter(Boolean);
 
-  const branchNames = tagNames
+  let branchNames = tagNames
     .filter((tagName) => {
       return /^[^@]+?@\d+\.\d+\.\d+$/.test(tagName);
     })
@@ -209,6 +223,18 @@ function dumpProject(out = Utils.cwd()) {
 
       return branchNames;
     }, []);
+
+  if (options.filter) {
+    branchNames = branchNames.filter((branchName) => {
+      return options.filter.includes(branchName);
+    });
+  }
+
+  if (options.reject) {
+    branchNames = branchNames.filter((branchName) => {
+      return !options.reject.includes(branchName);
+    });
+  }
 
   const dump = branchNames.map((branchName) => {
     const historyBranchName = `${branchName}-history`;
