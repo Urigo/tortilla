@@ -208,8 +208,7 @@ describe('Step', function () {
     });
 
     it('should be able to edit steps with multiple digits', function () {
-      this.slow(10000);
-      this.timeout(20000);
+      this.slow(15000);
 
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 

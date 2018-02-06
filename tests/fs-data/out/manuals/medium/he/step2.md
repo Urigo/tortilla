@@ -1,6 +1,12 @@
 # צעד 2: דמה
 
+[//]: # (head-end)
+
+
 המדריך של צעד 2
+
+
+[//]: # (foot-start)
 
 [{]: <helper> (navStep)
 

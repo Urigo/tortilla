@@ -1,5 +1,8 @@
 # Step 1: Package test manual
 
+[//]: # (head-end)
+
+
 [{]: <helper> (diffStep 1.1)
 
 #### Step 1.1: Add c package
@@ -19,6 +22,9 @@
 ```
 
 [}]: #
+
+[//]: # (foot-start)
+
 [{]: <helper> (navStep)
 
 | [< Intro](../../../README.md) |
