@@ -262,7 +262,7 @@ function dumpProject(out = Utils.cwd(), options = {}) {
       .map((match) => {
         return match[1];
       })
-      .reverse()
+      .reverse();
 
     const releases = releaseVersions.map((releaseVersion) => {
       const tagName = `${branchName}@${releaseVersion}`;
@@ -315,6 +315,8 @@ function dumpProject(out = Utils.cwd(), options = {}) {
             .slice(0, -1)
             .join(footStart);
         }
+
+        manualView = manualView.trim();
 
         return {
           manualTitle,

@@ -1,5 +1,4 @@
 const Chai = require('chai');
-const EscapeRegExp = require('escape-string-regexp');
 const Fs = require('fs-extra');
 const Path = require('path');
 
@@ -20,26 +19,31 @@ Assertion.addMethod('file', function (expectedFileName, extension) {
 
   const expectedFilePath = Path.resolve(__dirname, 'fs-data/out', expectedFile);
   const expectedContent = Fs.readFileSync(expectedFilePath, 'utf8');
+  let xMatch = expectedContent.match(/X{3,}/);
+  let index = 0;
+  let prevIndex = 0;
+  let length;
+  let expectedChunk;
+  let actualChunk;
 
-  let pattern = expectedContent
-    .split('XXX')
-    .map(EscapeRegExp)
-    .map(chunk => '(' + chunk + ')')
-    .join('(.+)')
-  pattern = '^' + pattern;
-  pattern = pattern + '$';
-  pattern = new RegExp(pattern);
+  while (xMatch) {
+    index = xMatch.index;
+    length = xMatch[0].length;
+    expectedChunk = expectedContent.substr(prevIndex, index);
+    actualChunk = actualContent.substr(prevIndex, index);
 
-  const matches = actualContent.match(pattern) || [actualContent];
+    new Assertion(actualChunk).to.equal(expectedChunk,
+      'Expected file to have the same content as \'' + expectedFile + '\''
+    );
 
-  if (matches.length > 1) {
-    actualContent = matches.slice(1).reduce((actualContent, match, index) => {
-      if (index % 2 == 1) match = 'XXX';
-      return actualContent + match;
-    });
+    prevIndex += index + length;
+    xMatch = expectedContent.substr(prevIndex).match(/X{3,}/);
   }
 
-  new Assertion(actualContent).to.equal(expectedContent,
+  expectedChunk = expectedContent.slice(prevIndex).trim();
+  actualChunk = actualContent.slice(prevIndex).trim();
+
+  new Assertion(actualChunk).to.equal(expectedChunk,
     'Expected file to have the same content as \'' + expectedFile + '\''
   );
 });
