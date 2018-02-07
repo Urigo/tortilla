@@ -261,24 +261,19 @@ function sortSteps(operations, options) {
       // prevent external interventions, mostly because of tests
       operations.push({
         method: 'exec',
-        command: `
+        command: Utils.shCmd(`
+          export GIT_DIR=${cwd}/.git
+          export GIT_WORK_TREE=${cwd}
           export TORTILLA_CHILD_PROCESS=true
           export TORTILLA_CWD=${cwd}
           export TORTILLA_SUBMODULE_CWD=${subCwd}
-
-          cd ${cwd}
 
           if ${Paths.cli.tortilla} step edit --root ; then
             git rebase --continue
           else
             git rebase --abort
           fi
-
-          cd ${subCwd}
-        `.trim()
-         .replace(/\n+/g, ';')
-         .replace(/\s+/g, ' ')
-         .trim()
+        `)
       });
     }
 

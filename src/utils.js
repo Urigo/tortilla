@@ -339,6 +339,18 @@ function escapeBrackets(str) {
     .replace(/\>/g, '\\>');
 }
 
+// Takes a shell script string and transforms it into a one liner
+function shCmd(cmd) {
+  return cmd
+    .trim()
+    .replace(/\n+/g, ';')
+    .replace(/\s+/g, ' ')
+    .replace(/then\s*;/g, 'then')
+    .replace(/else\s*;/g, 'else')
+    .replace(/;\s*;/g, ';')
+    .trim();
+}
+
 
 module.exports = {
   cwd,
@@ -362,4 +374,5 @@ module.exports = {
   delegateProperties,
   isEqual,
   escapeBrackets,
+  shCmd,
 };
