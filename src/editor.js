@@ -36,8 +36,6 @@ const Utils = require('./utils');
     udiff: udiff === 'true' ? '' : udiff
   };
 
-  console.log(argv)
-
   const rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
   const operations = disassemblyOperations(rebaseFileContent);
