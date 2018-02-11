@@ -19,8 +19,7 @@ const Utils = require('./utils');
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm'],
-    boolean: ['udiff'],
+    string: ['_', 'message', 'm', 'udiff'],
   });
 
   // The first argument will be the rebase file path provided to us by git
@@ -30,8 +29,11 @@ const Utils = require('./utils');
   const message = argv.message || argv.m;
   const udiff = argv.udiff;
 
+  // Rebase file path will always be appended at the end of the arguments vector,
+  // therefore udiff has to have a value, otherwise it will be matched with the wrong
+  // argument
   const options = {
-    udiff
+    udiff: udiff === 'true' ? '' : udiff
   };
 
   const rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
@@ -46,7 +48,7 @@ const Utils = require('./utils');
   switch (method) {
     case 'edit': editStep(operations, steps, options); break;
     case 'edit-head': editHead(operations); break;
-    case 'sort': sortSteps(operations); break;
+    case 'sort': sortSteps(operations, options); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
   }
@@ -59,8 +61,10 @@ const Utils = require('./utils');
 // Edit the last step in the rebase file
 function editStep(operations, steps, options) {
   // Create initial step map
-  if (options.udiff) {
-    Step.initializeStepMap();
+  // Note that udiff is a string, since it may very well specify a module path
+  if (options.udiff != null) {
+    // Providing pending flag
+    Step.initializeStepMap(!!options.udiff);
   }
 
   if (!steps) {
@@ -116,7 +120,14 @@ function editStep(operations, steps, options) {
       LocalStorage.setItem('REBASE_NEW_STEP', 'root');
     }
 
-    const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
+    // Building sort command
+    let sort = `node ${Paths.tortilla.editor} sort`;
+
+    if (options.udiff) {
+      sort = `${sort} --udiff=${options.udiff}`;
+    }
+
+    sort = `GIT_SEQUENCE_EDITOR="${sort}"`;
 
     // Continue sorting the steps after step editing has been finished
     steps.forEach((step) => {
@@ -161,14 +172,18 @@ function editStep(operations, steps, options) {
 }
 
 // Adjusts upcoming step numbers in rebase
-function sortSteps(operations) {
+function sortSteps(operations, options) {
   // Grab meta-data
   const oldStep = LocalStorage.getItem('REBASE_OLD_STEP');
   const newStep = LocalStorage.getItem('REBASE_NEW_STEP');
+  const submoduleCwd = LocalStorage.getItem('SUBMODULE_CWD');
 
   // If delta is 0 no sortments are needed
   if (oldStep == newStep) {
-    return LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+    LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+
+    // Escape unless we need to update stepDiffs for submodules
+    if (!submoduleCwd) return;
   }
 
   const stepLimit = getStepLimit(oldStep, newStep);
@@ -176,7 +191,7 @@ function sortSteps(operations) {
   let offset = 0;
 
   operations.slice().some((operation, index) => {
-    const currStepDescriptor = Step.descriptor(operation.message);
+    const currStepDescriptor = Step.descriptor(operation.message || '');
     // Skip commits which are not step commits
     if (!currStepDescriptor) {
       return;
@@ -186,8 +201,17 @@ function sortSteps(operations) {
     const currSuperStep = currStepSplit[0];
     const currSubStep = currStepSplit[1];
 
+    if (submoduleCwd) {
+      // If this is a super step, replace pick operation with the super pick
+      if (!currSubStep) {
+        operations.splice(index + offset, 1, {
+          method: 'exec',
+          command: `node ${Paths.tortilla.rebase} super-pick ${operation.hash}`,
+        });
+      }
+    }
     // If limit reached
-    if (currSuperStep > stepLimit) {
+    else if (currSuperStep > stepLimit) {
       // Prepend local storage item setting operation, this would be a flag which will be
       // used in git-hooks
       operations.splice(index + offset++, 0, {
@@ -252,10 +276,36 @@ function sortSteps(operations) {
       command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
     });
 
+    // If specified udiff is a path to another tortilla repo
+    if (options.udiff) {
+      const subCwd = Utils.cwd();
+      const cwd = Path.resolve(Utils.cwd(), options.udiff)
+
+      // Update the specified repo's manual files
+      // Note that TORTILLA_CHILD_PROCESS and TORTILLA_CWD flags are set to
+      // prevent external interventions, mostly because of tests
+      operations.push({
+        method: 'exec',
+        command: Utils.shCmd(`
+          export GIT_DIR=${cwd}/.git
+          export GIT_WORK_TREE=${cwd}
+          export TORTILLA_CHILD_PROCESS=true
+          export TORTILLA_CWD=${cwd}
+          export TORTILLA_SUBMODULE_CWD=${subCwd}
+
+          if ${Paths.cli.tortilla} step edit --root ; then
+            git rebase --continue
+          else
+            git rebase --abort
+          fi
+        `)
+      });
+    }
+
     // Ensure step map is being disposed
     operations.push({
       method: 'exec',
-      command: `node ${Paths.tortilla.localStorage} remove STEP_MAP`,
+      command: `node ${Paths.tortilla.localStorage} remove STEP_MAP STEP_MAP_PENDING`,
     });
   }
 }

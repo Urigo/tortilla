@@ -141,10 +141,12 @@ function exec(file, argv, options) {
     delete options.env[key];
   });
 
-  return ChildProcess
-    .execFileSync(file, argv, options)
-    .toString()
-    .trim();
+  const out = ChildProcess.execFileSync(file, argv, options);
+
+  // In case of stdio inherit
+  if (!out) return '';
+
+  return out.toString().trim();
 }
 
 // Tells if entity exists or not by an optional document type
@@ -366,6 +368,18 @@ function escapeBrackets(str) {
     .replace(/\>/g, '\\>');
 }
 
+// Takes a shell script string and transforms it into a one liner
+function shCmd(cmd) {
+  return cmd
+    .trim()
+    .replace(/\n+/g, ';')
+    .replace(/\s+/g, ' ')
+    .replace(/then\s*;/g, 'then')
+    .replace(/else\s*;/g, 'else')
+    .replace(/;\s*;/g, ';')
+    .trim();
+}
+
 
 module.exports = {
   cwd,
@@ -390,4 +404,5 @@ module.exports = {
   delegateProperties,
   isEqual,
   escapeBrackets,
+  shCmd,
 };

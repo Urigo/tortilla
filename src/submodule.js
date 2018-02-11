@@ -1,5 +1,6 @@
 const Fs = require('fs-extra');
 const Minimist = require('minimist');
+const Path = require('path');
 const Git = require('./git');
 const Paths = require('./paths');
 const Step = require('./step');
@@ -39,7 +40,7 @@ function addSubmodules(remotes) {
       continue;
     }
 
-    name = getSubmoduleName(remote);
+    name = getRemoteSubmoduleName(remote);
 
     if (!remote.includes('/')) {
       throw Error('Provided remote is not a path');
@@ -291,12 +292,28 @@ function getSubmoduleCheckouts(whiteList) {
   return checkouts;
 }
 
-function getSubmoduleName(remote) {
+function getRemoteSubmoduleName(remote) {
   return remote
     .split('/')
     .pop()
     .split('.')
     .shift();
+}
+
+function getLocalSubmoduleName(path) {
+  if (!path) return '';
+
+  const givenPackPath = Paths.resolveProject(path).npm.package;
+  const givenPackName = JSON.parse(Fs.readFileSync(givenPackPath)).name;
+
+  const submoduleName = listSubmodules().find((submoduleName) => {
+    const submodulePackPath = Paths.resolveProject(path).npm.package;
+    const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath)).name;
+
+    return submoduleName;
+  });
+
+  return submoduleName || '';
 }
 
 
@@ -307,4 +324,6 @@ module.exports = {
   list: listSubmodules,
   isOne: isSubmodule,
   ensure: ensureSubmodules,
+  getRemoteName: getRemoteSubmoduleName,
+  getLocalName: getLocalSubmoduleName,
 };
