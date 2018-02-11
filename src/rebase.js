@@ -21,8 +21,6 @@ const Submodule = require('./submodule');
   const method = argv._[0];
   const arg1 = argv._[1];
 
-  LocalStorage.setItem('DEBUG', argv.toString());
-
   switch (method) {
     case 'reword': return rewordRecentStep(arg1);
     case 'super-pick': return superPickStep(arg1);

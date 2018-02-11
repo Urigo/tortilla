@@ -10,10 +10,37 @@ const Utils = require('./utils');
  */
 
 const exec = Utils.exec;
-const git = Utils.git;
 // This RegExp will help us pluck the versions in a conflict and solve it
 const conflict = /\n\s*<<<<<<< [^\n]+(\n(?:.|\n)+?)\n\s*=======(\n(?:.|\n)+?)\n\s*>>>>>>> [^\n]+/;
 
+git.print = function(argv, options) {
+  return gitBody(Utils.git.print, argv, options);
+};
+
+function git(argv, options) {
+  return gitBody(Utils.git, argv, options);
+}
+
+// The body of the git execution function, useful since we use the same logic both for
+// exec and spawn
+function gitBody(handler, argv, options) {
+  options = Object.assign({
+    env: {},
+  }, options);
+
+  // Zeroing environment vars which might affect other executions
+  options.env = Object.assign({
+    GIT_DIR: null,
+    GIT_WORK_TREE: null,
+  }, options.env);
+
+  return handler(argv, options);
+}
+
+// Tells if rebasing or not
+function isRebasing() {
+  return Utils.exists(Paths.git.rebaseMerge) || Utils.exists(Paths.git.rebaseApply);
+}
 
 // Tells if rebasing or not
 function isRebasing() {

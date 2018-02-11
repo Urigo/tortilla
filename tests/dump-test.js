@@ -22,7 +22,7 @@ describe('tortilla dump', function () {
     Fs.removeSync(this.dumpFile);
   });
 
-  it('should dump tall branches which has at least a single release', function () {
+  it('should dump all branches which has at least a single release', function () {
     this.slow(10000);
 
     const testBranches = ['foo', 'bar', 'baz'];

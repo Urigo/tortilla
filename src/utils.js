@@ -101,11 +101,20 @@ function spawn(file, argv, options) {
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: process.env.TORTILLA_STDIO || 'inherit',
+    env: {},
   }, options);
+
+  const envRedundantKeys = Object.keys(options.env).filter((key) => {
+    return options.env[key] == null;
+  });
 
   options.env = extend({
     TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
+
+  envRedundantKeys.forEach((key) => {
+    delete options.env[key];
+  });
 
   return ChildProcess.spawnSync(file, argv, options);
 }
@@ -117,11 +126,20 @@ function exec(file, argv, options) {
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: 'pipe',
+    env: {},
   }, options);
+
+  const envRedundantKeys = Object.keys(options.env).filter((key) => {
+    return options.env[key] == null;
+  });
 
   options.env = extend({
     TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
+
+  envRedundantKeys.forEach((key) => {
+    delete options.env[key];
+  });
 
   return ChildProcess
     .execFileSync(file, argv, options)

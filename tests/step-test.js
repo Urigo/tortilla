@@ -2,6 +2,7 @@ const Chai = require('chai');
 const Path = require('path');
 const Fs = require('fs-extra');
 const Git = require('../src/git');
+const Paths = require('../src/paths');
 const Step = require('../src/step');
 
 
@@ -128,7 +129,7 @@ describe('Step', function () {
 
       this.tortilla(['step', 'edit', '--root']);
 
-      const checkoutsPath = this.exec('realpath', ['.tortilla/checkouts.json']);
+      const checkoutsPath = Paths.checkouts;
       Fs.writeFileSync(checkoutsPath, JSON.stringify({
         test_submodule: {
           head: 'master',
@@ -594,7 +595,6 @@ describe('Step', function () {
       const testModuleName = 'test_submodule';
 
       this.git(['submodule', 'add', testRemote, testModuleName]);
-      this.git(['add', testModuleName]);
 
       const testModulePath = Path.resolve(this.testDir, testModuleName);
       const testFilePath = `${testModulePath}/test.txt`;
@@ -603,7 +603,9 @@ describe('Step', function () {
       this.git(['add', testFilePath], { cwd: testModulePath });
       this.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
 
-      const checkoutsPath = Path.resolve(this.testDir, '.tortilla/checkouts.json');
+      this.git(['add', testModuleName]);
+
+      const checkoutsPath = Paths.checkouts;
       Fs.writeFileSync(checkoutsPath, JSON.stringify({
         [testModuleName]: {
           head: 'master',

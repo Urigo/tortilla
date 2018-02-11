@@ -48,7 +48,8 @@ Renderer.registerHelper('diffStep', (step, options) => {
   if (hash.files) {
     pattern = new RegExp(hash.files.replace(/\s*,\s*/g, '|').replace(/\./g, '\\.'));
   // Will print diff of all possible files
-  } else {
+  }
+  else {
     pattern = /.*/;
   }
 
@@ -85,7 +86,8 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // If this is a relative path, we won't reference the commit
   if (commitReference.isRelative) {
     var stepTitle = `#### ${stepMessage}`;
-  } else {
+  }
+  else {
     var stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
@@ -111,9 +113,14 @@ function getMdDiff(file) {
 
   if (file.new) {
     fileTitle = `##### ${t('diff.added', { path: file.to })}`;
-  } else if (file.deleted) {
+  }
+  else if (file.deleted) {
     fileTitle = `##### ${t('diff.deleted', { path: file.from })}`;
-  } else {
+  }
+  else if (!file.chunks.length) {
+    fileTitle = `##### ${t('diff.renamed', { from: file.from, to: file.to })}`;
+  }
+  else {
     fileTitle = `##### ${t('diff.changed', { path: file.from })}`;
   }
 
