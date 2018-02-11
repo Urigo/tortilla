@@ -1,3 +1,4 @@
+const Chai = require('chai');
 const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
@@ -102,6 +103,7 @@ beforeEach(function () {
 
 
 // Plugins
+Chai.use(require('chai-match'));
 require('./assertions');
 // Tests
 require('./step-test');
