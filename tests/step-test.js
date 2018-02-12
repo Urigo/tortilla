@@ -563,8 +563,8 @@ describe('Step', function () {
     });
 
     it('should update all diffStep template helpers in manuals repo', function () {
-      this.timeout(35000);
-      this.slow(25000);
+      this.timeout(50000);
+      this.slow(35000);
 
       this.exec('sh', ['-c', 'echo foo > file']);
       this.git(['add', 'file']);

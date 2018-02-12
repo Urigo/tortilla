@@ -310,7 +310,7 @@ function getLocalSubmoduleName(path) {
     const submodulePackPath = Paths.resolveProject(path).npm.package;
     const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath)).name;
 
-    return submoduleName;
+    return submodulePackName == givenPackName;
   });
 
   return submoduleName || '';
