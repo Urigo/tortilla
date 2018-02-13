@@ -79,11 +79,11 @@ function superPickStep(hash) {
   if (stepMap) {
     // The submodule cwd was given from another process of tortilla
     const submodule = Submodule.getLocalName(submoduleCwd);
-    const diffStepPattern = /\{\{\s*diffStep\s+(\d+\.\d+).*\}\}/g;
+    const diffStepPattern = /\{\{\s*diffStep\s+"?(\d+\.\d+)"?.*\}\}/g;
 
     // Replace indexes presented in diffStep() template helpers
     fixedPatch = fixedPatch.replace(diffStepPattern, (helper, oldStep) => {
-      let helperSubmodule = helper.match(/module="?([^\s"]+)"?/);
+      let helperSubmodule = helper.match(/module\s?=\s?"?([^\s"]+)"?/);
       helperSubmodule = helperSubmodule ? helperSubmodule[1] : '';
 
       // Don't replace anything if submodules don't match
@@ -92,7 +92,7 @@ function superPickStep(hash) {
       // In case step has been removed in the process, replace it with a meaningless placeholder
       const newStep = stepMap[oldStep] || 'XX.XX';
 
-      return helper.replace(/(diffStep\s+)\d+\.\d+/, `$1${newStep}`);
+      return helper.replace(/(diffStep\s+"?)\d+\.\d+/, `$1${newStep}`);
     });
   }
 
