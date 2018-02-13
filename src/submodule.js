@@ -300,14 +300,15 @@ function getRemoteSubmoduleName(remote) {
     .shift();
 }
 
-function getLocalSubmoduleName(path) {
-  if (!path) return '';
+function getLocalSubmoduleName(givenPath) {
+  if (!givenPath) return '';
 
-  const givenPackPath = Paths.resolveProject(path).npm.package;
+  const givenPackPath = Paths.resolveProject(givenPath).npm.package;
   const givenPackName = JSON.parse(Fs.readFileSync(givenPackPath)).name;
 
   const submoduleName = listSubmodules().find((submoduleName) => {
-    const submodulePackPath = Paths.resolveProject(path).npm.package;
+    const submodulePath = `${Utils.cwd()}/${submoduleName}`;
+    const submodulePackPath = Paths.resolveProject(submodulePath).npm.package;
     const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath)).name;
 
     return submodulePackName == givenPackName;
