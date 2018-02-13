@@ -49,6 +49,9 @@ function addSubmodules(remotes) {
     remotes[i] = { remote, name };
   }
 
+  // Cleanup names leftovers
+  remotes = remotes.filter((raw) => typeof raw != 'string');
+
   const rebasing = Git.rebasing();
 
   // Submodule can only be added in the root commit, therefore in case we're rebasing
@@ -130,6 +133,55 @@ function removeSubmodules(submodules) {
   }
 }
 
+// This is useful when we not only want to update the files inside the submodules,
+// but rather ensure that the hash is set to the latest after rebasing the submodule
+function resetSubmodules(submodules) {
+  if (!submodules || submodules.length == 0) {
+    submodules = listSubmodules();
+  }
+
+  const rebasing = Git.rebasing();
+
+  // Submodule can only be reseted from the root commit, therefore in case we're rebasing
+  // we should check whether we're editing the root or not
+  if (rebasing) {
+    const commitHash = Git.recentCommit(['--format=%H']);
+    const rootHash = Git.rootHash();
+
+    if (commitHash != rootHash) {
+      throw TypeError("Can't remove submodules from the middle of the stack");
+    }
+  }
+  else {
+    Step.edit('root');
+  }
+
+  // After removing submodules they need to be re-added with the right url
+  const submodulesUrls = listUrls(submodules);
+
+  const submodleUrlPairs = submodules.reduce((pairs, submodule, index) => {
+    const url = submodulesUrls[index];
+
+    pairs.push(url, submodule);
+
+    return pairs;
+  }, []);
+
+  // Actual reset
+  removeSubmodules(submodules);
+  addSubmodules(submodleUrlPairs);
+
+  // If we're not in rebase mode, amend the changes
+  if (!rebasing) {
+    Git.print(['commit', '--amend'], {
+      env: {
+        GIT_EDITOR: true,
+      }
+    });
+    Git.print(['rebase', '--continue']);
+  }
+}
+
 function updateSubmodules(submodules) {
   if (!submodules || submodules.length == 0) {
     submodules = listSubmodules();
@@ -185,6 +237,26 @@ function listSubmodules() {
   return configData.split('\n').map((submodule) => {
     return submodule.split('.')[1];
   });
+}
+
+function listUrls(whiteList = []) {
+  return Git([
+    'config', '--file', '.gitmodules', '--get-regexp', 'url'
+  ]).split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^submodule\.([^\.]+)\.url\s(.+)$/);
+
+      if (!match) return;
+
+      const submodule = match[1];
+      const url = match[2];
+
+      if (!whiteList.length || whiteList.includes(submodule)) {
+        return url
+      }
+    })
+    .filter(Boolean);
 }
 
 function isSubmodule() {
@@ -322,7 +394,9 @@ module.exports = {
   add: addSubmodules,
   remove: removeSubmodules,
   update: updateSubmodules,
+  reset: resetSubmodules,
   list: listSubmodules,
+  urls: listUrls,
   isOne: isSubmodule,
   ensure: ensureSubmodules,
   getRemoteName: getRemoteSubmoduleName,

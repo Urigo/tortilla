@@ -439,6 +439,10 @@ Remove submodules from the root commit. If non was provided - will remove all su
 
 Update submodules in the root commit. If non was provided - will update all submodules.
 
+**command:** `tortilla submodule reset [submodules...]`
+
+Reset submodules in the root commit. If non was provided - will update all submodules. Unlike the `update` function, this will remove all the given submodules and re-add them, which will always result in the most recent submodules, event if the HEAD was rebased.
+
 ### tortilla-package CLI
 
 `package.json` related commands are useful when we wanna update our dependencies' versions all across the tutorial, without needing to deal with any conflicts across the process.
