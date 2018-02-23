@@ -3,6 +3,7 @@ const Handlebars = require('handlebars');
 const ParseDiff = require('parse-diff');
 const Git = require('../../git');
 const Step = require('../../step');
+const Submodule = require('../../submodule');
 const Translator = require('../../translator');
 const Utils = require('../../utils');
 
@@ -57,7 +58,14 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // In case a submodule was specified then all our git commands should be executed
   // from that module
   if (hash.module) {
-    cwd = `${cwd}/${hash.module}`;
+    // Use the cloned repo that is used for development
+    if (process.env.TORTILLA_SUBDEV) {
+      cwd = Submodule.getCwd(hash.module);
+    }
+    // Use the local submodule
+    else {
+      cwd = `${cwd}/${hash.module}`;
+    }
   }
 
   const stepData = Git.recentCommit([

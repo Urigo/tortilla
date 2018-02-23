@@ -389,6 +389,19 @@ function getLocalSubmoduleName(givenPath) {
   return submoduleName || '';
 }
 
+// Will get the path of the development sub-repo
+function getSubmoduleCwd(name) {
+  const configLine = Git([
+    'config', '--file', '.gitmodules', '--get-regexp', `submodule.${name}.url`
+  ]);
+
+  if (!configLine) return;
+
+  const relativePath = configLine.split(' ')[1];
+
+  return Path.resolve(Utils.cwd(), relativePath);
+}
+
 
 module.exports = {
   add: addSubmodules,
@@ -401,4 +414,5 @@ module.exports = {
   ensure: ensureSubmodules,
   getRemoteName: getRemoteSubmoduleName,
   getLocalName: getLocalSubmoduleName,
+  getCwd: getSubmoduleCwd,
 };
