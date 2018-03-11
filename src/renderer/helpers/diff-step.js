@@ -41,19 +41,30 @@ const t = Translator.translate.bind(Translator);
 
 
 Renderer.registerHelper('diffStep', (step, options) => {
-  let pattern;
+  const hash = options.hash;
 
+  let pattern;
   // Will print diff of multiple specified files
   // e.g. files="foo/a, bar/b"
-  if (options.hash.files) {
-    pattern = new RegExp(options.hash.files.replace(/\s*,\s*/g, '|').replace(/\./g, '\\.'));
-  } else { // Will print diff of all possible files
+  if (hash.files) {
+    pattern = new RegExp(hash.files.replace(/\s*,\s*/g, '|').replace(/\./g, '\\.'));
+  // Will print diff of all possible files
+  } else {
     pattern = /.*/;
+  }
+
+  let cwd = Git(['rev-parse', '--show-toplevel']);
+  // In case a submodule was specified then all our git commands should be executed
+  // from that module
+  if (hash.module) {
+    cwd = `${cwd}/${hash.module}`;
   }
 
   const stepData = Git.recentCommit([
     `--grep=^Step ${step}:`, '--format=%h %s',
-  ]).split(' ')
+  ], {
+    cwd
+  }).split(' ')
     .filter(Boolean);
 
   // In case step doesn't exist just render the error message.
@@ -81,7 +92,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
     stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
-  const diff = Git(['diff', `${stepHash}^`, stepHash]);
+  const diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
 
   const blacklist = Config.getBlacklist();
 

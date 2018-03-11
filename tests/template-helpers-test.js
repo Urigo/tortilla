@@ -1,4 +1,7 @@
 const Chai = require('chai');
+const Fs = require('fs');
+const Path = require('path');
+const Pack = require('../package.json');
 const Renderer = require('../src/renderer');
 const Translator = require('../src/translator');
 
@@ -58,11 +61,29 @@ describe('Template Helpers', function() {
     it('should reference commit if repo URL is defined in package.json', function () {
       this.applyTestPatch('add-file');
 
+      const packPath = this.exec('realpath', ['package.json']);
+      const pack = JSON.parse(Fs.readFileSync(packPath).toString());
+
+      pack.repository = Pack.repository;
+      Fs.writeFileSync(packPath, JSON.stringify(pack));
+
       const view = Renderer.renderTemplate('{{{diffStep 1.1}}}', {
         viewPath: 'dummy'
       });
 
       expect(view).to.be.a.file('referenced-diff.md');
+    });
+
+    it('should render step from the specified submodule', function () {
+      this.slow(4000);
+
+      const repoDir = this.createRepo();
+
+      this.tortilla(['submodule', 'add', repoDir]);
+
+      const view = Renderer.renderTemplate(`{{{diffStep 1.1 module="${Path.basename(repoDir)}"}}}`);
+
+      expect(view).to.be.a.file('submodule-diff.md');
     });
 
     describe('render target set to Medium', function () {
@@ -250,6 +271,14 @@ describe('Template Helpers', function() {
       expect(view).to.be.a.file('nav-steps-ref.md');
     });
 
+    it('should create a single button referencing the README.md file', function () {
+      this.tortilla(['step', 'pop']);
+      this.tortilla(['step', 'pop']);
+
+      const view = Renderer.renderTemplate('{{{navStep}}}');
+      expect(view).to.be.a.file('prev-root.md');
+    });
+
     describe('render target set to Medium', function () {
       before(function () {
         process.env.TORTILLA_RENDER_TARGET = 'medium';
@@ -292,6 +321,14 @@ describe('Template Helpers', function() {
 
         const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
         expect(view).to.be.a.file('medium/nav-steps-ref.md');
+      });
+
+      it('should create a single button referencing the README.md file', function () {
+        this.tortilla(['step', 'pop']);
+        this.tortilla(['step', 'pop']);
+
+        const view = Renderer.renderTemplate('{{{navStep}}}');
+        expect(view).to.be.a.file('medium/prev-root.md');
       });
     });
 
@@ -345,6 +382,14 @@ describe('Template Helpers', function() {
 
         const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
         expect(view).to.be.a.file('he/nav-steps-ref.md');
+      });
+
+      it('should create a single button referencing the README.md file', function () {
+        this.tortilla(['step', 'pop']);
+        this.tortilla(['step', 'pop']);
+
+        const view = Renderer.renderTemplate('{{{navStep}}}');
+        expect(view).to.be.a.file('he/prev-root.md');
       });
     });
   });

@@ -1,3 +1,4 @@
+const Git = require('../git');
 const LocalStorage = require('../local-storage');
 
 /**
@@ -11,6 +12,16 @@ const LocalStorage = require('../local-storage');
   }
 
   if (!process.env.TORTILLA_CHILD_PROCESS) throw Error(
-    'Rebase mode is prohibited! Use `$ tortilla step edit` instead'
-  )
+    "Rebase mode is prohibited! Use '$ tortilla step edit' instead"
+  );
+
+  const [activeBranch, mainBranch] = Git.activeBranchName().match(/^(.+)-step\d+$/) || [];
+
+  if (activeBranch) {
+    throw Error([
+      `Rebase mode is prohibited!`,
+      `Please checkout '${mainBranch}' branch beforehand ` +
+      `by running '$ git checkout ${mainBranch}'`
+    ].join('\n'));
+  }
 })();

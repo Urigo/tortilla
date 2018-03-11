@@ -4,17 +4,24 @@ const Path = require('path');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
+const Utils = require('./utils');
 
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
   if (typeof offset === 'string') {
+    grep = format;
     format = offset;
     offset = 0;
   }
 
-  const argv = [`--grep=${grep}`];
+  const argv = [];
+
   if (format) {
     argv.push(`--format=${format}`);
+  }
+
+  if (grep) {
+    argv.push(`--grep=${grep}`);
   }
 
   return Git.recentCommit(offset, argv);
@@ -44,6 +51,7 @@ function getStepDescriptor(message) {
   return match && {
     number: match[1],
     message: match[2],
+    type: match[1].split('.')[1] ? 'sub' : 'super',
   };
 }
 
@@ -93,8 +101,22 @@ function popStep() {
 
   Git.print(['reset', '--hard', 'HEAD~1']);
 
-  if (stepDescriptor) { // Meta-data for step editing
+  // Meta-data for step editing
+  if (stepDescriptor) {
     LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
+
+    // This will be used later on to update the manuals
+    if (ensureStepMap()) {
+      updateStepMap('remove', { step: stepDescriptor.number });
+    }
+
+    // Delete branch referencing the super step unless we're rebasing, in which case the
+    // branches will be reset automatically at the end of the rebase
+    if (stepDescriptor.type == 'super' && !Git.rebasing()) {
+      const branch = Git.activeBranchName();
+
+      Git(['branch', '-D', `${branch}-step${stepDescriptor.number}`]);
+    }
   } else {
     return console.warn('Removed commit was not a step');
   }
@@ -113,6 +135,13 @@ function tagStep(message) {
 
   Git(['add', manualTemplatePath]);
   commitStep(step, message);
+
+  // If we're in edit mode all the branches will be set after the rebase
+  if (!Git.rebasing()) {
+    const branch = Git.activeBranchName();
+    // This branch will be used to run integration testing
+    Git(['branch', `${branch}-step${step}`]);
+  }
 
   // Meta-data for step editing
   LocalStorage.setItem('REBASE_NEW_STEP', step);
@@ -144,12 +173,45 @@ function getStepBase(step) {
 }
 
 // Edit the provided step
-function editStep(step) {
-  const base = getStepBase(step);
+function editStep(steps, options = {}) {
+  if (steps instanceof Array) {
+    steps = steps.slice().sort((a, b) => {
+      const [superA, subA] = a.split('.');
+      const [superB, subB] = b.split('.');
+
+      // Always put the root on top
+      if (a == 'root') {
+        return -1;
+      }
+
+      if (b == 'root') {
+        return 1;
+      }
+
+      // Put first steps first
+      return (
+        (superA - superB) ||
+        (subA - subB)
+      );
+    });
+  }
+  // A single step was provided
+  else {
+    steps = [steps];
+  }
+
+  // The would always have to start from the first step
+  const base = getStepBase(steps[0]);
+
+  const argv = [Paths.tortilla.editor, 'edit', ...steps];
+
+  if (options.udiff) {
+    argv.push('--udiff');
+  }
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
-      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} edit`,
+      GIT_SEQUENCE_EDITOR: `node ${argv.join(' ')}`,
     },
   });
 }
@@ -318,6 +380,53 @@ function getNextSuperStep(offset) {
   return getNextStep(offset).split('.')[0];
 }
 
+function initializeStepMap() {
+  const map = Git([
+    'log', '--format=%s', '--grep=^Step [0-9]\\+'
+  ])
+  .split('\n')
+  .filter(Boolean)
+  .reduce((map, subject) => {
+    const number = getStepDescriptor(subject).number;
+    map[number] = number;
+    return map;
+  }, {});
+
+  LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+}
+
+function getStepMap() {
+  if (ensureStepMap()) {
+    return JSON.parse(LocalStorage.getItem('STEP_MAP'));
+  }
+}
+
+function ensureStepMap() {
+  return Utils.exists(Path.resolve(Paths.storage, 'STEP_MAP'), 'file');
+}
+
+function disposeStepMap() {
+  LocalStorage.deleteItem('STEP_MAP');
+}
+
+function updateStepMap(type, payload) {
+  const map = getStepMap();
+
+  switch (type) {
+    case 'remove':
+      delete map[payload.step];
+
+      break;
+
+    case 'reset':
+      map[payload.oldStep] = payload.newStep;
+
+      break;
+  }
+
+  LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+}
+
 /**
   Contains step related utilities.
  */
@@ -329,7 +438,7 @@ function getNextSuperStep(offset) {
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
-    boolean: ['root', 'allow-empty'],
+    boolean: ['root', 'udiff', 'allow-empty'],
   });
 
   const method = argv._[0];
@@ -337,6 +446,7 @@ function getNextSuperStep(offset) {
   const message = argv.message || argv.m;
   const root = argv.root;
   const allowEmpty = argv['allow-empty'];
+  const udiff = argv.udiff;
 
   if (!step && root) {
     step = 'root';
@@ -344,13 +454,14 @@ function getNextSuperStep(offset) {
 
   const options = {
     allowEmpty,
+    udiff,
   };
 
   switch (method) {
     case 'push': return pushStep(message, options);
     case 'pop': return popStep();
     case 'tag': return tagStep(message);
-    case 'edit': return editStep(step);
+    case 'edit': return editStep(step, options);
     case 'sort': return sortStep(step);
     case 'reword': return rewordStep(step, message);
   }
@@ -375,4 +486,9 @@ module.exports = {
   descriptor: getStepDescriptor,
   superDescriptor: getSuperStepDescriptor,
   subDescriptor: getSubStepDescriptor,
+  initializeStepMap,
+  getStepMap,
+  ensureStepMap,
+  disposeStepMap,
+  updateStepMap,
 };

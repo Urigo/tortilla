@@ -1,3 +1,4 @@
+const Fs = require('fs-extra');
 const Path = require('path');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
@@ -37,8 +38,9 @@ function tagExists(tag) {
 
 // Get the recent commit by the provided arguments. An offset can be specified which
 // means that the recent commit from several times back can be fetched as well
-function getRecentCommit(offset, argv) {
+function getRecentCommit(offset, argv, options) {
   if (offset instanceof Array) {
+    options = argv;
     argv = offset;
     offset = 0;
   } else {
@@ -49,7 +51,7 @@ function getRecentCommit(offset, argv) {
   const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
 
   argv = ['log', hash, '-1'].concat(argv);
-  return git(argv);
+  return git(argv, options);
 }
 
 // Gets a list of the modified files reported by git matching the provided pattern.
@@ -64,17 +66,42 @@ function getStagedFiles(pattern) {
 
 // Gets active branch name
 function getActiveBranchName() {
-  // If rebasing, return stored branch name
-  if (isRebasing()) {
-    return LocalStorage.getItem('REBASE_BRANCH');
+  if (!isRebasing()) {
+    return git(['rev-parse', '--abbrev-ref', 'HEAD']);
   }
 
-  return git(['rev-parse', '--abbrev-ref', 'HEAD']);
+  // Getting a reference for the hash of which the rebase have started
+  const branchHash = git(['reflog', '--format=%gd %gs'])
+    .split('\n')
+    .filter(Boolean)
+    .map(line => line.split(' '))
+    .map(split => [split.shift(), split.join(' ')])
+    .find(([ref, msg]) => msg.match(/^rebase -i \(start\)/))
+    .shift()
+    .match(/^HEAD@\{(\d+)\}$/)
+    .slice(1)
+    .map(i => `HEAD@{${++i}}`)
+    .map(ref => git(['rev-parse', ref]))
+    .pop();
+
+  // Comparing the found hash to each of the branches' hashes
+  return Fs.readdirSync(Paths.git.refs.heads).find((branchName) => {
+    return git(['rev-parse', branchName]) == branchHash;
+  });
 }
 
 // Gets the root hash of HEAD
 function getRootHash() {
   return git(['rev-list', '--max-parents=0', 'HEAD']);
+}
+
+function getRoot() {
+  try {
+    return git(['rev-parse', '--show-toplevel']);
+  // Not a git project
+  } catch (e) {
+    return '';
+  }
 }
 
 
@@ -87,4 +114,5 @@ module.exports = Utils.extend(git.bind(null), git, {
   stagedFiles: getStagedFiles,
   activeBranchName: getActiveBranchName,
   rootHash: getRootHash,
+  root: getRoot,
 });

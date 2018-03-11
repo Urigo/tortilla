@@ -13,7 +13,7 @@ let node;
 
 (function () {
   // Defaults to process's current working dir
-  cwd = process.cwd();
+  cwd = process.env.TORTILLA_CWD || process.cwd();
 
   try {
     cwd = ChildProcess.execFileSync('git', [
@@ -59,8 +59,8 @@ function isChildProcessOf(file, argv, offset) {
     // Get the parent process id
     currProcess.pid = Number(getProcessData(currProcess.pid, 'ppid'));
     // The root process'es id is 0 which means we've reached the limit
-    if (!currProcess.pid) { 
-      return false; 
+    if (!currProcess.pid) {
+      return false;
     }
 
     currProcess.argv = getProcessData(currProcess.pid, 'command')
@@ -187,8 +187,8 @@ function extend(destination) {
   const sources = [].slice.call(arguments, 1);
 
   sources.forEach((source) => {
-    if (!(source instanceof Object)) { 
-      return; 
+    if (!(source instanceof Object)) {
+      return;
     }
 
     Object.keys(source).forEach((k) => {
@@ -299,6 +299,44 @@ function delegateProperties(destination, source, modifiers) {
   return destination;
 }
 
+function isEqual(objA, objB) {
+  if (objA === objB) return true;
+  if (typeof objA != typeof objB) return false;
+  if (!(objA instanceof Object) || !(objB instanceof Object)) return false;
+  if (objA.__proto__ !== objB.__proto__) return false;
+
+  const objAKeys = Object.keys(objA);
+  const objBKeys = Object.keys(objB);
+
+  if (objAKeys.length != objBKeys.length) return;
+
+  objAKeys.sort();
+  objBKeys.sort();
+
+  return objAKeys.every((keyA, index) => {
+    const keyB = objBKeys[index];
+
+    if (keyA != keyB) return false;
+
+    const valueA = objA[keyA];
+    const valueB = objB[keyB];
+
+    return isEqual(valueA, valueB);
+  });
+}
+
+function escapeBrackets(str) {
+  return str
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/\</g, '\\<')
+    .replace(/\>/g, '\\>');
+}
+
 
 module.exports = {
   cwd,
@@ -320,4 +358,6 @@ module.exports = {
   upperFirst,
   words: splitWords,
   delegateProperties,
+  isEqual,
+  escapeBrackets,
 };

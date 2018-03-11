@@ -107,6 +107,8 @@ function resolveProject(cwd) {
   return cache[cwd] = resolveTree(cwd, {
     config: resolve(cwd, '.tortilla/config.js'),
     readme: resolve(cwd, 'README.md'),
+    renovate: resolve(cwd, 'renovate.json'),
+    travis: resolve(cwd, 'travis.yml'),
     locales: resolve(cwd, '.tortilla/locales'),
     storage: resolve(cwd, '.git/.tortilla'),
     manuals,

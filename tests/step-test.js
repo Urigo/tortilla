@@ -1,4 +1,5 @@
 const Chai = require('chai');
+const Fs = require('fs-extra');
 const Git = require('../src/git');
 const Step = require('../src/step');
 
@@ -58,6 +59,26 @@ describe('Step', function () {
       const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(fileExists).to.be.falsy;
     });
+
+    it('should delete branch referencing super step', function () {
+      this.slow(3000);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.tortilla(['step', 'pop']);
+
+      let branchExists;
+      try {
+        branchExists = !!this.git(['rev-parse', 'master-step3']);
+      }
+      catch (e) {
+        branchExists = false;
+      }
+
+      expect(branchExists).to.be.falsy;
+    });
   });
 
   describe('tag()', function () {
@@ -86,6 +107,19 @@ describe('Step', function () {
 
       const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
       expect(fileExists).to.be.truthy;
+    });
+
+    it('should create a new branch referencing the tagged step', function () {
+      this.slow(3000);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      expect(this.git(['rev-parse', 'HEAD~0'])).to.equal(this.git(['rev-parse', 'master-step3']));
+      expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
+      expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
+      expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
   });
 
@@ -294,6 +328,223 @@ describe('Step', function () {
 
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.2: target');
+    });
+
+    it('should be able to edit multiple steps if specified to', function () {
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+
+      this.tortilla(['step', 'edit', '1.2', '1.4']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.2: target');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.4: target');
+    });
+
+    it('should be able to edit multiple steps in a random order', function () {
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
+
+      this.tortilla(['step', 'edit', '1.4', '1.2']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.2: target');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.4: target');
+    });
+
+    it('should be able to edit multiple steps including the root commit', function () {
+      // Keep-empty is not allowed when using the --root flag
+      this.exec('touch', ['1.1']);
+
+      this.git(['add', '1.1']);
+
+      this.tortilla(['step', 'push', '-m', 'target']);
+
+      this.tortilla(['step', 'edit', '1.1', '--root']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      const commitHash = Git.recentCommit(['--format=%H']);
+      const rootHash = Git.rootHash();
+      expect(commitHash).to.equal(rootHash);
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).to.be.truthy;
+
+      message = Step.recentCommit('%s');
+      expect(message).to.equal('Step 1.1: target');
+    });
+
+    it('should re-adjust indicies after editing multiple steps', function () {
+      this.slow(10000);
+
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'pop', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+
+      this.tortilla(['step', 'edit', '1.2', '1.4']);
+
+      this.tortilla(['step', 'pop']);
+
+      Git(['rebase', '--continue']);
+
+      this.tortilla(['step', 'push', '-m', 'push', '--allow-empty']);
+
+      Git(['rebase', '--continue']);
+
+      const popMessage = Step.recentCommit('%s', '^Step 1.2');
+      expect(popMessage).to.equal('Step 1.2: dummy');
+
+      const pushMessage = Step.recentCommit('%s', '^Step 1.4');
+      expect(pushMessage).to.equal('Step 1.4: push');
+    });
+
+    it('should be able to update diffStep() template helpers indexes', function () {
+      this.slow(10000);
+
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Edit file']);
+
+      this.tortilla(['step', 'tag', '-m', 'File manipulation']);
+      this.tortilla(['step', 'edit', '1']);
+
+      const manualPath = this.exec('realpath', ['.tortilla/manuals/templates/step1.tmpl']);
+
+      Fs.writeFileSync(manualPath, [
+        'Create file:',
+        '',
+        '{{{diffStep 1.1}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.2}}}',
+      ].join('\n'));
+
+      this.git(['add', manualPath]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['step', 'edit', '1.1', '--udiff']);
+      this.tortilla(['step', 'pop']);
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.git(['add', 'file']);
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.1}}}',
+      ].join('\n'));
+
+      this.tortilla(['step', 'edit', '--root', '--udiff']);
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.2}}}',
+      ].join('\n'));
+    });
+
+    it('should reset all branches referencing super steps', function () {
+      this.slow(10000);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.tortilla(['step', 'edit', '3']);
+
+      this.tortilla(['step', 'pop']);
+      this.tortilla(['step', 'pop']);
+      this.tortilla(['step', 'pop']);
+
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      this.tortilla(['step', 'tag', '-m', 'dummy']);
+
+      this.git(['rebase', '--continue']);
+
+      expect(this.git(['rev-parse', 'HEAD~0'])).to.equal(this.git(['rev-parse', 'master-step3']));
+      expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
+      expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
+      expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
   });
 

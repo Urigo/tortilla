@@ -4,10 +4,11 @@ const Path = require('path');
 const ReadlineSync = require('readline-sync');
 const Tmp = require('tmp');
 const Ascii = require('./ascii');
-const Rebase = require('./rebase');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
+const Rebase = require('./rebase');
+const Submodule = require('./submodule');
 const Utils = require('./utils');
 
 /**
@@ -42,7 +43,7 @@ const exec = Utils.exec;
 
   switch (method) {
     case 'create': return createProject(arg1, options);
-    case 'init': return initializeProject(arg1);
+    case 'ensure': return ensureTortilla(arg1);
   }
 }());
 
@@ -71,7 +72,7 @@ function createProject(projectName, options) {
   // Clone skeleton
   Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
   // Checkout desired release
-  Git.print(['checkout', '0.0.1-alpha.4'], { cwd: tmpDir.name });
+  Git(['checkout', '0.0.1-alpha.4'], { cwd: tmpDir.name });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
   Fs.removeSync(tmpPaths.git.resolve());
@@ -115,6 +116,7 @@ function ensureTortilla(projectDir) {
 
   const projectPaths = projectDir.resolve ? projectDir : Paths.resolveProject(projectDir);
   const localStorage = LocalStorage.create(projectPaths);
+  const cwd = projectPaths.resolve();
 
   // If tortilla is already initialized don't do anything
   const isInitialized = localStorage.getItem('INIT');
@@ -149,11 +151,27 @@ function ensureTortilla(projectDir) {
     Fs.chmodSync(hookPath, '755');
   });
 
+  // Create root branch reference for continues integration testing
+  const activeBranchName = Git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd });
+  try {
+    Git(['rev-parse', `${activeBranchName}-root`], { cwd });
+  }
+  catch (e) {
+    Git(['branch', `${activeBranchName}-root`, activeBranchName], { cwd });
+  }
+
+  // Ensure submodules are initialized
+  Git.print(['submodule', 'init'], { cwd });
+  Git.print(['submodule', 'update'], { cwd });
+
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
   localStorage.setItem('USE_STRICT', true);
 
-  Ascii.print('ready');
+  // The art should be printed only if the operation finished for all submodules
+  if (!Submodule.isOne()) {
+    Ascii.print('ready');
+  }
 }
 
 function overwriteTemplateFile(path, scope) {

@@ -1,10 +1,11 @@
 const Fs = require('fs-extra');
-const Path = require('path');
 const Minimist = require('minimist');
+const Path = require('path');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
 const Step = require('./step');
+const Utils = require('./utils');
 
 /**
   This is the editor for interactive rebases and amended commits. Instead of opening
@@ -19,14 +20,19 @@ const Step = require('./step');
 
   const argv = Minimist(process.argv.slice(2), {
     string: ['_', 'message', 'm'],
+    boolean: ['udiff'],
   });
 
   // The first argument will be the rebase file path provided to us by git
   const method = argv._[0];
-  const rebaseFilePath = argv._[1];
+  const steps = argv._.slice(1, -1);
+  const rebaseFilePath = argv._[argv._.length - 1];
   const message = argv.message || argv.m;
-  const prod = argv.prod;
-  const dev = argv.dev;
+  const udiff = argv.udiff;
+
+  const options = {
+    udiff
+  };
 
   const rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
   // Convert to array of jsons so it would be more comfortable to word with
@@ -34,13 +40,12 @@ const Step = require('./step');
 
   // Set flag just in case recent rebase was aborted
   LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
-  // Set current branch name so it can be retrieved during rebase
-  LocalStorage.setItem('REBASE_BRANCH', Git(['rev-parse', '--abbrev-ref', 'HEAD']));
 
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
   switch (method) {
-    case 'edit': editStep(operations); break;
+    case 'edit': editStep(operations, steps, options); break;
+    case 'edit-head': editHead(operations); break;
     case 'sort': sortSteps(operations); break;
     case 'reword': rewordStep(operations, message); break;
     case 'render': renderManuals(operations); break;
@@ -52,32 +57,81 @@ const Step = require('./step');
 }());
 
 // Edit the last step in the rebase file
-function editStep(operations) {
-  operations[0].method = 'edit';
+function editStep(operations, steps, options) {
+  // Create initial step map
+  if (options.udiff) {
+    Step.initializeStepMap();
+  }
+
+  if (!steps) {
+    const descriptor = Step.descriptor(operations[0].message);
+    const step = (descriptor && descriptor.number) || 'root';
+
+    steps = [step];
+  }
+
+  // This way we can store data on each step string
+  steps = steps.map(step => new String(step));
+
+  // Edit each commit which is relevant to the specified steps
+  steps.forEach((step) => {
+    if (step == 'root') {
+      const operation = operations[0];
+      operation.method = 'edit';
+      step.operation = operation;
+    }
+    else {
+      const operation = operations.find((operation) => {
+        const descriptor = Step.descriptor(operation.message);
+        return descriptor && descriptor.number == step;
+      });
+
+      if (!operation) return;
+
+      operation.method = 'edit';
+      step.operation = operation;
+    }
+  });
 
   // Probably editing the recent step in which case no sortments are needed
-  if (operations.length <= 1) {
-    return;
+  if (operations.length > 1) {
+    // Prepare meta-data for upcoming sortments
+    const descriptor = Step.descriptor(operations[0].message);
+
+    // Step exists
+    if (descriptor) {
+      LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+      LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
+    } else { // Probably root commit
+      LocalStorage.setItem('REBASE_OLD_STEP', 'root');
+      LocalStorage.setItem('REBASE_NEW_STEP', 'root');
+    }
+
+    const sort = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
+
+    // Continue sorting the steps after step editing has been finished
+    steps.forEach((step) => {
+      const operation = step.operation;
+
+      if (!operation) return;
+
+      const index = operations.indexOf(operation);
+
+      // Insert the following operation AFTER the step's operation
+      operations.splice(index + 1, 0, {
+        method: 'exec',
+        command: `${sort} git rebase --edit-todo`,
+      });
+    });
   }
 
-  // Prepare meta-data for upcoming sortments
-  const descriptor = Step.descriptor(operations[0].message);
+  // Whether we edit the most recent step or not, rebranching process should be initiated
+  const rebranchSuper = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.rebase} rebranch-super"`;
 
-  // Step exists
-  if (descriptor) {
-    LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
-    LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
-  } else { // Probably root commit
-    LocalStorage.setItem('REBASE_OLD_STEP', 'root');
-    LocalStorage.setItem('REBASE_NEW_STEP', 'root');
-  }
-
-  const editor = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} sort"`;
-
-  // Once we finish editing our step, sort the rest of the steps accordingly
-  operations.splice(1, 0, {
+  // After rebase has finished, update the brancehs referencing the super steps
+  operations.push({
     method: 'exec',
-    command: `${editor} git rebase --edit-todo`,
+    command: `${rebranchSuper} git rebase --edit-todo`,
   });
 }
 
@@ -93,6 +147,7 @@ function sortSteps(operations) {
   }
 
   const stepLimit = getStepLimit(oldStep, newStep);
+  let editFlag = false;
   let offset = 0;
 
   operations.slice().some((operation, index) => {
@@ -108,7 +163,7 @@ function sortSteps(operations) {
 
     // If limit reached
     if (currSuperStep > stepLimit) {
-      // prepend local storage item setting operation, this would be a flag which will be
+      // Prepend local storage item setting operation, this would be a flag which will be
       // used in git-hooks
       operations.splice(index + offset++, 0, {
         method: 'exec',
@@ -127,6 +182,36 @@ function sortSteps(operations) {
       });
     }
 
+    // If another step edit is pending, we will first perform the reword and only then
+    // we will proceed to the editing itself, since we wanna ensure that all the previous
+    // step indexes are already sorted
+    if (operation.method == 'edit') {
+      // Pick BEFORE edit
+      operations.splice(index + offset++, 0, Object.assign({}, operation, {
+        method: 'pick'
+      }));
+
+      // Update commit's step number
+      operations.splice(index + offset++, 0, {
+        method: 'exec',
+        command: `GIT_EDITOR=true node ${Paths.tortilla.rebase} reword`,
+      });
+
+      const editor = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.editor} edit-head"`;
+
+      // Replace edited step with the reworded one
+      operations.splice(index + offset++, 0, {
+        method: 'exec',
+        command: `${editor} git rebase --edit-todo`,
+      });
+
+      operations.splice(index + offset, 1);
+
+      // The sorting process should continue after we've finished editing the step, for now
+      // we will need to abort the current sorting process
+      return editFlag = true;
+    }
+
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
       method: 'exec',
@@ -134,10 +219,47 @@ function sortSteps(operations) {
     });
   });
 
-  // Remove hooks storage items so it won't affect post-rebase operations
+  // Remove hooks storage items so it won't affect post-rebase operations, but only if
+  // there are no any further step edits pending
+  if (!editFlag) {
+    operations.push({
+      method: 'exec',
+      command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
+    });
+
+    // Ensure step map is being disposed
+    operations.push({
+      method: 'exec',
+      command: `node ${Paths.tortilla.localStorage} remove STEP_MAP`,
+    });
+  }
+}
+
+// Edit the commit which is presented as the current HEAD
+function editHead(operations) {
+  // Prepare meta-data for upcoming sortments
+  const descriptor = Step.descriptor(operations[0].message);
+
+  // Descriptor should always exist, but just in case
+  if (descriptor) {
+    LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+  }
+
+  const head = Git.recentCommit(['--format=%h m']).split(' ');
+  const hash = head.shift();
+  const message = head.join(' ');
+
+  // Remove head commit so there won't be any conflicts
   operations.push({
     method: 'exec',
-    command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
+    command: 'git reset --hard HEAD~1'
+  });
+
+  // Re-pick and edit head commit
+  operations.push({
+    method: 'edit',
+    hash,
+    message
   });
 }
 
@@ -221,8 +343,9 @@ function getStepLimit(oldStep, newStep) {
 // Convert rebase file content to operations array
 function disassemblyOperations(rebaseFileContent) {
   const operations = rebaseFileContent.match(/^[a-z]+\s.{7}.*$/mg);
+
   if (!operations) {
-    return;
+    return [];
   }
 
   return operations.map((line) => {
@@ -238,11 +361,13 @@ function disassemblyOperations(rebaseFileContent) {
 
 // Convert operations array to rebase file content
 function assemblyOperations(operations) {
-  return `${operations
+  return operations
     // Compose lines
-    .map(operation => Object.keys(operation)
-        .map(k => operation[k])
-        .join(' '))
+    .map(operation => Object
+      .keys(operation)
+      .map(k => operation[k])
+      .join(' ')
+    )
     // Connect lines
-    .join('\n')}\n`;
+    .join('\n') + '\n';
 }

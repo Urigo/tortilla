@@ -20,9 +20,12 @@ const Step = require('./step');
   const method = argv._[0];
   const arg1 = argv._[1];
 
+  LocalStorage.setItem('DEBUG', argv.toString());
+
   switch (method) {
     case 'reword': return rewordRecentStep(arg1);
     case 'super-pick': return superPickStep(arg1);
+    case 'rebranch-super': return rebranchSuperSteps();
   }
 }());
 
@@ -42,6 +45,12 @@ function rewordRecentStep(message) {
 
   // Specified step is gonna be used for when forming the commit message
   LocalStorage.setItem('HOOK_STEP', nextStep);
+
+  // This will be used later on to update the manuals
+  if (stepDescriptor && Step.ensureStepMap()) {
+    Step.updateStepMap('reset', { oldStep: stepDescriptor.number, newStep: nextStep });
+  }
+
   // commit, let git hooks do the rest
   Git.print(argv);
 }
@@ -55,20 +64,76 @@ function superPickStep(hash) {
 
   // Fetch patch data
   const diff = newStep - oldStep;
-  const pattern = /step(\d+)\.(md|tmpl)/g;
+  const stepFilePattern = /step(\d+)\.(md|tmpl)/g;
   const patch = Git(['format-patch', '-1', hash, '--stdout']);
 
   // Replace references for old manual files with new manual files
-  // so there would be no conflicts
-  const fixedPatch = patch.replace(pattern, (file, step, extension) => {
+  let fixedPatch = patch.replace(stepFilePattern, (file, step, extension) => {
     step = Number(step) + diff;
+
     return `step${step}.${extension}`;
   });
+
+  const stepMap = Step.getStepMap();
+
+  if (stepMap) {
+    const diffStepPattern = /\{\{\s*diffStep\s+(\d+\.\d+).*\}\}/g;
+
+    // Replace indexes presented in diffStep() template helpers
+    fixedPatch = fixedPatch.replace(diffStepPattern, (helper, oldStep) => {
+      // In case step has been removed in the process, replace it with a meaningless placeholder
+      const newStep = stepMap[oldStep] || 'XX.XX';
+
+      return helper.replace(/(diffStep\s+)\d+\.\d+/, `$1${newStep}`);
+    });
+  }
 
   // Apply patch
   Git(['am'], {
     input: fixedPatch,
   });
+}
+
+// Updates the branches referencing all super steps
+function rebranchSuperSteps() {
+  const rootBranch = Git.activeBranchName();
+
+  // Delete root
+  try {
+    Git(['branch', '-D', `${rootBranch}-root`]);
+  }
+  catch (e) {
+    // Ignore
+  }
+
+  // Delete steps
+  Git(['branch']).split('\n').filter((branch) => {
+    return branch.match(new RegExp(`${rootBranch}-step\\d+`));
+  })
+  .forEach((branch) => {
+    Git(['branch', '-D', branch.trim()]);
+  });
+
+  // Branch root
+  Git(['branch', `${rootBranch}-root`, Git.rootHash()]);
+
+  // Branch steps
+  Git(['log', '--format=%H %s', '--grep=^Step [0-9]\\+:'])
+    .split('\n')
+    .filter(Boolean)
+    .map((log) => {
+      let message = log.split(' ');
+      const hash = message.shift();
+      message = message.join(' ');
+
+      return {
+        number: Step.descriptor(message).number,
+        hash,
+      };
+    })
+    .forEach((step) => {
+      Git(['branch', `${rootBranch}-step${step.number}`, step.hash]);
+    });
 }
 
 // Calculate the next step dynamically based on its super flag
@@ -81,8 +146,8 @@ function getNextStep(stepDescriptor) {
   return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }
 
-
 module.exports = {
   rewordRecentStep,
   superPickStep,
+  rebranchSuperSteps,
 };

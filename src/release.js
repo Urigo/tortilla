@@ -64,7 +64,7 @@ function bumpRelease(releaseType, options) {
 
   // Create root tag
   // e.g. master@root@1.0.1
-  Git(['tag', rootTag, rootHash]);
+  createReleaseTag(rootTag, rootHash);
 
   // Create a release tag for each super step
   Git([
@@ -86,17 +86,18 @@ function bumpRelease(releaseType, options) {
 
       // Create tag
       // e.g. master@step1@1.0.1
-      Git(['tag', tag, hash]);
+      createReleaseTag(tag, hash);
     });
 
   const tag = `${branch}@${formattedRelease}`;
 
   // Create a tag with the provided message which will reference to HEAD
   // e.g. 'master@1.0.1'
-  if (options.message) { 
-    Git.print(['tag', tag, 'HEAD', '-m', options.message]); 
-  } else { // If no message provided, open the editor
-    Git.print(['tag', tag, 'HEAD', '-a']); 
+  if (options.message) {
+    createReleaseTag(tag, 'HEAD', options.message);
+  // If no message provided, open the editor
+  } else {
+    createReleaseTag(tag, 'HEAD', true);
   }
 
   createDiffReleasesBranch();
@@ -302,6 +303,35 @@ function deformatRelease(releaseString) {
     minor: releaseSlices[1],
     patch: releaseSlices[2],
   };
+}
+
+function createReleaseTag(tag, dstHash, message) {
+  let srcHash = Git.activeBranchName();
+  if (srcHash == 'HEAD') srcHash = git(['rev-parse', 'HEAD']);
+
+  Git(['checkout', dstHash]);
+
+  // Remove files which shouldn't be included in releases
+  // TODO: Remove files based on a user defined blacklist
+  Fs.removeSync(Paths.travis);
+  Fs.removeSync(Paths.renovate);
+
+  // Releasing a version
+  Git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+
+  // Provide a quick message
+  if (typeof message == 'string') {
+    Git.print(['tag', tag, '-m', message]);
+  // Open editor
+  } else if (message === true) {
+    Git.print(['tag', tag, '-a']);
+  // No message
+  } else {
+    Git(['tag', tag]);
+  }
+
+  // Returning to the original hash
+  Git(['checkout', srcHash]);
 }
 
 

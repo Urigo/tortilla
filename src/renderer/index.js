@@ -46,8 +46,8 @@ function renderTemplateFile(templatePath, scope) {
 // Render provided template
 function renderTemplate(template, scope) {
   // Template can either be a string or a compiled template object
-  if (typeof template === 'string') { 
-    template = handlebars.compile(template); 
+  if (typeof template === 'string') {
+    template = handlebars.compile(template);
   }
   scope = scope || {};
 
@@ -78,8 +78,8 @@ function resolveTemplatePath(templatePath) {
 
   // User defined templates
   const relativeTemplatePath = Path.resolve(Paths.manuals.templates, templatePath);
-  if (Utils.exists(relativeTemplatePath)) { 
-    return relativeTemplatePath; 
+  if (Utils.exists(relativeTemplatePath)) {
+    return relativeTemplatePath;
   }
 
   // Tortilla defined templates
@@ -103,7 +103,8 @@ function registerHelper(name, helper, options) {
       handlebars.call = oldCall;
     }
 
-    if (typeof out !== 'string') {
+    if (typeof out !== 'string' &&
+        !(out instanceof String)) {
       throw Error([
         'Template helper', name, 'must return a string!',
         'Instead it returned', out,
@@ -148,8 +149,8 @@ function registerPartial(name, partial, options) {
 // adjustments for custom targets. For now this is NOT part of the official API and
 // is used only for development purposes
 function registerTransformation(targetName, helperName, transformation) {
-  if (!transformations[targetName]) { 
-    transformations[targetName] = {}; 
+  if (!transformations[targetName]) {
+    transformations[targetName] = {};
   }
   transformations[targetName][helperName] = transformation;
 }
@@ -181,7 +182,7 @@ function mdWrapComponent(type, name, args, content) {
     .filter(Boolean)
     .join(' ');
 
-  return `[{]: <${type}> (${args})\n\n${content}\n\n[}]: #`;
+  return `[{]: <${type}> (${Utils.escapeBrackets(args)})\n\n${content}\n\n[}]: #`;
 }
 
 // Takes a helper hash and stringifying it
@@ -189,8 +190,8 @@ function mdWrapComponent(type, name, args, content) {
 function stringifyHash(hash) {
   return Object.keys(hash).map((key) => {
     let value = hash[key];
-    if (typeof value === 'string') { 
-      value = `"${value}"`; 
+    if (typeof value === 'string') {
+      value = `"${value}"`;
     }
     return `${key}=${value}`;
   }).join(' ');
@@ -223,8 +224,8 @@ function resolvePath(/* reserved path, user defined path */) {
   defaultPath.isRelative = true;
 
   // If function is unbound, return default path
-  if (typeof paths[0] !== 'string') { 
-    return defaultPath; 
+  if (typeof paths[0] !== 'string') {
+    return defaultPath;
   }
 
   const repository = require(Paths.npm.package).repository;

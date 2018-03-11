@@ -42,4 +42,3 @@ function printStrictMode(mode) {
 }
 
 Program.parse(process.argv);
-
