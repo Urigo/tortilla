@@ -1,0 +1,272 @@
+[
+  {
+    "branchName": "bar",
+    "historyBranchName": "bar-history",
+    "releases": [
+      {
+        "releaseVersion": "0.3.0",
+        "tagName": "bar@0.3.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.2.0",
+        "tagName": "bar@0.2.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.1.0",
+        "tagName": "bar@0.1.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "branchName": "baz",
+    "historyBranchName": "baz-history",
+    "releases": [
+      {
+        "releaseVersion": "0.3.0",
+        "tagName": "baz@0.3.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.2.0",
+        "tagName": "baz@0.2.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.1.0",
+        "tagName": "baz@0.1.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "branchName": "foo",
+    "historyBranchName": "foo-history",
+    "releases": [
+      {
+        "releaseVersion": "0.3.0",
+        "tagName": "foo@0.3.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.2.0",
+        "tagName": "foo@0.2.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.1.0",
+        "tagName": "foo@0.1.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      }
+    ]
+  }
+]

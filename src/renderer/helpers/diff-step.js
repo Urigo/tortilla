@@ -3,6 +3,7 @@ const Handlebars = require('handlebars');
 const ParseDiff = require('parse-diff');
 const Git = require('../../git');
 const Step = require('../../step');
+const Submodule = require('../../submodule');
 const Translator = require('../../translator');
 const Utils = require('../../utils');
 const Config = require('../../config');
@@ -49,7 +50,8 @@ Renderer.registerHelper('diffStep', (step, options) => {
   if (hash.files) {
     pattern = new RegExp(hash.files.replace(/\s*,\s*/g, '|').replace(/\./g, '\\.'));
   // Will print diff of all possible files
-  } else {
+  }
+  else {
     pattern = /.*/;
   }
 
@@ -57,7 +59,14 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // In case a submodule was specified then all our git commands should be executed
   // from that module
   if (hash.module) {
-    cwd = `${cwd}/${hash.module}`;
+    // Use the cloned repo that is used for development
+    if (process.env.TORTILLA_SUBDEV) {
+      cwd = Submodule.getCwd(hash.module);
+    }
+    // Use the local submodule
+    else {
+      cwd = `${cwd}/${hash.module}`;
+    }
   }
 
   const stepData = Git.recentCommit([
@@ -88,7 +97,8 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // If this is a relative path, we won't reference the commit
   if (commitReference.isRelative) {
     stepTitle = `#### ${stepMessage}`;
-  } else {
+  }
+  else {
     stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
@@ -117,9 +127,14 @@ function getMdDiff(file) {
 
   if (file.new) {
     fileTitle = `##### ${t('diff.added', { path: file.to })}`;
-  } else if (file.deleted) {
+  }
+  else if (file.deleted) {
     fileTitle = `##### ${t('diff.deleted', { path: file.from })}`;
-  } else {
+  }
+  else if (!file.chunks.length) {
+    fileTitle = `##### ${t('diff.renamed', { from: file.from, to: file.to })}`;
+  }
+  else {
     fileTitle = `##### ${t('diff.changed', { path: file.from })}`;
   }
 

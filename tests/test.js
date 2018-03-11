@@ -1,3 +1,4 @@
+const Chai = require('chai');
 const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
@@ -69,6 +70,23 @@ before(function () {
 
     return dir;
   };
+
+  this.newEditor = (fn) => {
+    const body = fn.toString().replace(/`/g, '\\`');
+    const scriptFile = Tmp.fileSync({ unsafeCleanup: true });
+
+    Fs.writeFileSync(scriptFile.name, `
+      const Fs = require('fs');
+
+      const file = process.argv[process.argv.length - 1];
+      let content = Fs.readFileSync(file).toString();
+      content = new Function(\`return (${body}).apply(this, arguments)\`)(content);
+      Fs.writeFileSync(file, content);
+      Fs.unlinkSync('${scriptFile.name}');
+    `);
+
+    return `node ${scriptFile.name}`;
+  };
 });
 
 beforeEach(function () {
@@ -85,6 +103,7 @@ beforeEach(function () {
 
 
 // Plugins
+Chai.use(require('chai-match'));
 require('./assertions');
 // Tests
 require('./step-test');
@@ -94,3 +113,5 @@ require('./template-helpers-test');
 require('./manual-test');
 require('./release-test');
 require('./submodule-test');
+require('./package-test');
+require('./dump-test');

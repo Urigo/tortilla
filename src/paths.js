@@ -28,20 +28,31 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
-  rebase: resolve(__dirname, 'rebase.js'),
   initializer: resolve(__dirname, 'initializer.js'),
   localCache: resolve(__dirname, 'local-cache.js'),
   localStorage: resolve(__dirname, 'local-storage.js'),
   manual: resolve(__dirname, 'manual.js'),
+  package: resolve(__dirname, 'package.js'),
   paths: resolve(__dirname, 'paths.js'),
+  rebase: resolve(__dirname, 'rebase.js'),
   release: resolve(__dirname, 'release.js'),
   step: resolve(__dirname, 'step.js'),
+  submodule: resolve(__dirname, 'submodule.js'),
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
   skeleton: 'https://github.com/Urigo/tortilla-skeleton.git',
   ascii,
   renderer,
   translator,
+});
+
+const cli = resolveTree(resolve(__dirname, '../cli'), {
+  tortilla: resolve(__dirname, '../cli/tortilla'),
+  tortillaManual: resolve(__dirname, '../cli/tortilla-manual'),
+  tortillaRelease: resolve(__dirname, '../cli/tortilla-release'),
+  tortillaStep: resolve(__dirname, '../cli/tortilla-step'),
+  tortillaStrict: resolve(__dirname, '../cli/tortilla-strict'),
+  tortillaSubmodule: resolve(__dirname, '../cli/tortilla-submodule'),
 });
 
 // Makes the root path available in the branches object using a 'resolve()' method
@@ -106,13 +117,15 @@ function resolveProject(cwd) {
 
   return cache[cwd] = resolveTree(cwd, {
     config: resolve(cwd, '.tortilla/config.js'),
+    checkouts: resolve(cwd, '.tortilla/checkouts.json'),
+    locales: resolve(cwd, '.tortilla/locales'),
     readme: resolve(cwd, 'README.md'),
     renovate: resolve(cwd, 'renovate.json'),
-    travis: resolve(cwd, 'travis.yml'),
-    locales: resolve(cwd, '.tortilla/locales'),
     storage: resolve(cwd, '.git/.tortilla'),
+    travis: resolve(cwd, 'travis.yml'),
     manuals,
     tortilla,
+    cli,
     git,
     npm,
     resolveTree,

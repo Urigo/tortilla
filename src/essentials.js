@@ -8,6 +8,7 @@ const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
 const Rebase = require('./rebase');
+const Step = require('./step');
 const Submodule = require('./submodule');
 const Utils = require('./utils');
 
@@ -19,6 +20,10 @@ const Utils = require('./utils');
 const tmpDir = Tmp.dirSync({ unsafeCleanup: true });
 const tmpPaths = Paths.resolveProject(tmpDir.name);
 const exec = Utils.exec;
+
+const defaultDumpFileName = 'tutorial.json';
+const headEnd = '[//]: # (head-end)\n';
+const footStart = '[//]: # (foot-start)\n';
 
 
 (function () {
@@ -59,7 +64,7 @@ function createProject(projectName, options) {
   // In case dir already exists verify the user's decision
   if (Utils.exists(options.output)) {
     options.override = options.override || ReadlineSync.keyInYN([
-      'Output path already eixsts.',
+      'Output path already exists.',
       'Would you like to override it and continue?',
     ].join('\n'));
 
@@ -174,6 +179,171 @@ function ensureTortilla(projectDir) {
   }
 }
 
+// Dumps tutorial into a JSON file
+// Output path defaults to cwd
+function dumpProject(out = Utils.cwd(), options = {}) {
+  if (out instanceof Object && !(out instanceof String)) {
+    options = out;
+    out = Utils.cwd();
+  }
+
+  options = Object.assign({
+    filter: options.filter,
+    reject: options.reject,
+  }, options);
+
+  // Output path is relative to cwd
+  out = Path.resolve(Utils.cwd(), out);
+
+  // If provided output path is a dir assume the dump file should be created inside of it
+  if (Utils.exists(out, 'dir')) {
+    out = Path.join(out, defaultDumpFileName);
+  }
+
+  if (Utils.exists(out, 'file')) {
+    options.override = options.override || ReadlineSync.keyInYN([
+      'Output path already exists.',
+      'Would you like to override it and continue?',
+    ].join('\n'));
+
+    if (!options.override) {
+      return;
+    }
+  }
+
+  console.log();
+  console.log(`Dumping into ${out}...`);
+  console.log();
+
+  // Will recursively ensure dirs as well
+  Fs.ensureFileSync(out);
+
+  // Run command once
+  const tagNames = Git(['tag', '-l'])
+    .split('\n')
+    .filter(Boolean);
+
+  let branchNames = tagNames
+    .filter((tagName) => {
+      return /^[^@]+?@\d+\.\d+\.\d+$/.test(tagName);
+    })
+    .map((tagName) => {
+      return tagName.split('@')[0];
+    })
+    .reduce((branchNames, branchName) => {
+      if (!branchNames.includes(branchName)) {
+        branchNames.push(branchName);
+      }
+
+      return branchNames;
+    }, []);
+
+  if (options.filter) {
+    branchNames = branchNames.filter((branchName) => {
+      return options.filter.includes(branchName);
+    });
+  }
+
+  if (options.reject) {
+    branchNames = branchNames.filter((branchName) => {
+      return !options.reject.includes(branchName);
+    });
+  }
+
+  const dump = branchNames.map((branchName) => {
+    const historyBranchName = `${branchName}-history`;
+
+    // Run command once
+    const releaseVersions = tagNames
+      .map((tagName) => {
+        return tagName.match(new RegExp(`${branchName}@(\\d+\\.\\d+\\.\\d+)`));
+      })
+      .filter(Boolean)
+      .map((match) => {
+        return match[1];
+      })
+      .reverse();
+
+    const releases = releaseVersions.map((releaseVersion) => {
+      const tagName = `${branchName}@${releaseVersion}`;
+      const tagRevision = Git(['rev-parse', tagName]);
+
+      const historyRevision = Git([
+        'log', historyBranchName, `--grep=^${tagName}:`, '--format=%H'
+      ]).split('\n')
+        .filter(Boolean)
+        .pop();
+
+      const manuals = Fs.readdirSync(Paths.manuals.views).map((manualName, stepIndex) => {
+        const format = '%H %s';
+        let stepLog, manualPath;
+
+        // Step
+        if (stepIndex) {
+          manualPath = Path.resolve(Paths.manuals.views, manualName);
+          stepLog = Git([
+            'log', branchName, `--grep=^Step ${stepIndex}:`, `--format=${format}`
+          ]);
+        }
+        // Root
+        else {
+          manualPath = Paths.readme;
+          stepLog = Git([
+            'log', Git.rootHash(branchName), `--format=${format}`
+          ]);
+        }
+
+        manualPath = Path.relative(Utils.cwd(), manualPath);
+        stepLog = stepLog.split(' ');
+        const stepRevision = stepLog.shift();
+        const manualTitle = stepLog.join(' ');
+
+        // Removing header and footer, since the view should be used externally on a
+        // different host which will make sure to show these two
+        let manualView = Git(['show', `${stepRevision}:${manualPath}`]);
+
+        if (manualView.includes(headEnd)) {
+          manualView = manualView
+            .split(headEnd)
+            .slice(1)
+            .join(headEnd);
+        }
+
+        if (manualView.includes(footStart)) {
+          manualView = manualView
+            .split(footStart)
+            .slice(0, -1)
+            .join(footStart);
+        }
+
+        manualView = manualView.trim();
+
+        return {
+          manualTitle,
+          stepRevision,
+          manualView,
+        };
+      });
+
+      return {
+        releaseVersion,
+        tagName,
+        tagRevision,
+        historyRevision,
+        manuals,
+      };
+    });
+
+    return {
+      branchName,
+      historyBranchName,
+      releases,
+    };
+  });
+
+  Fs.writeJsonSync(out, dump);
+}
+
 function overwriteTemplateFile(path, scope) {
   const templateContent = Fs.readFileSync(path, 'utf8');
   const viewContent = Handlebars.compile(templateContent)(scope);
@@ -185,4 +355,5 @@ function overwriteTemplateFile(path, scope) {
 module.exports = {
   create: createProject,
   ensure: ensureTortilla,
+  dump: dumpProject,
 };

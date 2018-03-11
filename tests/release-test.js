@@ -1,4 +1,5 @@
 const Chai = require('chai');
+const Paths = require('../src/paths');
 
 
 const expect = Chai.expect;
@@ -7,7 +8,6 @@ const expect = Chai.expect;
 describe('Release', function () {
   describe('bump()', function () {
     this.slow(20000);
-    this.timeout(30000);
 
     it('should bump a major version', function () {
       this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
@@ -212,16 +212,16 @@ describe('Release', function () {
     });
 
     it('should remove files which should not be included in the release', function () {
-      this.exec('touch', ['travis.yml']);
+      this.exec('touch', ['.travis.yml']);
       this.exec('touch', ['renovate.json']);
-      this.git(['add', 'travis.yml']);
+      this.git(['add', '.travis.yml']);
       this.git(['add', 'renovate.json']);
       this.tortilla(['step', 'push', '-m', 'Add CI configurations']);
       this.tortilla(['step', 'tag', '-m', 'First step']);
       this.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
 
-      const travisPath = this.exec('realpath', ['travis.yml']);
-      const renovatePath = this.exec('realpath', ['renovate.json']);
+      const travisPath = Paths.travis;
+      const renovatePath = Paths.renovate;
 
       expect(this.exists(travisPath)).to.be.truthy;
       expect(this.exists(renovatePath)).to.be.truthy;
@@ -284,8 +284,7 @@ describe('Release', function () {
   });
 
   describe('diff()', function () {
-    this.slow(15000);
-    this.timeout(20000);
+    this.slow(20000);
 
     it('should run "git diff" between provided releases', function () {
       this.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);

@@ -1,6 +1,12 @@
 # Step 3: dummy
 
+[//]: # (head-end)
+
+
 Step 3 manual
+
+
+[//]: # (foot-start)
 
 [{]: <helper> (navStep)
 

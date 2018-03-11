@@ -17,6 +17,7 @@
   "diff": {
     "added": "Added {{path}}",
     "changed": "Changed {{path}}",
-    "deleted": "Deleted {{path}}"
+    "deleted": "Deleted {{path}}",
+    "renamed": "Renamed from {{from}} to {{to}}"
   }
 }

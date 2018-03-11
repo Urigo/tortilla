@@ -149,4 +149,40 @@ describe('Submodule', function () {
       expect(this.exists(`${fooPath}/hello_world`)).to.be.truthy;
     });
   });
+
+  describe('reset()', function () {
+    this.slow(14000);
+
+    beforeEach(function () {
+      this.tortilla(['submodule', 'add',
+        this.fooModuleDir,
+        this.barModuleDir,
+        this.bazModuleDir
+      ]);
+    });
+
+    it('should result in submodules which are referencing the most recent hash', function () {
+      this.tortilla(['step', 'edit', '--root']);
+
+      const fooPath = this.exec('realpath', [Path.basename(this.fooModuleDir)]);
+
+      this.git(['checkout', 'HEAD~1'], { cwd: fooPath });
+      this.exec('touch', ['hello_planet'], { cwd: fooPath });
+      this.git(['add', 'hello_planet'], { cwd: fooPath });
+      this.git(['commit', '-m', 'hello_planet'], { cwd: fooPath });
+      this.git(['branch', '-D', 'master'], { cwd: fooPath });
+      this.git(['checkout', '-b', 'master'], { cwd: fooPath });
+      this.git(['push', 'origin', 'master', '-f'], { cwd: fooPath });
+
+      this.git(['add', Path.basename(this.fooModuleDir)]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['submodule', 'reset', Path.basename(this.fooModuleDir)]);
+
+      expect(this.exists(`${fooPath}/hello_world`)).to.be.falsy;
+      expect(this.exists(`${fooPath}/hello_planet`)).to.be.true;
+    });
+  });
 });

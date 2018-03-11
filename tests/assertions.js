@@ -21,25 +21,16 @@ Assertion.addMethod('file', function (expectedFileName, extension) {
   const expectedFilePath = Path.resolve(__dirname, 'fs-data/out', expectedFile);
   const expectedContent = Fs.readFileSync(expectedFilePath, 'utf8');
 
-  let pattern = expectedContent
-    .split('XXX')
-    .map(EscapeRegExp)
-    .map(chunk => '(' + chunk + ')')
-    .join('(.+)')
-  pattern = '^' + pattern;
-  pattern = pattern + '$';
-  pattern = new RegExp(pattern);
+  const expectedRegExp = new RegExp(EscapeRegExp(expectedContent)
+    .replace(/X{3,}/g, ({ length }) => {
+      return Array.apply(null, { length }).map(() => '.').join('');
+    })
+    .replace(/(?:\\\?){3}(.|\n)/g, (match, char) => {
+      return `[^${char}]+${char}`;
+    })
+  );
 
-  const matches = actualContent.match(pattern) || [actualContent];
-
-  if (matches.length > 1) {
-    actualContent = matches.slice(1).reduce((actualContent, match, index) => {
-      if (index % 2 == 1) match = 'XXX';
-      return actualContent + match;
-    });
-  }
-
-  new Assertion(actualContent).to.equal(expectedContent,
+  new Assertion(actualContent).to.match(expectedRegExp,
     'Expected file to have the same content as \'' + expectedFile + '\''
   );
 });
