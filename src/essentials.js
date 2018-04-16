@@ -179,6 +179,39 @@ function ensureTortilla(projectDir) {
   }
 }
 
+function naturalSort(as, bs) {
+  let a1, b1, i = 0, n,  rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
+
+  if (as === bs) {
+    return 0;
+  }
+
+  const a = as.toLowerCase().match(rx);
+  const b = bs.toLowerCase().match(rx);
+  const L = a.length;
+
+  while (i < L) {
+    if (!b[i]) {
+      return 1;
+    }
+
+    a1 = a[i];
+    b1 = b[i++];
+
+    if (a1 !== b1) {
+      n = a1 - b1;
+
+      if (!isNaN(n)) {
+        return n;
+      }
+
+      return a1 > b1 ? 1 : -1;
+    }
+  }
+
+  return b[i] ? -1 : 0;
+}
+
 // Dumps tutorial into a JSON file
 // Output path defaults to cwd
 function dumpProject(out = Utils.cwd(), options = {}) {
@@ -274,7 +307,7 @@ function dumpProject(out = Utils.cwd(), options = {}) {
         .filter(Boolean)
         .pop();
 
-      const manuals = Fs.readdirSync(Paths.manuals.views).map((manualName, stepIndex) => {
+      const manuals = Fs.readdirSync(Paths.manuals.views).sort(naturalSort).map((manualName, stepIndex) => {
         const format = '%H %s';
         let stepLog, manualPath;
 
