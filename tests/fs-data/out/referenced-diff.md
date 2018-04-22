@@ -1,6 +1,6 @@
 [{]: <helper> (diffStep 1.1)
 
-#### [Step 1.1: Add file](https://github.com/Urigo/tortilla/commit/XXX)
+#### Step 1.1: Add file
 
 ##### Added test-file.js
 ```diff

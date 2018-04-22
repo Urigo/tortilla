@@ -1,5 +1,6 @@
 const Fs = require('fs-extra');
 const Path = require('path');
+const Tmp = require('tmp');
 const LocalStorage = require('./local-storage');
 const Paths = require('./paths');
 const Utils = require('./utils');
@@ -8,8 +9,33 @@ const Utils = require('./utils');
   Contains general git utilities.
  */
 
-const git = Utils.git;
+const exec = Utils.exec;
+// This RegExp will help us pluck the versions in a conflict and solve it
+const conflict = /\n\s*<<<<<<< [^\n]+(\n(?:.|\n)+?)\n\s*=======(\n(?:.|\n)+?)\n\s*>>>>>>> [^\n]+/;
 
+git.print = function(argv, options) {
+  return gitBody(Utils.git.print, argv, options);
+};
+
+function git(argv, options) {
+  return gitBody(Utils.git, argv, options);
+}
+
+// The body of the git execution function, useful since we use the same logic both for
+// exec and spawn
+function gitBody(handler, argv, options) {
+  options = Object.assign({
+    env: {},
+  }, options);
+
+  // Zeroing environment vars which might affect other executions
+  options.env = Object.assign({
+    GIT_DIR: null,
+    GIT_WORK_TREE: null,
+  }, options.env);
+
+  return handler(argv, options);
+}
 
 // Tells if rebasing or not
 function isRebasing() {
@@ -91,8 +117,8 @@ function getActiveBranchName() {
 }
 
 // Gets the root hash of HEAD
-function getRootHash() {
-  return git(['rev-list', '--max-parents=0', 'HEAD']);
+function getRootHash(head = 'HEAD') {
+  return git(['rev-list', '--max-parents=0', head]);
 }
 
 function getRoot() {
@@ -104,8 +130,47 @@ function getRoot() {
   }
 }
 
+function edit(initialContent) {
+  const editor = getEditor();
+  const file = Tmp.fileSync({ unsafeCleanup: true });
+
+  Fs.writeFileSync(file.name, initialContent);
+  exec.print('sh', ['-c', `${editor} ${file.name}`]);
+
+  const content = Fs.readFileSync(file.name).toString();
+  file.removeCallback();
+
+  return content;
+}
+
+// https://github.com/git/git/blob/master/git-rebase--interactive.sh#L257
+function getEditor() {
+  let editor = process.env.GIT_EDITOR;
+
+  if (!editor) try {
+    editor = git(['config', 'core.editor']);
+  }
+  catch (e) {
+    // Ignore
+  }
+
+  if (!editor) try {
+    editor = git(['var', 'GIT_EDITOR']);
+  }
+  catch (e) {
+    // Ignore
+  }
+
+  if (!editor) {
+    throw Error('Git editor could not be found');
+  }
+
+  return editor;
+}
+
 
 module.exports = Utils.extend(git.bind(null), git, {
+  conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,
   gonnaAmend,
@@ -115,4 +180,6 @@ module.exports = Utils.extend(git.bind(null), git, {
   activeBranchName: getActiveBranchName,
   rootHash: getRootHash,
   root: getRoot,
+  edit,
+  editor: getEditor,
 });

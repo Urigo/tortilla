@@ -1,0 +1,36 @@
+[
+  {
+    "branchName": "master",
+    "historyBranchName": "master-history",
+    "releases": [
+      {
+        "releaseVersion": "0.1.0",
+        "tagName": "master@0.1.0",
+        "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "manuals": [
+          {
+            "manualTitle": "Test tortilla project",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          },
+          {
+            "manualTitle": "Step 1: foo",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "foo"
+          },
+          {
+            "manualTitle": "Step 2: bar",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "bar"
+          },
+          {
+            "manualTitle": "Step 3: baz",
+            "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "manualView": "baz"
+          }
+        ]
+      }
+    ]
+  }
+]

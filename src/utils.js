@@ -23,7 +23,8 @@ let node;
       stdio: ['pipe', 'pipe', 'ignore'],
     }).toString()
       .trim();
-  } catch (err) {
+  }
+  catch (err) {
     // If no git-exists nor git-failed use default value instead
   }
 
@@ -100,11 +101,20 @@ function spawn(file, argv, options) {
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: process.env.TORTILLA_STDIO || 'inherit',
+    env: {},
   }, options);
+
+  const envRedundantKeys = Object.keys(options.env).filter((key) => {
+    return options.env[key] == null;
+  });
 
   options.env = extend({
     TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
+
+  envRedundantKeys.forEach((key) => {
+    delete options.env[key];
+  });
 
   return ChildProcess.spawnSync(file, argv, options);
 }
@@ -116,16 +126,27 @@ function exec(file, argv, options) {
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: 'pipe',
+    env: {},
   }, options);
+
+  const envRedundantKeys = Object.keys(options.env).filter((key) => {
+    return options.env[key] == null;
+  });
 
   options.env = extend({
     TORTILLA_CHILD_PROCESS: true,
   }, process.env, options.env);
 
-  return ChildProcess
-    .execFileSync(file, argv, options)
-    .toString()
-    .trim();
+  envRedundantKeys.forEach((key) => {
+    delete options.env[key];
+  });
+
+  const out = ChildProcess.execFileSync(file, argv, options);
+
+  // In case of stdio inherit
+  if (!out) return '';
+
+  return out.toString().trim();
 }
 
 // Tells if entity exists or not by an optional document type
@@ -224,6 +245,16 @@ function pad(str, length, char) {
   const chars = Array(length + 1).join(char);
 
   return chars.substr(0, chars.length - str.length) + str;
+}
+
+// Like pad() only from the right
+// '1' -> '10000'
+function padRight(str, length, char) {
+  str = str.toString();
+  char = char || ' ';
+  const chars = Array(length + 1).join(char);
+
+  return str + chars.substr(0, chars.length - str.length);
 }
 
 // foo_barBaz -> foo-bar-baz
@@ -337,6 +368,18 @@ function escapeBrackets(str) {
     .replace(/\>/g, '\\>');
 }
 
+// Takes a shell script string and transforms it into a one liner
+function shCmd(cmd) {
+  return cmd
+    .trim()
+    .replace(/\n+/g, ';')
+    .replace(/\s+/g, ' ')
+    .replace(/then\s*;/g, 'then')
+    .replace(/else\s*;/g, 'else')
+    .replace(/;\s*;/g, ';')
+    .trim();
+}
+
 
 module.exports = {
   cwd,
@@ -352,6 +395,7 @@ module.exports = {
   contract,
   pluck,
   pad,
+  padRight,
   kebabCase: toKebabCase,
   startCase: toStartCase,
   lowerFirst,
@@ -360,4 +404,5 @@ module.exports = {
   delegateProperties,
   isEqual,
   escapeBrackets,
+  shCmd,
 };

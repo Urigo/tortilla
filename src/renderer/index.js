@@ -54,7 +54,7 @@ function renderTemplate(template, scope) {
   if (scope.viewPath) {
     // Relative path of view dir
     // e.g. manuals/views
-    var viewDir = Path.relative(Paths.resolve(), Path.dirname(scope.viewPath));
+    var viewDir = Path.dirname(scope.viewPath);
   }
 
   const oldResolve = handlebars.resolve;
@@ -64,7 +64,8 @@ function renderTemplate(template, scope) {
     // resolve function below still won't work
     handlebars.resolve = resolvePath.bind(null, viewDir);
     return template(scope);
-  } finally {
+  }
+  finally {
     // Either if an error was thrown or not, unbind it
     handlebars.resolve = oldResolve;
   }
@@ -223,12 +224,14 @@ function resolvePath(/* reserved path, user defined path */) {
   // or a relative path
   defaultPath.isRelative = true;
 
+  const cwd = paths.shift()
+
   // If function is unbound, return default path
-  if (typeof paths[0] !== 'string') {
+  if (typeof cwd != 'string') {
     return defaultPath;
   }
 
-  const repository = require(Paths.npm.package).repository;
+  const repository = Fs.readJsonSync(Paths.npm.package).repository;
 
   // If no repository was defined, or
   // repository type is not git, or
@@ -239,9 +242,16 @@ function resolvePath(/* reserved path, user defined path */) {
     return defaultPath;
   }
 
+  const currentRelease = Release.format(Release.current());
+
+  // Any release is yet to exist
+  if (currentRelease == '0.0.0') {
+    return defaultPath;
+  }
+
   // Compose branch path for current release tree
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
-  const releaseTag = `${Git.activeBranchName()}@${Release.format(Release.current())}`;
+  const releaseTag = `${Git.activeBranchName()}@${currentRelease}`;
   const repositoryUrl = repository.url.replace('.git', '');
   const branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
   const protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
@@ -250,7 +260,9 @@ function resolvePath(/* reserved path, user defined path */) {
   // If we use tilde (~) at the beginning of the path, we will be referenced to the
   // repo's root URL. This is useful when we want to compose links which are
   // completely disconnected from the current state, like commits, issues and PRs
-  paths = paths.map(path => path.replace(/~/g, Path.resolve(branchPath, '../..')));
+  paths = paths
+    .map(path => path.replace(/~/g, Path.resolve(branchPath, '../..')))
+    .map(path => Path.isAbsolute(path) ? Path.relative(cwd, path) : Path.resolve(branchPath, Path.join(cwd, path)));
 
   // Resolve full path
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1

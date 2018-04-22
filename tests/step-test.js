@@ -1,6 +1,9 @@
 const Chai = require('chai');
+const Path = require('path');
 const Fs = require('fs-extra');
+const Tmp = require('tmp');
 const Git = require('../src/git');
+const Paths = require('../src/paths');
 const Step = require('../src/step');
 
 
@@ -121,6 +124,41 @@ describe('Step', function () {
       expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
       expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
     });
+
+    it('should set submodule to right revision based on checkouts file', function () {
+      this.slow(15000);
+
+      this.tortilla(['step', 'edit', '--root']);
+
+      const checkoutsPath = Paths.checkouts;
+      Fs.writeFileSync(checkoutsPath, JSON.stringify({
+        test_submodule: {
+          head: 'master',
+          steps: ['root', 1, 'root'],
+        }
+      }));
+
+      const testRemote = this.createRepo();
+      const testModuleName = 'test_submodule';
+      this.git(['submodule', 'add', testRemote, testModuleName]);
+
+      const testModulePath = Path.resolve(this.testDir, testModuleName);
+      const testFilePath = `${testModulePath}/test.txt`;
+
+      Fs.writeFileSync(testFilePath, '');
+      this.git(['add', testFilePath], { cwd: testModulePath });
+      this.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
+
+      this.git(['add', '.']);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['step', 'tag', '-m', 'foo']);
+      this.tortilla(['step', 'tag', '-m', 'bar']);
+
+      const msg = this.git(['log', '--format=%s'], { cwd: testModulePath });
+      expect(msg).to.equal('New Repo');
+    });
   });
 
   describe('reword()', function () {
@@ -172,8 +210,7 @@ describe('Step', function () {
     });
 
     it('should be able to edit steps with multiple digits', function () {
-      this.slow(10000);
-      this.timeout(20000);
+      this.slow(15000);
 
       this.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
@@ -411,7 +448,7 @@ describe('Step', function () {
     });
 
     it('should re-adjust indicies after editing multiple steps', function () {
-      this.slow(10000);
+      this.slow(20000);
 
       this.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       this.tortilla(['step', 'push', '-m', 'pop', '--allow-empty']);
@@ -429,15 +466,16 @@ describe('Step', function () {
 
       Git(['rebase', '--continue']);
 
-      const popMessage = Step.recentCommit('%s', '^Step 1.2');
+      const popMessage = this.git(['log', '--format=%s', '--grep=^Step 1.2']);
       expect(popMessage).to.equal('Step 1.2: dummy');
 
-      const pushMessage = Step.recentCommit('%s', '^Step 1.4');
+      const pushMessage = this.git(['log', '--format=%s', '--grep=^Step 1.4']);
       expect(pushMessage).to.equal('Step 1.4: push');
     });
 
     it('should be able to update diffStep() template helpers indexes', function () {
-      this.slow(10000);
+      this.timeout(30000);
+      this.slow(20000);
 
       this.exec('sh', ['-c', 'echo foo > file']);
       this.git(['add', 'file']);
@@ -468,6 +506,7 @@ describe('Step', function () {
 
       this.tortilla(['step', 'edit', '1.1', '--udiff']);
       this.tortilla(['step', 'pop']);
+      // Expected conflict
       try {
         this.git(['rebase', '--continue']);
       }
@@ -496,6 +535,7 @@ describe('Step', function () {
       this.exec('sh', ['-c', 'echo foo > file']);
       this.git(['add', 'file']);
       this.tortilla(['step', 'push', '-m', 'Create file']);
+      // Expected conflict
       try {
         this.git(['rebase', '--continue']);
       }
@@ -522,6 +562,104 @@ describe('Step', function () {
       ].join('\n'));
     });
 
+    it('should update all diffStep template helpers in manuals repo', function () {
+      this.timeout(50000);
+      this.slow(35000);
+
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Edit file']);
+
+      this.tortilla(['step', 'tag', '-m', 'File manipulation']);
+
+      const textRepoDir = Tmp.tmpNameSync();
+      this.tortilla(['create', textRepoDir, '-m', 'Manuals Repo']);
+
+      let manualPath;
+      this.scopeEnv(() => {
+        this.tortilla(['step', 'tag', '-m', 'File manipulation']);
+        this.tortilla(['submodule', 'add', this.cwd(), 'submodule']);
+
+        manualPath = this.exec('realpath', ['.tortilla/manuals/templates/step1.tmpl']);
+
+        Fs.writeFileSync(manualPath, [
+          'Create file:',
+          '',
+          '{{{diffStep 1.1 module="submodule"}}}',
+          '',
+          'Edit file:',
+          '',
+          '{{{diffStep 1.2 module="submodule"}}}',
+        ].join('\n'));
+
+        this.git(['add', manualPath]);
+        this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      }, {
+        TORTILLA_CWD: textRepoDir
+      });
+
+      this.tortilla(['step', 'edit', '1.1', `--udiff=${textRepoDir}`]);
+      this.tortilla(['step', 'pop']);
+      // Expected conflict
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.git(['add', 'file']);
+
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX module="submodule"}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.1 module="submodule"}}}',
+      ].join('\n'));
+
+      this.tortilla(['step', 'edit', '--root', `--udiff=${textRepoDir}`]);
+      this.exec('sh', ['-c', 'echo foo > file']);
+      this.git(['add', 'file']);
+      this.tortilla(['step', 'push', '-m', 'Create file']);
+      try {
+        this.git(['rebase', '--continue']);
+      }
+      catch (e) {
+      }
+
+      this.exec('sh', ['-c', 'echo bar > file']);
+      this.git(['add', 'file']);
+      this.git(['rebase', '--continue'], {
+        env: {
+          TORTILLA_CHILD_PROCESS: '',
+          GIT_EDITOR: true
+        }
+      });
+
+      expect(Fs.readFileSync(manualPath).toString()).to.equal([
+        'Create file:',
+        '',
+        '{{{diffStep XX.XX module="submodule"}}}',
+        '',
+        'Edit file:',
+        '',
+        '{{{diffStep 1.2 module="submodule"}}}',
+      ].join('\n'));
+    });
+
     it('should reset all branches referencing super steps', function () {
       this.slow(10000);
 
@@ -545,6 +683,44 @@ describe('Step', function () {
       expect(this.git(['rev-parse', 'HEAD~1'])).to.equal(this.git(['rev-parse', 'master-step2']));
       expect(this.git(['rev-parse', 'HEAD~2'])).to.equal(this.git(['rev-parse', 'master-step1']));
       expect(this.git(['rev-parse', 'HEAD~3'])).to.equal(this.git(['rev-parse', 'master-root']));
+    });
+
+    it('should adjust submodules on the run when editing a step', function () {
+      this.slow(15000);
+
+      this.tortilla(['step', 'tag', '-m', 'foo']);
+      this.tortilla(['step', 'tag', '-m', 'bar']);
+
+      this.tortilla(['step', 'edit', '--root']);
+
+      const testRemote = this.createRepo();
+      const testModuleName = 'test_submodule';
+
+      this.git(['submodule', 'add', testRemote, testModuleName]);
+
+      const testModulePath = Path.resolve(this.testDir, testModuleName);
+      const testFilePath = `${testModulePath}/test.txt`;
+
+      Fs.writeFileSync(testFilePath, '');
+      this.git(['add', testFilePath], { cwd: testModulePath });
+      this.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
+
+      this.git(['add', testModuleName]);
+
+      const checkoutsPath = Paths.checkouts;
+      Fs.writeFileSync(checkoutsPath, JSON.stringify({
+        [testModuleName]: {
+          head: 'master',
+          steps: [1, 1, 'root'],
+        }
+      }));
+      this.git(['add', checkoutsPath]);
+
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      const msg = this.git(['log', '--format=%s', '-1'], { cwd: testModulePath });
+      expect(msg).to.equal('New Repo');
     });
   });
 

@@ -2,6 +2,7 @@ const Minimist = require('minimist');
 const Git = require('./git');
 const LocalStorage = require('./local-storage');
 const Step = require('./step');
+const Submodule = require('./submodule');
 
 /**
   The rebase module is responsible for performing tasks done by the editor using an
@@ -14,13 +15,11 @@ const Step = require('./step');
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_'],
+    string: ['_']
   });
 
   const method = argv._[0];
   const arg1 = argv._[1];
-
-  LocalStorage.setItem('DEBUG', argv.toString());
 
   switch (method) {
     case 'reword': return rewordRecentStep(arg1);
@@ -74,17 +73,26 @@ function superPickStep(hash) {
     return `step${step}.${extension}`;
   });
 
-  const stepMap = Step.getStepMap();
+  const submoduleCwd = LocalStorage.getItem('SUBMODULE_CWD');
+  const stepMap = Step.getStepMap(submoduleCwd, true);
 
   if (stepMap) {
-    const diffStepPattern = /\{\{\s*diffStep\s+(\d+\.\d+).*\}\}/g;
+    // The submodule cwd was given from another process of tortilla
+    const submodule = Submodule.getLocalName(submoduleCwd);
+    const diffStepPattern = /\{\{\s*diffStep\s+"?(\d+\.\d+)"?.*\}\}/g;
 
     // Replace indexes presented in diffStep() template helpers
     fixedPatch = fixedPatch.replace(diffStepPattern, (helper, oldStep) => {
+      let helperSubmodule = helper.match(/module\s?=\s?"?([^\s"]+)"?/);
+      helperSubmodule = helperSubmodule ? helperSubmodule[1] : '';
+
+      // Don't replace anything if submodules don't match
+      if (helperSubmodule != submodule) return helper;
+
       // In case step has been removed in the process, replace it with a meaningless placeholder
       const newStep = stepMap[oldStep] || 'XX.XX';
 
-      return helper.replace(/(diffStep\s+)\d+\.\d+/, `$1${newStep}`);
+      return helper.replace(/(diffStep\s+"?)\d+\.\d+/, `$1${newStep}`);
     });
   }
 
@@ -92,6 +100,8 @@ function superPickStep(hash) {
   Git(['am'], {
     input: fixedPatch,
   });
+
+  Submodule.ensure(newStep);
 }
 
 // Updates the branches referencing all super steps

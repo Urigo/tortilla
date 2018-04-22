@@ -7,6 +7,10 @@ const Renderer = require('./renderer');
 const Step = require('./step');
 const Translator = require('./translator');
 const Utils = require('./utils');
+const Config = require('./config');
+
+// register custom transforations from ./tortilla/config.js
+Config.registerCustomTransformations();
 
 /**
   Contains manual related utilities.
@@ -43,16 +47,21 @@ const Utils = require('./utils');
 function renderManual(step) {
   if (step) {
     const isSuperStep = !step.split('.')[1];
+
     if (!isSuperStep) {
       throw TypeError('Provided step must be a super step');
     }
-  } else { // Grab recent super step by default
-    const superMessage = Step.recentSuperCommit('%s');
-    step = superMessage ? Step.descriptor(superMessage).number : 'root';
+  }
+  // Grab recent super step by default
+  else {
+    const superMessage = Step.recentSuperCommit('%s') || '';
+    const stepDescriptor = Step.descriptor(superMessage) || {};
+
+    step = stepDescriptor.number || 'root';
   }
 
   // Convert all manuals since the beginning of history
-  if (step == 'all') {
+  if (step === 'all') {
     return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
       env: {
         GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} render`,
@@ -118,7 +127,7 @@ function renderManual(step) {
     const symlinkPath = Path.resolve(Paths.manuals.views, 'root.md');
 
     // If this is the root step, create a symlink to README.md if not yet exists
-    if (step != 'root' || Utils.exists(symlinkPath)) {
+    if (step !== 'root' || Utils.exists(symlinkPath)) {
       return;
     }
 
@@ -141,9 +150,9 @@ function renderManual(step) {
 
 // Renders manual template into informative view
 function renderManualView(manual, scope) {
-  let header,
-    body,
-    footer;
+  let header;
+  let body;
+  let footer;
 
   Translator.scopeLanguage(scope.language, () => {
     header = Renderer.renderTemplateFile('header', scope);
@@ -159,7 +168,7 @@ function getManualTemplatePath(step, locale) {
   locale = locale ? (`locales/${locale}`) : '';
 
   const baseDir = Path.resolve(Paths.manuals.templates, locale);
-  const fileName = step == 'root' ? 'root.tmpl' : (`step${step}.tmpl`);
+  const fileName = step === 'root' ? 'root.tmpl' : (`step${step}.tmpl`);
 
   return Path.resolve(baseDir, fileName);
 }
@@ -170,7 +179,7 @@ function getManualViewPath(step, locale) {
 
   // The sub-dir of our views in case a custom render target is specified
   const subDir = process.env.TORTILLA_RENDER_TARGET || '';
-  const fileName = step == 'root' ? 'root.md' : (`step${step}.md`);
+  const fileName = step === 'root' ? 'root.md' : (`step${step}.md`);
 
   // If sub-dir exists, return its path e.g. manuals/view/medium
   if (subDir) {
