@@ -28,7 +28,7 @@ jobs:
           command: node --version && git --version && yarn --version
      - run:
           name: Installing dependencies
-     - run: yarn
+          command: yarn
 
      - save_cache:
           name: Save Yarn Package Cache
