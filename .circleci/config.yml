@@ -33,5 +33,3 @@ jobs:
      - run:
           name: Test
           command: yarn test
-          environment:
-               TORTILLA_DEBUG: 1
