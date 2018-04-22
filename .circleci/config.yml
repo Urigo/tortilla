@@ -30,8 +30,6 @@ jobs:
           paths:
             - node_modules/
 
-     - run: echo 'export PATH=/usr/bin:$PATH' >> $BASH_ENV
-
      - run:
           name: Test
           command: yarn test
