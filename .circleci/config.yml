@@ -18,7 +18,7 @@ jobs:
 
      - run:
           name: Check git version
-          command: git --version
+          command: which git && git --version
 
      - run:
           name: Installing dependencies
