@@ -8,7 +8,6 @@ const Os = require('os');
 // It's important to set TORTILLA_CWD over here so when we require Paths module they will
 // be created relative to the right dir
 process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
-process.env.TORTILLA_DEBUG = true;
 
 const Utils = require('../src/utils');
 

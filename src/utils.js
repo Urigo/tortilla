@@ -124,7 +124,7 @@ function exec(file, argv, options) {
   argv = argv || [];
 
   options = extend({
-    cwd: process.env.TORTILLA_CWD || cwd(),
+    cwd: cwd(),
     stdio: 'pipe',
     env: {},
   }, options);
@@ -140,10 +140,6 @@ function exec(file, argv, options) {
   envRedundantKeys.forEach((key) => {
     delete options.env[key];
   });
-
-  if (process.env.TORTILLA_DEBUG) {
-    console.log(`Running command ${file} with argv: ${JSON.stringify(argv)} and options: `, options);
-  }
 
   const out = ChildProcess.execFileSync(file, argv, options);
 
