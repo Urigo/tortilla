@@ -12,10 +12,10 @@ jobs:
          - v1-dependencies-{{ checksum "package.json" }}
          # fallback to using the latest cache if no exact match is found
          - v1-dependencies-
-     - run: add-apt-repository ppa:git-core/ppa -y
-     - run: apt-get update
-     - run: apt-get install realpath
-     - run: apt-get install git
+     - run: sudo add-apt-repository ppa:git-core/ppa -y
+     - run: sudo apt-get update
+     - run: sudo apt-get install realpath
+     - run: sudo apt-get install git
      - run: yarn
 
      - save_cache:
