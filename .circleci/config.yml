@@ -13,7 +13,7 @@ jobs:
      - run: yarn
 
      - save_cache:
-         paths:
-           - node_modules
+       paths:
+         - node_modules
 
      - run: yarn test
