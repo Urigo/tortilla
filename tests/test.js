@@ -3,6 +3,7 @@ const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
 const Tmp = require('tmp');
+const Os = require('os');
 
 // It's important to set TORTILLA_CWD over here so when we require Paths module they will
 // be created relative to the right dir
@@ -12,6 +13,16 @@ const Utils = require('../src/utils');
 
 
 before(function () {
+  // Check if Mac OS is in use, and if so, check for "realpath" command
+  if (Os.type() === 'Darwin') {
+    try {
+      Utils.exec('which', ['realpath']);
+    } catch (e) {
+      console.error('Unable to find realpath command. Please install is using: "brew install coreutils"');
+      process.exit(1);
+    }
+  }
+
   // Consts
   this.testDir = process.env.TORTILLA_CWD;
   this.plainDir = Tmp.dirSync({ unsafeCleanup: true }).name;
