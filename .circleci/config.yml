@@ -8,19 +8,23 @@ jobs:
    steps:
      - checkout
      - restore_cache:
-         keys:
-         - v1-dependencies-{{ checksum "package.json" }}
-         # fallback to using the latest cache if no exact match is found
-         - v1-dependencies-
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - yarn-packages-{{ .Branch }}
+            - yarn-packages-master
+            - yarn-packages-
      - run: sudo add-apt-repository ppa:git-core/ppa -y
      - run: sudo apt-get update
      - run: sudo apt-get install realpath
      - run: sudo apt-get install git
+     - run: sudo apt-get install yarn
      - run: yarn
 
      - save_cache:
-         paths:
-           - node_modules
-         key: v1-dependencies-{{ checksum "package.json" }}
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules/
 
      - run: yarn test
