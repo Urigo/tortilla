@@ -25,7 +25,7 @@ before(function () {
 
   // Consts
   this.testDir = process.env.TORTILLA_CWD;
-  this.plainDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+  this.plainDir = process.env.TORTILLA_CWD;
   this.repoDir = Tmp.dirSync({ unsafeCleanup: true }).name;
   this.tempDir = Tmp.dirSync({ unsafeCleanup: true }).name;
 
