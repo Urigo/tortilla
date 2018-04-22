@@ -15,6 +15,11 @@ jobs:
             - yarn-packages-{{ .Branch }}
             - yarn-packages-master
             - yarn-packages-
+
+     - run:
+          name: Check git version
+          command: git --version
+
      - run:
           name: Installing dependencies
           command: yarn
