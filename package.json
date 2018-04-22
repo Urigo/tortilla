@@ -23,7 +23,7 @@
     "parse-diff": "0.4.0",
     "readline-sync": "1.4.7",
     "semver": "5.5.0",
-    "tmp": "0.0.31"
+    "tmp": "0.0.33"
   },
   "devDependencies": {
     "babel-register": "6.26.0",
