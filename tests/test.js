@@ -7,7 +7,7 @@ const Os = require('os');
 
 // It's important to set TORTILLA_CWD over here so when we require Paths module they will
 // be created relative to the right dir
-// process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
+process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 
 const Utils = require('../src/utils');
 
@@ -24,7 +24,7 @@ before(function () {
   }
 
   // Consts
-  this.testDir = process.env.TORTILLA_CWD || process.cwd();
+  this.testDir = process.env.TORTILLA_CWD;
   this.plainDir = Tmp.dirSync({ unsafeCleanup: true }).name;
   this.repoDir = Tmp.dirSync({ unsafeCleanup: true }).name;
   this.tempDir = Tmp.dirSync({ unsafeCleanup: true }).name;

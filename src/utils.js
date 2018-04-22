@@ -30,11 +30,11 @@ let node;
 
   // Setting all relative utils
   exec.print = spawn;
-  git = exec.bind(null, 'git');
+  git = (process.env.CI ? spawn : exec).bind(null, 'git');
   git.print = spawn.bind(null, 'git');
-  npm = exec.bind(null, 'npm');
+  npm = process.env.CI ? spawn : exec.bind(null, 'npm');
   npm.print = spawn.bind(null, 'npm');
-  node = exec.bind(null, 'node');
+  node = process.env.CI ? spawn : exec.bind(null, 'node');
   node.print = spawn.bind(null, 'node');
   // It's better to have a getter rather than an explicit value otherwise
   // it might be reset
