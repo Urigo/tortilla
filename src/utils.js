@@ -30,7 +30,7 @@ let node;
 
   // Setting all relative utils
   exec.print = spawn;
-  git = spawn.bind(null, 'git');
+  git = exec.bind(null, 'git');
   git.print = spawn.bind(null, 'git');
   npm = exec.bind(null, 'npm');
   npm.print = spawn.bind(null, 'npm');

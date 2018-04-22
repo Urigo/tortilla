@@ -34,6 +34,7 @@ before(function () {
   process.env.TORTILLA_CWD = this.testDir;
   // Print test dir so it can be observed in case of failure
   console.log(`Test Dir: ${this.testDir}`);
+  console.log('Test Env: ', process.env);
 
   // Initializing test tortilla project
   ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [
