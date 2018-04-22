@@ -11,7 +11,6 @@ process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 
 const Utils = require('../src/utils');
 
-
 before(function () {
   // Check if Mac OS is in use, and if so, check for "realpath" command
   if (Os.type() === 'Darwin') {
