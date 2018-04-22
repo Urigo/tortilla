@@ -15,8 +15,11 @@ jobs:
             - yarn-packages-
 
      - run:
-          name: Check git version
-          command: which git && git --version
+          name: Config Git
+          command: |
+            git --version
+            git config --global user.email "test@tortilla.com"
+            git config --global user.name "Tortilla"
 
      - run:
           name: Installing dependencies
