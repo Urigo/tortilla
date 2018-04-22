@@ -42,11 +42,6 @@ function isRebasing() {
   return Utils.exists(Paths.git.rebaseMerge) || Utils.exists(Paths.git.rebaseApply);
 }
 
-// Tells if rebasing or not
-function isRebasing() {
-  return Utils.exists(Paths.git.rebaseMerge) || Utils.exists(Paths.git.rebaseApply);
-}
-
 // Tells if cherry-picking or not
 function isCherryPicking() {
   return Utils.exists(Paths.git.heads.cherryPick) || Utils.exists(Paths.git.heads.revert);
