@@ -4,12 +4,8 @@ jobs:
    docker:
      - image: circleci/node:latest
 
-   working_directory: ~/repo
-
    steps:
      - checkout
-          post:
-            - mkdir -p /tmp/
      - restore_cache:
           name: Restore Yarn Package Cache
           keys:
