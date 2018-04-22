@@ -1,5 +1,5 @@
 const Chai = require('chai');
-const Fs = require('fs');
+const Fs = require('fs-extra');
 const Path = require('path');
 const Pack = require('../package.json');
 const Renderer = require('../src/renderer');
@@ -62,7 +62,7 @@ describe('Template Helpers', function() {
       this.applyTestPatch('add-file');
 
       const packPath = this.exec('realpath', ['package.json']);
-      const pack = JSON.parse(Fs.readFileSync(packPath).toString());
+      const pack = Fs.readJsonSync(packPath);
 
       pack.repository = Pack.repository;
       Fs.writeFileSync(packPath, JSON.stringify(pack));

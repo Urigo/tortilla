@@ -1,4 +1,6 @@
 const Chai = require('chai');
+const Fs = require('fs-extra');
+const Paths = require('../src/paths');
 const Renderer = require('../src/renderer');
 
 
@@ -135,6 +137,37 @@ describe('Renderer', function () {
     });
 
     it('should replace tilde (~) with root', function () {
+      this.slow(12000);
+
+      this.tortilla(['step', 'edit']);
+
+      const pack = Fs.readJsonSync(Paths.npm.package);
+
+      pack.repository = {
+        type: 'git',
+        url: 'https://github.com/username/reponame.git',
+      };
+
+      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
+
+      this.git(['add', Paths.npm.package]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
+
+      Renderer.registerHelper('testHelper', function () {
+        return Renderer.resolve('~/commit/abc0xyz');
+      });
+
+      const view = Renderer.renderTemplate('{{{testHelper}}}', {
+        viewPath: '.tortilla/manuals/views/step1.md'
+      });
+
+      expect(view).to.equal('https://github.com/username/reponame/commit/abc0xyz');
+    });
+
+    it('should remain tilde if no repo was specified', function () {
       Renderer.registerHelper('testHelper', function () {
         return Renderer.resolve('~/commit/abc0xyz');
       });
@@ -144,6 +177,66 @@ describe('Renderer', function () {
       });
 
       expect(view).to.equal('~/commit/abc0xyz');
+    });
+
+    it('should resolve path relative to repository url if specified in package.json', function () {
+      this.slow(12000);
+
+      this.tortilla(['step', 'edit']);
+
+      const pack = Fs.readJsonSync(Paths.npm.package);
+
+      pack.repository = {
+        type: 'git',
+        url: 'https://github.com/username/reponame.git',
+      };
+
+      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
+
+      this.git(['add', Paths.npm.package]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      this.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
+
+      Renderer.registerHelper('testHelper', function () {
+        return Renderer.resolve('./step2.md');
+      });
+
+      const view = Renderer.renderTemplate('{{{testHelper}}}', {
+        viewPath: '.tortilla/manuals/views/step1.md'
+      });
+
+      expect(view).to.equal('https://github.com/username/reponame/tree/master@0.1.0/.tortilla/manuals/views/step2.md');
+    });
+
+    it('should NOT resolve path relative to repository url if a release is yet to exist', function () {
+      this.slow(3000);
+
+      this.tortilla(['step', 'edit']);
+
+      const pack = Fs.readJsonSync(Paths.npm.package);
+
+      pack.repository = {
+        type: 'git',
+        url: 'https://github.com/username/reponame.git',
+      };
+
+      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
+
+      this.git(['add', Paths.npm.package]);
+      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      this.git(['rebase', '--continue']);
+
+      Renderer.registerHelper('testHelper', function () {
+        return Renderer.resolve('./step2.md');
+      });
+
+      const view = Renderer.renderTemplate('{{{testHelper}}}', {
+        viewPath: '.tortilla/manuals/views/step1.md'
+      });
+
+      expect(view).to.equal('./step2.md');
     });
   });
 

@@ -1,7 +1,9 @@
+const Chai = require('chai');
 const ChildProcess = require('child_process');
 const Fs = require('fs-extra');
 const Path = require('path');
 const Tmp = require('tmp');
+const Os = require('os');
 
 // It's important to set TORTILLA_CWD over here so when we require Paths module they will
 // be created relative to the right dir
@@ -9,8 +11,17 @@ process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 
 const Utils = require('../src/utils');
 
-
 before(function () {
+  // Check if Mac OS is in use, and if so, check for "realpath" command
+  if (Os.type() === 'Darwin') {
+    try {
+      Utils.exec('which', ['realpath']);
+    } catch (e) {
+      console.error('Unable to find realpath command. Please install is using: "brew install coreutils"');
+      process.exit(1);
+    }
+  }
+
   // Consts
   this.testDir = process.env.TORTILLA_CWD;
   this.plainDir = Tmp.dirSync({ unsafeCleanup: true }).name;
@@ -69,6 +80,23 @@ before(function () {
 
     return dir;
   };
+
+  this.newEditor = (fn) => {
+    const body = fn.toString().replace(/`/g, '\\`');
+    const scriptFile = Tmp.fileSync({ unsafeCleanup: true });
+
+    Fs.writeFileSync(scriptFile.name, `
+      const Fs = require('fs');
+
+      const file = process.argv[process.argv.length - 1];
+      let content = Fs.readFileSync(file).toString();
+      content = new Function(\`return (${body}).apply(this, arguments)\`)(content);
+      Fs.writeFileSync(file, content);
+      Fs.unlinkSync('${scriptFile.name}');
+    `);
+
+    return `node ${scriptFile.name}`;
+  };
 });
 
 beforeEach(function () {
@@ -85,6 +113,7 @@ beforeEach(function () {
 
 
 // Plugins
+Chai.use(require('chai-match'));
 require('./assertions');
 // Tests
 require('./step-test');
@@ -94,3 +123,5 @@ require('./template-helpers-test');
 require('./manual-test');
 require('./release-test');
 require('./submodule-test');
+require('./package-test');
+require('./dump-test');

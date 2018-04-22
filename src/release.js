@@ -323,15 +323,19 @@ function createReleaseTag(tag, dstHash, message) {
   if (typeof message == 'string') {
     Git.print(['tag', tag, '-m', message]);
   // Open editor
-  } else if (message === true) {
+  }
+  else if (message === true) {
     Git.print(['tag', tag, '-a']);
   // No message
-  } else {
+  }
+  else {
     Git(['tag', tag]);
   }
 
   // Returning to the original hash
   Git(['checkout', srcHash]);
+  // Restore renovate.json and .travis.yml
+  Git(['checkout', '.']);
 }
 
 

@@ -1,4 +1,4 @@
-[{]: <helper> (diffStep 1.1 module="XXX")
+[{]: <helper> (diffStep 1.1 module="tmp-???")
 
 #### Step 1.1: Hello World
 

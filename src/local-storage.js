@@ -27,6 +27,8 @@ const Utils = require('./utils');
   - STEP_MAP - A map of old steps and their new indexes which is being built during the
     step editing process in order to be able to update the diffStep template helpers in
     the manuals being rebased later on.
+  - STEP_MAP_PENDING - Indicates that this stored step map will be used in another
+    tortilla repo and not in the current repo where the process started running at.
  */
 
 let localStorage;
@@ -38,7 +40,9 @@ function createLocalStorage(cwd) {
   // If git dir exists use it as a local-storage dir
   if (Utils.exists(paths.git.resolve())) {
     localStorage = new LocalStorage(paths.storage);
-  } else { // Else, create local cache
+  }
+  // Else, create local cache
+  else {
     localStorage = new LocalCache();
   }
 
@@ -78,15 +82,18 @@ localStorage = createLocalStorage(Paths.resolve());
   });
 
   const method = argv._[0];
-  const key = argv._[1];
-  const value = argv._[2];
+  const args = argv._.slice(1);
 
   switch (method) {
     case 'set':
-      localStorage.setItem(key, value);
+      for (let i = 0; i < args.length; i += 2) {
+        localStorage.setItem(args[i], args[i + 1]);
+      }
       break;
     case 'remove':
-      localStorage.removeItem(key);
+      for (let i = 0; i < args.length; i++) {
+        localStorage.removeItem(args[i]);
+      }
       break;
     default:
       break;
