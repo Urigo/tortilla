@@ -124,7 +124,7 @@ function exec(file, argv, options) {
   argv = argv || [];
 
   options = extend({
-    cwd: cwd(),
+    cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: 'pipe',
     env: {},
   }, options);
