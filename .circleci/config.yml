@@ -19,8 +19,8 @@ jobs:
      - run: sudo apt-get install realpath
      - run: sudo apt-get install git
      - run: sudo apt-get install apt-transport-https
-     - run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-     - run: echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+     - run: sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+     - run: sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
      - run: sudo apt-get update && sudo apt-get install yarn
      - run: yarn
 
