@@ -1,22 +1,67 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
 version: 2
 jobs:
  build:
-   working_directory: ~/repo
+   machine: true
 
    steps:
      - checkout
-     - run: sudo add-apt-repository ppa:git-core/ppa -y
-     - run: sudo apt-get update
-     - run: sudo apt-get install realpath
-     - run: sudo apt-get install git
-     - run: yarn
+     - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - yarn-packages-{{ .Branch }}
+            - yarn-packages-master
+            - yarn-packages-
+
+     - run:
+          name: Installing latest Git
+          command: |
+            sudo add-apt-repository ppa:git-core/ppa -y
+            sudo apt-get update
+            sudo apt-get install realpath
+            sudo apt-get install git
+            which git
+
+     - run:
+          name: Installing Node 8
+          command: |
+            set +e
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.9/install.sh | bash
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install --lts
+            nvm alias default node
+
+            # Each step uses the same `$BASH_ENV`, so need to modify it
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
+     - run:
+          name: Installing Yarn
+          command: |
+            set +e
+            sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt-get update
+            sudo apt-get install yarn
+
+     - run:
+          name: Config Git
+          command: |
+            git --version
+            git config --global user.email "test@tortilla.com"
+            git config --global user.name "Tortilla"
+
+     - run:
+          name: Installing dependencies
+          command: yarn
 
      - save_cache:
-         paths:
-           - node_modules
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules/
 
-     - run: yarn test
+     - run:
+          name: Test
+          command: yarn test
