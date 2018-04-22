@@ -11,7 +11,6 @@ process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 
 const Utils = require('../src/utils');
 
-
 before(function () {
   // Check if Mac OS is in use, and if so, check for "realpath" command
   if (Os.type() === 'Darwin') {
@@ -34,7 +33,6 @@ before(function () {
   process.env.TORTILLA_CWD = this.testDir;
   // Print test dir so it can be observed in case of failure
   console.log(`Test Dir: ${this.testDir}`);
-  console.log('Test Env: ', process.env);
 
   // Initializing test tortilla project
   ChildProcess.execFileSync(Path.resolve(__dirname, '../cli/tortilla'), [
