@@ -43,6 +43,7 @@ const Utils = require('../utils');
     let allowedFiles = [
       `.tortilla/manuals/templates/${tag}.tmpl`,
       `.tortilla/manuals/views/${tag}.md`,
+      '.tortilla/config.js',
     ];
 
     const localesDir = `${Paths.manuals.templates}/locales`;
