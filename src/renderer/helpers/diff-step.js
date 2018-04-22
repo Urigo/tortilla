@@ -3,8 +3,10 @@ const Handlebars = require('handlebars');
 const ParseDiff = require('parse-diff');
 const Git = require('../../git');
 const Step = require('../../step');
+const Submodule = require('../../submodule');
 const Translator = require('../../translator');
 const Utils = require('../../utils');
+const Config = require('../../config');
 
 /**
   Renders step diff in a pretty markdown format. For example {{{ diffStep 1.1 }}}
@@ -48,7 +50,8 @@ Renderer.registerHelper('diffStep', (step, options) => {
   if (hash.files) {
     pattern = new RegExp(hash.files.replace(/\s*,\s*/g, '|').replace(/\./g, '\\.'));
   // Will print diff of all possible files
-  } else {
+  }
+  else {
     pattern = /.*/;
   }
 
@@ -56,7 +59,14 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // In case a submodule was specified then all our git commands should be executed
   // from that module
   if (hash.module) {
-    cwd = `${cwd}/${hash.module}`;
+    // Use the cloned repo that is used for development
+    if (process.env.TORTILLA_SUBDEV) {
+      cwd = Submodule.getCwd(hash.module);
+    }
+    // Use the local submodule
+    else {
+      cwd = `${cwd}/${hash.module}`;
+    }
   }
 
   const stepData = Git.recentCommit([
@@ -82,19 +92,25 @@ Renderer.registerHelper('diffStep', (step, options) => {
     commitMessage: stepMessage,
   });
 
+  let stepTitle;
+
   // If this is a relative path, we won't reference the commit
   if (commitReference.isRelative) {
-    var stepTitle = `#### ${stepMessage}`;
-  } else {
-    var stepTitle = `#### [${stepMessage}](${commitReference})`;
+    stepTitle = `#### ${stepMessage}`;
+  }
+  else {
+    stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
   const diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
 
+  const blacklist = Config.getBlacklist();
+
   // Convert diff string to json format
   const files = ParseDiff(diff).filter(file =>
     // Filter files which match the given pattern
-     file.from.match(pattern) || file.to.match(pattern));
+    (file.from.match(pattern) || file.to.match(pattern)) &&
+    (!blacklist || (!file.to.match(blacklist) && !file.from.match(blacklist))));
 
   const mdDiffs = files
     .map(getMdDiff)
@@ -111,9 +127,14 @@ function getMdDiff(file) {
 
   if (file.new) {
     fileTitle = `##### ${t('diff.added', { path: file.to })}`;
-  } else if (file.deleted) {
+  }
+  else if (file.deleted) {
     fileTitle = `##### ${t('diff.deleted', { path: file.from })}`;
-  } else {
+  }
+  else if (!file.chunks.length) {
+    fileTitle = `##### ${t('diff.renamed', { from: file.from, to: file.to })}`;
+  }
+  else {
     fileTitle = `##### ${t('diff.changed', { path: file.from })}`;
   }
 
@@ -143,7 +164,7 @@ function getMdChunk(chunk) {
 // Gets line in a markdown format for a single change
 function getMdChange(padLength, change) {
   // No newline at end of file
-  if (change.content[0] == '\\') {
+  if (change.content[0] === '\\') {
     return change.content;
   }
 
@@ -166,6 +187,8 @@ function getMdChange(padLength, change) {
       sign = ' ';
       addLineNum = change.ln2;
       delLineNum = change.ln1;
+      break;
+    default:
       break;
   }
 
@@ -194,7 +217,7 @@ Renderer.registerTransformation('medium', 'diffStep', (view) => {
 
   return view
     .split(/```diff\n|\n```(?!diff)/).map((chunk, index) => {
-      if (index % 2 == 0) { return chunk; }
+      if (index % 2 === 0) { return chunk; }
 
       const content = Handlebars.escapeExpression(chunk)
         // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic

@@ -1,6 +1,6 @@
 {
   "name": "tortilla",
-  "version": "0.0.1-alpha.26",
+  "version": "0.0.1-alpha.28",
   "description": "A tutorials framework based on git and NodeJS",
   "author": "Eytan Manor",
   "repository": {
@@ -22,12 +22,13 @@
     "node-localstorage": "1.3.0",
     "parse-diff": "0.4.2",
     "readline-sync": "1.4.7",
-    "semver": "5.4.1",
+    "semver": "5.5.0",
     "tmp": "0.0.31"
   },
   "devDependencies": {
     "babel-register": "6.26.0",
     "chai": "3.5.0",
+    "chai-match": "1.1.1",
     "escape-string-regexp": "1.0.5",
     "eslint": "3.19.0",
     "eslint-config-airbnb-base": "11.3.2",
@@ -36,6 +37,6 @@
   },
   "engines": {
     "node": ">=0.10",
-    "git": ">=1.7.4.2"
+    "git": ">=1.7.4.2 || ^2.17.0"
   }
 }

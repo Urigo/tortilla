@@ -17,6 +17,7 @@
   "diff": {
     "added": "הוספנו את {{path}}",
     "changed": "שינינו את {{path}}",
-    "deleted": "מחקנו את {{path}}"
+    "deleted": "מחקנו את {{path}}",
+    "renamed": "השם שונה מ {{from}} ל {{to}}"
   }
 }

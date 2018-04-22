@@ -1,4 +1,4 @@
-const Fs = require('fs');
+const Fs = require('fs-extra');
 const Git = require('../git');
 const LocalStorage = require('../local-storage');
 const Paths = require('../paths');
@@ -43,6 +43,7 @@ const Utils = require('../utils');
     let allowedFiles = [
       `.tortilla/manuals/templates/${tag}.tmpl`,
       `.tortilla/manuals/views/${tag}.md`,
+      '.tortilla/config.js',
     ];
 
     const localesDir = `${Paths.manuals.templates}/locales`;
@@ -62,7 +63,9 @@ const Utils = require('../utils');
 
       throw Error(`Staged files must be one of:\n${filesList}`);
     }
-  } else if (stepDescriptor) { // Else, if this is not root commit prohibit manual files modifications
+  }
+  // Else, if this is not root commit prohibit manual files modifications
+  else if (stepDescriptor) {
     stagedFiles = Git.stagedFiles(/^\.tortilla\/manuals\//);
 
     if (stagedFiles.length) {

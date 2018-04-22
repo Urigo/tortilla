@@ -37,6 +37,8 @@ See:
 - [releases](#releases)
   - [release-tags](#release-tags)
   - [history-branches](#history-branches)
+- [submodules](#submodules)
+  - [checkouts](#checkouts)
 
 ### Steps
 
@@ -242,6 +244,31 @@ The history is specific for a certain branch. Its name should end with `history`
     master@0.0.2: Update step 2
     master@0.0.1: Initial tutorial creation
 
+### Submodules
+
+Often times, we would like to have a single repository where we include all the manual files, and the implementation logic would be implemented in different repositories which will be referenced from the main repository using git's submodules architecture; E.g. a single repository that includes submodules referencing the client and the server. Another advantage for that architecture is that we can implement similar applications using different stacks, or having a single back-end for multiple front-end applications, with almost identical instructions.
+
+**Related CLI:** [tortilla-submodule CLI](#tortilla-submodule-cli)
+
+#### Checkouts
+
+There would be cases where submodule's steps won't be correlated to the same step indices in the main repository; E.g. in manual file for step 3 the client would be set to step 1 and the server would be et to step 2. In-order to specify which steps should be checked out in the submodules for each step in the main repository, we would need to specify a `checkouts.json` file under the `.tortilla` directory. Here's an example checkouts file:
+
+```json
+{
+  "server": {
+    "head": "master",
+    "steps": ["root", "root", 1, 1]
+  },
+  "client": {
+    "head": "master",
+    "steps": ["root", 1, 1, 2]
+  }
+}
+```
+
+Each key represents a submodule name. The `head` property represents which branch should be checked out before looking for the steps at each submodule, and the `steps` property represents the steps that should be checked out at the submodule at each step at the main repository (e.g. "root" would be checked out at the server and step number 1 would be checked out in the client for step 1 in the main repository). Needless to say that submodules should be defined beforehand.
+
 ## Quick Startup
 
 First you will need to install Tortilla's CLI tool:
@@ -274,6 +301,7 @@ See:
   - [tortilla-release](#tortilla-release-cli)
   - [tortilla-step](#tortilla-step-cli)
   - [tortilla-strict](#tortilla-strict-cli)
+  - [tortilla-package](#tortilla-package-cli)
 
 ### tortilla CLI
 
@@ -288,6 +316,38 @@ Creates a new Tortilla project with the provided name.
 **command:** `tortilla init [name]`
 
 Initializes Tortilla essentials in the provided project.
+
+**command:** `tortilla dump [out]`
+
+Dumps tutorial data as a JSON file. The default dump file name would be `tutorial.json`, although an optional output path might be provided. Here's a brief description of the schema of the generated dump file:
+
+```json
+[
+  {
+    "branchName": "Current branch",
+    "historyBranchName": "History branch matching current branch",
+    "releases": [
+      {
+        "ReleaseVersion": "x.x.x",
+        "tagName": "The name of the tag",
+        "tagRevision": "The revision of the tag",
+        "historyRevision": "Commit hash based on history branch",
+        "manuals": [
+          {
+            "manualTitle": "Step commit message",
+            "stepRevision": "Step commit revision",
+            "manualView": "Manual view content"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+- *option:* `--filter [filter]` - A list of branches we would like to filter separated with spaces.
+- *option:* `--reject [reject]` - A list of branches we would like to reject separated with spaces.
+- *option:* `--override` - Override file if already exists.
 
 ### tortilla-manual CLI
 
@@ -343,7 +403,7 @@ Mark this step as finished and move on to the next one. This will increase the i
 Edits the specified step/s. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
 
 - *option:* `--root` - Edit the root step (initial commit).
-- *option:* `--udiff` - Updates the `diffStep` template helpers of manuals being rebased. Note that manuals prior to the current step being edited won't be updated, since the rebasing process never looks backwards.
+- *option:* `--udiff [path]` - Updates the `diffStep` template helpers of manuals being rebased. Note that manuals prior to the current step being edited won't be updated, since the rebasing process never looks backwards. An optional can be provided which will be a reference to another repository which contains the current repository as a submodule; This will result in updating the provided repository's manuals rather than the current one. Note that submodule's package names located in `package.json` should be distinct.
 
 **command:** `tortilla step reword [step]`
 
@@ -378,6 +438,18 @@ Remove submodules from the root commit. If non was provided - will remove all su
 **command:** `tortilla submodule update [submodules...]`
 
 Update submodules in the root commit. If non was provided - will update all submodules.
+
+**command:** `tortilla submodule reset [submodules...]`
+
+Reset submodules in the root commit. If non was provided - will update all submodules. Unlike the `update` function, this will remove all the given submodules and re-add them, which will always result in the most recent submodules, event if the HEAD was rebased.
+
+### tortilla-package CLI
+
+`package.json` related commands are useful when we wanna update our dependencies' versions all across the tutorial, without needing to deal with any conflicts across the process.
+
+**command:** `tortilla pacakge update-deps`
+
+This will start the dependencies updating process by creating a temporary file will contain a list of all our dependencies (merged with dev and peer) where we can specify the new versions that we would like to use in our tutorial. Once this file has been saved and closed Tortilla will handle the rebasing process.
 
 ## License
 

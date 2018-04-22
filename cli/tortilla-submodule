@@ -31,4 +31,12 @@ Program
     Submodule.update(submodules);
   });
 
+  Program
+    .command('reset [submodules...]')
+    .description('Reset submodules in root commit')
+    .action((submodules) => {
+      LocalStorage.assertTortilla(true);
+      Submodule.reset(submodules);
+    });
+
 Program.parse(process.argv);
