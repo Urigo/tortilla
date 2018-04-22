@@ -6,6 +6,7 @@ const Step = require('../../step');
 const Submodule = require('../../submodule');
 const Translator = require('../../translator');
 const Utils = require('../../utils');
+const Config = require('../../config');
 
 /**
   Renders step diff in a pretty markdown format. For example {{{ diffStep 1.1 }}}
@@ -91,20 +92,25 @@ Renderer.registerHelper('diffStep', (step, options) => {
     commitMessage: stepMessage,
   });
 
+  let stepTitle;
+
   // If this is a relative path, we won't reference the commit
   if (commitReference.isRelative) {
-    var stepTitle = `#### ${stepMessage}`;
+    stepTitle = `#### ${stepMessage}`;
   }
   else {
-    var stepTitle = `#### [${stepMessage}](${commitReference})`;
+    stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
   const diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
 
+  const blacklist = Config.getBlacklist();
+
   // Convert diff string to json format
   const files = ParseDiff(diff).filter(file =>
     // Filter files which match the given pattern
-     file.from.match(pattern) || file.to.match(pattern));
+    (file.from.match(pattern) || file.to.match(pattern)) &&
+    (!blacklist || (!file.to.match(blacklist) && !file.from.match(blacklist))));
 
   const mdDiffs = files
     .map(getMdDiff)
@@ -158,7 +164,7 @@ function getMdChunk(chunk) {
 // Gets line in a markdown format for a single change
 function getMdChange(padLength, change) {
   // No newline at end of file
-  if (change.content[0] == '\\') {
+  if (change.content[0] === '\\') {
     return change.content;
   }
 
@@ -181,6 +187,8 @@ function getMdChange(padLength, change) {
       sign = ' ';
       addLineNum = change.ln2;
       delLineNum = change.ln1;
+      break;
+    default:
       break;
   }
 
@@ -209,7 +217,7 @@ Renderer.registerTransformation('medium', 'diffStep', (view) => {
 
   return view
     .split(/```diff\n|\n```(?!diff)/).map((chunk, index) => {
-      if (index % 2 == 0) { return chunk; }
+      if (index % 2 === 0) { return chunk; }
 
       const content = Handlebars.escapeExpression(chunk)
         // Make diff changes (e.g. @@ -1,3 +1,3 @@) italic

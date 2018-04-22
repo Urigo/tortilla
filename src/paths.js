@@ -116,6 +116,7 @@ function resolveProject(cwd) {
   });
 
   return cache[cwd] = resolveTree(cwd, {
+    config: resolve(cwd, '.tortilla/config.js'),
     checkouts: resolve(cwd, '.tortilla/checkouts.json'),
     locales: resolve(cwd, '.tortilla/locales'),
     readme: resolve(cwd, 'README.md'),
