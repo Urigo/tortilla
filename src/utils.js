@@ -141,6 +141,10 @@ function exec(file, argv, options) {
     delete options.env[key];
   });
 
+  if (process.env.TORTILLA_DEBUG) {
+    console.log(`Running command ${file} with argv: ${JSON.stringify(argv)} and options: `, options);
+  }
+
   const out = ChildProcess.execFileSync(file, argv, options);
 
   // In case of stdio inherit
