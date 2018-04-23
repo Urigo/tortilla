@@ -223,18 +223,18 @@ describe('Release', function () {
       const travisPath = Paths.travis;
       const renovatePath = Paths.renovate;
 
-      expect(this.exists(travisPath)).to.be.truthy;
-      expect(this.exists(renovatePath)).to.be.truthy;
+      expect(this.exists(travisPath)).to.be.true;
+      expect(this.exists(renovatePath)).to.be.true;
 
       this.git(['checkout', 'master@1.0.0']);
 
-      expect(this.exists(travisPath)).to.be.falsy;
-      expect(this.exists(renovatePath)).to.be.falsy;
+      expect(this.exists(travisPath)).to.be.false;
+      expect(this.exists(renovatePath)).to.be.false;
 
       this.git(['checkout', 'master-history']);
 
-      expect(this.exists(travisPath)).to.be.falsy;
-      expect(this.exists(renovatePath)).to.be.falsy;
+      expect(this.exists(travisPath)).to.be.false;
+      expect(this.exists(renovatePath)).to.be.false;
     });
 
     it('should re-render all manuals using an updated release tag', function () {

@@ -60,7 +60,7 @@ describe('Step', function () {
       expect(message).to.equal('Step 1.1: target');
 
       const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
-      expect(fileExists).to.be.falsy;
+      expect(fileExists).to.be.false;
     });
 
     it('should delete branch referencing super step', function () {
@@ -80,7 +80,7 @@ describe('Step', function () {
         branchExists = false;
       }
 
-      expect(branchExists).to.be.falsy;
+      expect(branchExists).to.be.false;
     });
   });
 
@@ -109,7 +109,7 @@ describe('Step', function () {
       expect(message).to.equal('Step 1: target');
 
       const fileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
-      expect(fileExists).to.be.truthy;
+      expect(fileExists).to.be.true;
     });
 
     it('should create a new branch referencing the tagged step', function () {
@@ -203,7 +203,7 @@ describe('Step', function () {
       this.tortilla(['step', 'edit', '1.1']);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
@@ -222,7 +222,7 @@ describe('Step', function () {
       this.tortilla(['step', 'edit', '1.1']);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
@@ -233,7 +233,7 @@ describe('Step', function () {
       this.tortilla(['step', 'edit', '--root']);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const commitHash = Git.recentCommit(['--format=%H']);
       const rootHash = Git.rootHash();
@@ -334,10 +334,10 @@ describe('Step', function () {
       expect(newMessage).to.equal('Step 1: new');
 
       const oldFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
-      expect(oldFileExists).to.be.truthy;
+      expect(oldFileExists).to.be.true;
 
       const newFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step2.tmpl`);
-      expect(newFileExists).to.be.truthy;
+      expect(newFileExists).to.be.true;
     });
 
     it('should resolve removal conflicts when tagging a step', function () {
@@ -352,7 +352,7 @@ describe('Step', function () {
       expect(oldMessage).to.equal('Step 1: old');
 
       const oldFileExists = this.exists(`${this.testDir}/.tortilla/manuals/templates/step1.tmpl`);
-      expect(oldFileExists).to.be.truthy;
+      expect(oldFileExists).to.be.true;
     });
 
     it('should edit the last step by default if no step specified', function () {
@@ -361,7 +361,7 @@ describe('Step', function () {
       this.tortilla(['step', 'edit']);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.2: target');
@@ -379,7 +379,7 @@ describe('Step', function () {
       let isRebasing, message;
 
       isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.2: target');
@@ -387,7 +387,7 @@ describe('Step', function () {
       Git(['rebase', '--continue']);
 
       isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.4: target');
@@ -405,7 +405,7 @@ describe('Step', function () {
       let isRebasing, message;
 
       isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.2: target');
@@ -413,7 +413,7 @@ describe('Step', function () {
       Git(['rebase', '--continue']);
 
       isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.4: target');
@@ -432,7 +432,7 @@ describe('Step', function () {
       let isRebasing, message;
 
       isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const commitHash = Git.recentCommit(['--format=%H']);
       const rootHash = Git.rootHash();
@@ -441,7 +441,7 @@ describe('Step', function () {
       Git(['rebase', '--continue']);
 
       isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       message = Step.recentCommit('%s');
       expect(message).to.equal('Step 1.1: target');
