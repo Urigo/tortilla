@@ -35,7 +35,7 @@ describe('Submodule', function () {
       ]);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.falsy;
+      expect(isRebasing).to.be.false;
 
       this.tortilla(['step', 'edit', '--root']);
 
@@ -67,7 +67,7 @@ describe('Submodule', function () {
       ]);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const stagedFiles = Git.stagedFiles();
 
@@ -111,7 +111,7 @@ describe('Submodule', function () {
       this.tortilla(['submodule', 'remove', Path.basename(this.fooModuleDir)]);
 
       const isRebasing = Git.rebasing();
-      expect(isRebasing).to.be.truthy;
+      expect(isRebasing).to.be.true;
 
       const stagedFiles = Git.stagedFiles();
 
@@ -146,7 +146,7 @@ describe('Submodule', function () {
 
       this.tortilla(['submodule', 'update', Path.basename(this.fooModuleDir)]);
 
-      expect(this.exists(`${fooPath}/hello_world`)).to.be.truthy;
+      expect(this.exists(`${fooPath}/hello_world`)).to.be.true;
     });
   });
 
@@ -181,7 +181,7 @@ describe('Submodule', function () {
 
       this.tortilla(['submodule', 'reset', Path.basename(this.fooModuleDir)]);
 
-      expect(this.exists(`${fooPath}/hello_world`)).to.be.falsy;
+      expect(this.exists(`${fooPath}/hello_world`)).to.be.false;
       expect(this.exists(`${fooPath}/hello_planet`)).to.be.true;
     });
   });
