@@ -1,5 +1,7 @@
 # Tortilla
 
+[![CircleCI](https://circleci.com/gh/Urigo/tortilla.svg?style=svg&circle-token=12d30ba8bd17ea8294ef5430fbeb60af1474ab73)](https://circleci.com/gh/Urigo/tortilla)
+
 <p align="center"><img src="https://cloud.githubusercontent.com/assets/7648874/24250888/833ec58e-0fbf-11e7-95e5-42d5827f0dd6.png" alt="tortilla" width="500"></p>
 
 Tortilla is a framework for building tutorials based on git and NodeJS which will help you create AWESOME tutorials and upload them to any git-host which supports markdown rendering, like GitHub. Tortilla operates by simply wrapping an existing git project, thus providing you with some advanced git functions dedicated to create the most perfect and most beautiful tutorial in the world. In addition, Tortilla is easily accessible through a CLI, making it very convenient to use.
