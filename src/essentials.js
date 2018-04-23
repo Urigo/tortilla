@@ -374,7 +374,7 @@ function dumpProject(out = Utils.cwd(), options = {}) {
     };
   });
 
-  Fs.writeJsonSync(out, dump);
+  Fs.writeJsonSync(out, dump, { spaces: 2 });
 }
 
 function overwriteTemplateFile(path, scope) {
