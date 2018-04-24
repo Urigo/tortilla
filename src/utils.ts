@@ -1,25 +1,24 @@
-const ChildProcess = require('child_process');
-const Fs = require('fs-extra');
+import * as ChildProcess from 'child_process';
+import * as Fs from 'fs-extra';
 
 /**
   Contains general utilities.
  */
 
-let cwd;
+let cwd: () => string;
 let git;
 let npm;
 let node;
 
-
 (function () {
   // Defaults to process's current working dir
-  cwd = process.env.TORTILLA_CWD || process.cwd();
+  let tempCwd = process.env.TORTILLA_CWD || process.cwd();
 
   try {
-    cwd = ChildProcess.execFileSync('git', [
+    tempCwd = ChildProcess.execFileSync('git', [
       'rev-parse', '--show-toplevel',
     ], {
-      cwd,
+      cwd: tempCwd,
       stdio: ['pipe', 'pipe', 'ignore'],
     }).toString()
       .trim();
@@ -29,7 +28,7 @@ let node;
   }
 
   // Setting all relative utils
-  exec.print = spawn;
+  (exec as any).print = spawn;
   git = exec.bind(null, 'git');
   git.print = spawn.bind(null, 'git');
   npm = exec.bind(null, 'npm');
@@ -38,7 +37,7 @@ let node;
   node.print = spawn.bind(null, 'node');
   // It's better to have a getter rather than an explicit value otherwise
   // it might be reset
-  cwd = String.bind(null, cwd);
+  cwd = String.bind(null, tempCwd);
 }());
 
 // Checks if one of the parent processes launched by the provided file and has
@@ -120,7 +119,7 @@ function spawn(file, argv, options) {
 }
 
 // Execute file
-function exec(file, argv, options) {
+function exec(file, argv?, options?) {
   argv = argv || [];
 
   options = extend({
@@ -150,7 +149,7 @@ function exec(file, argv, options) {
 }
 
 // Tells if entity exists or not by an optional document type
-function exists(path, type) {
+function exists(path, type?) {
   try {
     const stats = Fs.lstatSync(path);
 
@@ -204,9 +203,7 @@ function merge(destination, source) {
 }
 
 // Extend destination object with provided sources
-function extend(destination) {
-  const sources = [].slice.call(arguments, 1);
-
+function extend(destination, ...sources) {
   sources.forEach((source) => {
     if (!(source instanceof Object)) {
       return;
@@ -308,7 +305,7 @@ function delegateProperties(destination, source, modifiers) {
       };
     } else {
       if (propertyDescriptor.get && modifiers.get) {
-        var superGetter = propertyDescriptor.get;
+        const superGetter = propertyDescriptor.get;
 
         propertyDescriptor.get = function () {
           return modifiers.get.call(this, superGetter, propertyName);
@@ -316,7 +313,7 @@ function delegateProperties(destination, source, modifiers) {
       }
 
       if (propertyDescriptor.set && modifiers.set) {
-        var superGetter = propertyDescriptor.set;
+        const superGetter = propertyDescriptor.set;
 
         propertyDescriptor.set = function (value) {
           return modifiers.value.call(this, superGetter, propertyName, value);
@@ -334,7 +331,7 @@ function isEqual(objA, objB) {
   if (objA === objB) return true;
   if (typeof objA != typeof objB) return false;
   if (!(objA instanceof Object) || !(objB instanceof Object)) return false;
-  if (objA.__proto__ !== objB.__proto__) return false;
+  if ((objA as any).__proto__ !== (objB as any).__proto__) return false;
 
   const objAKeys = Object.keys(objA);
   const objBKeys = Object.keys(objB);
@@ -380,8 +377,7 @@ function shCmd(cmd) {
     .trim();
 }
 
-
-module.exports = {
+export const Utils = {
   cwd,
   exec,
   git,

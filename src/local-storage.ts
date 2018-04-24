@@ -1,8 +1,8 @@
-const LocalStorage = require('node-localstorage').LocalStorage;
-const Minimist = require('minimist');
-const LocalCache = require('./local-cache');
-const Paths = require('./paths');
-const Utils = require('./utils');
+import { LocalStorage } from 'node-localstorage';
+import * as Minimist from'minimist';
+import { LocalCache } from './local-cache';
+import { Paths } from './paths';
+import { Utils } from './utils';
 
 /**
   A local storage whose storage dir is located under '.git/.tortilla'.
@@ -31,7 +31,7 @@ const Utils = require('./utils');
     tortilla repo and not in the current repo where the process started running at.
  */
 
-let localStorage;
+export let localStorage: any;
 
 // Creates a new instance of local-storage
 function createLocalStorage(cwd) {
@@ -99,5 +99,3 @@ localStorage = createLocalStorage(Paths.resolve());
       break;
   }
 })();
-
-module.exports = localStorage;

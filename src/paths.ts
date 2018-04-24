@@ -1,10 +1,101 @@
-const Path = require('path');
-const Utils = require('./utils');
+import * as Path from 'path';
+import { Utils } from './utils';
+
+export interface TortillaPaths {
+  resolve: () => string;
+  resolveTree: (path: string) => object;
+  resolveProject: (path: string) => TortillaPaths;
+  config: string;
+  checkouts: string;
+  locales: string;
+  readme: string;
+  renovate: string;
+  storage: string;
+  travis: string;
+  manuals: {
+    resolve: () => string;
+    templates: string;
+    views: string;
+  };
+  cli: {
+    resolve: () => string;
+    tortilla: string;
+    tortillaManual: string;
+    tortillaRelease: string;
+    tortillaStep: string;
+    tortillaStrict: string;
+    tortillaSubmodule: string;
+  };
+  git: {
+    resolve: () => string;
+    ignore: string;
+    hooks: string;
+    rebaseApply: string;
+    rebaseMerge: string;
+    heads: {
+      resolve: () => string;
+      cherryPick: string;
+      orig: string;
+      revert: string;
+    },
+    messages: {
+      resolve: () => string;
+      commit: string;
+      merge: string;
+      squash: string;
+    },
+    refs: {
+      resolve: () => string;
+      heads: string;
+      remotes: string;
+      tags: string;
+    },
+  };
+  tortilla: {
+    resolve: () => string;
+    editor: string;
+    essentials: string;
+    git: string;
+    initializer: string;
+    localCache: string;
+    localStorage: string;
+    manual: string;
+    package: string;
+    paths: string;
+    rebase: string;
+    release: string;
+    step: string;
+    submodule: string;
+    utils: string;
+    hooks: string;
+    skeleton: string;
+    ascii: {
+      resolve: () => string;
+      views: string;
+    };
+    renderer: {
+      resolve: () => string;
+      helpers: string;
+      templates: string;
+    };
+    translator: {
+      resolve: () => string;
+      translation: string;
+      locales: string;
+    };
+  };
+  npm: {
+    resolve: () => string;
+    ignore: string;
+    package: string;
+    modules: string;
+  };
+}
 
 /**
-  It is important to use absolute paths and not relative paths since some helpers
-  are distributed over several processes whose execution path is not always the same,
-  therefore this module was created.
+ It is important to use absolute paths and not relative paths since some helpers
+ are distributed over several processes whose execution path is not always the same,
+ therefore this module was created.
  */
 
 const cache = {};
@@ -57,7 +148,7 @@ const cli = resolveTree(resolve(__dirname, '../cli'), {
 
 // Makes the root path available in the branches object using a 'resolve()' method
 // e.g. ('foo', { bar: 'bar' }) -> { resolve() -> 'foo', bar: 'bar' }
-function resolveTree(root, branches) {
+function resolveTree(root, branches): any {
   branches = branches || {};
 
   return Object.keys(branches).reduce((tree, name) => {
@@ -69,7 +160,7 @@ function resolveTree(root, branches) {
 }
 
 // Resolves a bunch of paths to a given tortilla project path
-function resolveProject(cwd) {
+function resolveProject(cwd: string): TortillaPaths {
   if (!cwd) { throw TypeError('A project path must be provided'); }
 
   if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) {
@@ -133,5 +224,4 @@ function resolveProject(cwd) {
   });
 }
 
-
-module.exports = resolveProject(Utils.cwd());
+export const Paths: TortillaPaths = resolveProject(Utils.cwd());

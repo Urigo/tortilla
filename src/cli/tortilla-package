@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const Program = require('commander');
-const LocalStorage = require('../src/local-storage');
-const Package = require('../src/package');
+const LocalStorage = require('../local-storage');
+const Package = require('../package');
 
 /**
   Package CLI.

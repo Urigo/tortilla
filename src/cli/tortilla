@@ -5,9 +5,9 @@ if (!semver.gt(process.version, '6.0.0')) {
 }
 
 const Program = require('commander');
-const Pack = require('../package.json');
-const Essentials = require('../src/essentials');
-const LocalStorage = require('../src/local-storage');
+const Pack = require('../../package.json');
+const Essentials = require('../essentials');
+const LocalStorage = require('../local-storage');
 
 /**
   CLI entry point.

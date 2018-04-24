@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const Program = require('commander');
-const LocalStorage = require('../src/local-storage');
+const LocalStorage = require('../local-storage');
 
 /**
   Strict CLI.
