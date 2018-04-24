@@ -3,7 +3,7 @@ import * as Path from 'path';
 import * as Fs from 'fs-extra';
 import * as ChildProcess from 'child_process';
 import { type } from 'os';
-import {Utils} from '../src/utils';
+import { Utils } from '../src/utils';
 
 process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 
@@ -34,6 +34,10 @@ export function tortillaBeforeAll() {
   ChildProcess.execFileSync('node', [
     tortillaPath, 'create', '-m', 'Test tortilla project', '-o', this.plainDir, '--override',
   ]);
+
+  // Initializing test tortilla project
+  ChildProcess.execFileSync('git', ['config', 'user.email', 'test@tortilla.com'], { cwd: this.plainDir });
+  ChildProcess.execFileSync('git', ['config', 'user.name', 'Tortilla'], { cwd: this.plainDir });
 
   // Utils
   Object.assign(this, Utils);
