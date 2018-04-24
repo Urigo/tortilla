@@ -1,16 +1,16 @@
-const Fs = require('fs-extra');
-const Git = require('../git');
-const LocalStorage = require('../local-storage');
-const Paths = require('../paths');
-const Step = require('../step');
-const Utils = require('../utils');
+import * as Fs from 'fs-extra';
+import { Git } from '../git';
+import { localStorage as LocalStorage } from '../local-storage';
+import { Paths } from '../paths';
+import { Step } from '../step';
+import { Utils } from '../utils';
 
 /**
-  Pre-commit git hook launches right before we commit changes. If an error was thrown
-  the commit process will be aborted with the provided error message.
+ Pre-commit git hook launches right before we commit changes. If an error was thrown
+ the commit process will be aborted with the provided error message.
  */
 
-(function () {
+function run() {
   if (process.env.TORTILLA_CHILD_PROCESS) {
     return;
   }
@@ -51,21 +51,19 @@ const Utils = require('../utils');
     if (Utils.exists(localesDir)) {
       const locales = Fs.readdirSync(localesDir);
 
-      allowedFiles = allowedFiles.concat(locales.map(locale => `.tortilla/manuals/templates/locales/${locale}/${tag}.tmpl`));
+      allowedFiles = allowedFiles.concat(locales.map((locale) => `.tortilla/manuals/templates/locales/${locale}/${tag}.tmpl`));
 
-      allowedFiles = allowedFiles.concat(locales.map(locale => `.tortilla/manuals/views/locales/${locale}/${tag}.md`));
+      allowedFiles = allowedFiles.concat(locales.map((locale) => `.tortilla/manuals/views/locales/${locale}/${tag}.md`));
     }
 
-    stagedFiles = Git.stagedFiles().filter(stagedFile => allowedFiles.indexOf(stagedFile) !== -1);
+    stagedFiles = Git.stagedFiles().filter((stagedFile) => allowedFiles.indexOf(stagedFile) !== -1);
 
     if (!stagedFiles.length) {
-      const filesList = allowedFiles.map(file => `• ${file}`).join('\n');
+      const filesList = allowedFiles.map((file) => `• ${file}`).join('\n');
 
       throw Error(`Staged files must be one of:\n${filesList}`);
     }
-  }
-  // Else, if this is not root commit prohibit manual files modifications
-  else if (stepDescriptor) {
+  } else if (stepDescriptor) {
     stagedFiles = Git.stagedFiles(/^\.tortilla\/manuals\//);
 
     if (stagedFiles.length) {
@@ -81,4 +79,6 @@ const Utils = require('../utils');
       'Run `$ tortilla step edit --root` and edit \'.tortilla/manuals/templates/root.md\' file instead',
     ].join('\n'));
   }
-}());
+}
+
+run();

@@ -1,16 +1,16 @@
-const Fs = require('fs-extra');
-const Git = require('../git');
-const LocalStorage = require('../local-storage');
-const Paths = require('../paths');
-const Step = require('../step');
+import * as Fs from 'fs-extra';
+import { Git } from '../git';
+import { localStorage as LocalStorage } from '../local-storage';
+import { Paths } from '../paths';
+import { Step } from '../step';
 
 /**
-  Prepare-commit-message git hook launches right before we write our commit message.
-  If an error was thrown the commit process will be aborted with the provided error
-  message.
+ Prepare-commit-message git hook launches right before we write our commit message.
+ If an error was thrown the commit process will be aborted with the provided error
+ message.
  */
 
-(function () {
+function run() {
   // Should abort hook once steps limit reached
   if (Git.rebasing() && LocalStorage.getItem('REBASE_HOOKS_DISABLED')) {
     return;
@@ -39,4 +39,6 @@ const Step = require('../step');
 
   // Rewrite the commit message with no step prefix
   Fs.writeFileSync(Paths.git.messages.commit, stepDescriptor.message);
-}());
+}
+
+run();

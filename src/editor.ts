@@ -395,7 +395,7 @@ function getStepLimit(oldStep, newStep) {
   const oldStepSplits = oldStep.split('.');
   const newStepSplits = newStep.split('.');
   const oldSuperStep = oldStepSplits[0];
-  const newSuperStep = newStepSplits[0];
+  newSuperStep = newStepSplits[0];
   const oldSubStep = oldStepSplits[1];
   const newSubStep = newStepSplits[1];
 

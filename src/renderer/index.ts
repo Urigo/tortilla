@@ -50,10 +50,12 @@ function renderTemplate(template, scope) {
   }
   scope = scope || {};
 
+  let viewDir;
+
   if (scope.viewPath) {
     // Relative path of view dir
     // e.g. manuals/views
-    const viewDir = Path.dirname(scope.viewPath);
+    viewDir = Path.dirname(scope.viewPath);
   }
 
   const oldResolve = (handlebars as any).resolve;
@@ -92,11 +94,12 @@ function registerHelper(name, helper, options) {
 
   const wrappedHelper = function() {
     const oldCall = (handlebars as any).call;
+    let out;
 
     try {
       // Bind the call method to the current context
       (handlebars as any).call = callHelper.bind(this);
-      const out = helper.apply(this, arguments);
+      out = helper.apply(this, arguments);
     } finally { // Fallback
       // Restore method to its original
       (handlebars as any).call = oldCall;

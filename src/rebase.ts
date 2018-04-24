@@ -67,7 +67,7 @@ export function superPickStep(hash) {
   const newStep = Step.nextSuper();
 
   // Fetch patch data
-  const diff = newStep - oldStep;
+  const diff = (newStep as any) - (oldStep as any);
   const stepFilePattern = /step(\d+)\.(md|tmpl)/g;
   const patch = Git(['format-patch', '-1', hash, '--stdout']);
 
