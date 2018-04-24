@@ -19,7 +19,7 @@
   },
   "include": [
     "src/typings.d.ts",
-    "src/cli/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"
