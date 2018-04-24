@@ -1,10 +1,10 @@
-const Path = require('path');
-const Renderer = require('..');
-const Git = require('../../git');
-const Paths = require('../../paths');
-const Step = require('../../step');
-const Translator = require('../../translator');
-const Utils = require('../../utils');
+import * as Path from 'path';
+import { Renderer} from '../index';
+import { Git} from '../../git';
+import { Paths} from '../../paths';
+import { Step} from '../../step';
+import {Translator} from '../../translator';
+import { Utils} from '../../utils';
 
 /**
   Provides a navigation bar between steps. The navigation bar should be rendered
@@ -12,7 +12,6 @@ const Utils = require('../../utils');
  */
 
 const t = Translator.translate.bind(Translator);
-
 
 Renderer.registerHelper('navStep', (options) => {
   let step = options.hash.step || this.step || Step.currentSuper();

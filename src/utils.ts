@@ -236,7 +236,7 @@ function pluck(obj, keys) {
 
 // Pad the provided string with the provided pad params from the left
 // '1' -> '00001'
-function pad(str, length, char) {
+function pad(str, length, char?) {
   str = str.toString();
   char = char || ' ';
   const chars = Array(length + 1).join(char);

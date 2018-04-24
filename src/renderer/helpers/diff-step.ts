@@ -1,12 +1,11 @@
-const Renderer = require('..');
-const Handlebars = require('handlebars');
-const ParseDiff = require('parse-diff');
-const Git = require('../../git');
-const Step = require('../../step');
-const Submodule = require('../../submodule');
-const Translator = require('../../translator');
-const Utils = require('../../utils');
-const Config = require('../../config');
+import { Renderer} from '../index';
+import * as Handlebars from 'handlebars';
+import * as ParseDiff from 'parse-diff';
+import { Git} from '../../git';
+import {Submodule} from '../../submodule';
+import {Translator} from '../../translator';
+import { Utils} from '../../utils';
+import { getBlacklist } from '../../config';
 
 /**
   Renders step diff in a pretty markdown format. For example {{{ diffStep 1.1 }}}
@@ -104,7 +103,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
 
   const diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
 
-  const blacklist = Config.getBlacklist();
+  const blacklist: any = getBlacklist();
 
   // Convert diff string to json format
   const files = ParseDiff(diff).filter(file =>

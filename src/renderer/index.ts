@@ -1,10 +1,10 @@
-const Fs = require('fs-extra');
-const Handlebars = require('handlebars');
-const Path = require('path');
-const Git = require('../git');
-const Paths = require('../paths');
-const Release = require('../release');
-const Utils = require('../utils');
+import * as Fs from 'fs-extra';
+import * as Handlebars from 'handlebars';
+import * as Path from 'path';
+import { Git} from '../git';
+import { Paths} from '../paths';
+import { Release} from '../release';
+import { Utils} from '../utils';
 
 /**
   A wrapper for Handlebars with several additions which are essential for Tortilla
@@ -57,17 +57,17 @@ function renderTemplate(template, scope) {
     var viewDir = Path.dirname(scope.viewPath);
   }
 
-  const oldResolve = handlebars.resolve;
+  const oldResolve = (handlebars as any).resolve;
 
   try {
     // Set the view file for the resolve utility. If no view path was provided, the
     // resolve function below still won't work
-    handlebars.resolve = resolvePath.bind(null, viewDir);
+    (handlebars as any).resolve = resolvePath.bind(null, viewDir);
     return template(scope);
   }
   finally {
     // Either if an error was thrown or not, unbind it
-    handlebars.resolve = oldResolve;
+    (handlebars as any).resolve = oldResolve;
   }
 }
 
@@ -93,15 +93,15 @@ function registerHelper(name, helper, options) {
   options = options || {};
 
   const wrappedHelper = function () {
-    const oldCall = handlebars.call;
+    const oldCall = (handlebars as any).call;
 
     try {
       // Bind the call method to the current context
-      handlebars.call = callHelper.bind(this);
+      (handlebars as any).call = callHelper.bind(this);
       var out = helper.apply(this, arguments);
     } finally { // Fallback
       // Restore method to its original
-      handlebars.call = oldCall;
+      (handlebars as any).call = oldCall;
     }
 
     if (typeof out !== 'string' &&
@@ -160,7 +160,7 @@ function registerTransformation(targetName, helperName, transformation) {
 // components in the view later on using external softwares later on.
 // e.g. https://github.com/Urigo/angular-meteor-docs/blob/master/src/app/tutorials/
 // improve-code-resolver.ts#L24
-function mdWrapComponent(type, name, args, content) {
+function mdWrapComponent(type, name, args, content?) {
   let hash = {};
 
   if (typeof content !== 'string') {
@@ -271,8 +271,7 @@ function resolvePath(/* reserved path, user defined path */) {
   return protocol + Path.resolve(...paths).substr(1);
 }
 
-
-module.exports = Utils.extend(handlebars, {
+export const Renderer = Utils.extend(handlebars, {
   overwriteTemplateFile,
   renderTemplateFile,
   renderTemplate,
@@ -286,8 +285,8 @@ module.exports = Utils.extend(handlebars, {
 });
 
 // Built-in helpers and partials
-require('./helpers/diff-step');
-require('./helpers/nav-step');
-require('./helpers/resolve-path');
-require('./helpers/step-message');
-require('./helpers/translate');
+import './helpers/diff-step';
+import './helpers/nav-step';
+import './helpers/resolve-path';
+import './helpers/step-message';
+import './helpers/translate';

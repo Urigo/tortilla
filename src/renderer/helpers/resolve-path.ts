@@ -1,4 +1,4 @@
-const Renderer = require('..');
+import { Renderer} from '../index';
 
 /**
   A template helper which invokes Renderer.resolve(). This is currently being used
