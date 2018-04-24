@@ -1,1 +1,8 @@
 tests
+src
+node_modules
+.circleci
+Makefile
+renovate.json
+tsconfig.json
+
