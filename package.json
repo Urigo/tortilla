@@ -1,6 +1,6 @@
 {
   "name": "tortilla",
-  "version": "0.0.1-alpha.28",
+  "version": "0.0.1-alpha.30",
   "description": "A tutorials framework based on git and NodeJS",
   "contributors": [
     { "name": "Eytan Manor", "email": "emanor6@gmail.com", "url": "https://twitter.com/eytan_manor" },
@@ -15,9 +15,8 @@
     "url": "https://github.com/Urigo/tortilla.git"
   },
   "bin": {
-    "tortilla": "dist/cli/tortilla"
+    "tortilla": "./dist/cli/tortilla.js"
   },
-  "main": "dist/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
     "test": "make test",
