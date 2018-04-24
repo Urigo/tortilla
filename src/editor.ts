@@ -1,16 +1,16 @@
-const Fs = require('fs-extra');
-const Minimist = require('minimist');
-const Path = require('path');
-const Git = require('./git');
-const LocalStorage = require('./local-storage');
-const Paths = require('./paths');
-const Step = require('./step');
-const Utils = require('./utils');
+import * as Fs from 'fs-extra';
+import * as Minimist from 'minimist';
+import * as Path from 'path';
+import { Git } from './git';
+import { localStorage as LocalStorage } from './local-storage';
+import { Paths } from './paths';
+import { Step } from './step';
+import { Utils } from './utils';
 
 /**
-  This is the editor for interactive rebases and amended commits. Instead of opening
-  an editing software like 'nano' or 'vim', this module will edit the file by specified
-  methods we choose.
+ This is the editor for interactive rebases and amended commits. Instead of opening
+ an editing software like 'nano' or 'vim', this module will edit the file by specified
+ methods we choose.
  */
 
 (function () {
@@ -46,11 +46,21 @@ const Utils = require('./utils');
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
   switch (method) {
-    case 'edit': editStep(operations, steps, options); break;
-    case 'edit-head': editHead(operations); break;
-    case 'sort': sortSteps(operations, options); break;
-    case 'reword': rewordStep(operations, message); break;
-    case 'render': renderManuals(operations); break;
+    case 'edit':
+      editStep(operations, steps, options);
+      break;
+    case 'edit-head':
+      editHead(operations);
+      break;
+    case 'sort':
+      sortSteps(operations, options);
+      break;
+    case 'reword':
+      rewordStep(operations, message);
+      break;
+    case 'render':
+      renderManuals(operations);
+      break;
   }
 
   // Put everything back together and rewrite the rebase file
@@ -437,7 +447,7 @@ function disassemblyOperations(rebaseFileContent) {
 // Convert operations array to rebase file content
 function assemblyOperations(operations) {
   return operations
-    // Compose lines
+  // Compose lines
     .map(operation => Object
       .keys(operation)
       .map(k => operation[k])

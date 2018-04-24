@@ -16,6 +16,7 @@
   "dependencies": {
     "@types/fs-extra": "^5.0.2",
     "@types/handlebars": "^4.0.37",
+    "@types/i18next": "^8.4.3",
     "@types/minimist": "^1.2.0",
     "@types/node": "^9.6.6",
     "@types/tmp": "^0.0.33",

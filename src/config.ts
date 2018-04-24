@@ -32,3 +32,5 @@ export function getBlacklist() {
 
   return null;
 }
+
+export const Config = config;

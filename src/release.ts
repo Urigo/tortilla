@@ -1,22 +1,19 @@
-const Fs = require('fs-extra');
-const Path = require('path');
-const Tmp = require('tmp');
-const Git = require('./git');
-const LocalStorage = require('./local-storage');
-const Manual = require('./manual');
-const Paths = require('./paths');
-const Step = require('./step');
-const Utils = require('./utils');
+import * as Fs from 'fs-extra';
+import * as Tmp from 'tmp';
+import { Git } from './git';
+import { Manual } from './manual';
+import { Paths } from './paths';
+import { Step } from './step';
+import { localStorage as LocalStorage } from './local-storage';
 
 /**
-  The 'release' module contains different utilities and methods which are responsible
-  for release management. Before invoking any method, be sure to fetch **all** the step
-  tags from the git-host, since most calculations are based on them.
+ The 'release' module contains different utilities and methods which are responsible
+ for release management. Before invoking any method, be sure to fetch **all** the step
+ tags from the git-host, since most calculations are based on them.
  */
 
 const tmp1Dir = Tmp.dirSync({ unsafeCleanup: true });
 const tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
-
 
 // Creates a bumped release tag of the provided type
 // e.g. if the current release is @1.0.0 and we provide this function with a release type
@@ -95,7 +92,7 @@ function bumpRelease(releaseType, options) {
   // e.g. 'master@1.0.1'
   if (options.message) {
     createReleaseTag(tag, 'HEAD', options.message);
-  // If no message provided, open the editor
+    // If no message provided, open the editor
   } else {
     createReleaseTag(tag, 'HEAD', true);
   }
@@ -157,9 +154,7 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
 // newly created repo
-function createDiffReleasesRepo() {
-  let tags = [].slice.call(arguments);
-
+function createDiffReleasesRepo(...tags) {
   if (tags.length == 0) {
     const branch = Git.activeBranchName();
 
@@ -185,8 +180,8 @@ function createDiffReleasesRepo() {
   return tags.reduce((registers, tag, index) => {
     sourceDir = registers[0];
     destinationDir = registers[1];
-    sourcePaths = Paths.resolveProject(sourceDir);
-    destinationPaths = Paths.resolveProject(destinationDir);
+    let sourcePaths = Paths.resolveProject(sourceDir);
+    let destinationPaths = Paths.resolveProject(destinationDir);
 
     // Make sure destination is empty
     Fs.emptyDirSync(destinationDir);
@@ -262,7 +257,7 @@ function getAllReleases() {
   const branch = Git.activeBranchName();
 
   return Git(['tag'])
-    // Put tags into an array
+  // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
     .filter(Boolean)
@@ -277,10 +272,10 @@ function getAllReleases() {
     .map(releaseString => deformatRelease(releaseString))
     // Put the latest release first
     .sort((a, b) => (
-        (b.major - a.major) ||
-        (b.minor - a.minor) ||
-        (b.patch - a.patch)
-      ));
+      (b.major - a.major) ||
+      (b.minor - a.minor) ||
+      (b.patch - a.patch)
+    ));
 }
 
 // Takes a release json and puts it into a pretty string
@@ -305,9 +300,9 @@ function deformatRelease(releaseString) {
   };
 }
 
-function createReleaseTag(tag, dstHash, message) {
+function createReleaseTag(tag, dstHash, message?) {
   let srcHash = Git.activeBranchName();
-  if (srcHash == 'HEAD') srcHash = git(['rev-parse', 'HEAD']);
+  if (srcHash == 'HEAD') srcHash = Git(['rev-parse', 'HEAD']);
 
   Git(['checkout', dstHash]);
 
@@ -322,11 +317,11 @@ function createReleaseTag(tag, dstHash, message) {
   // Provide a quick message
   if (typeof message == 'string') {
     Git.print(['tag', tag, '-m', message]);
-  // Open editor
+    // Open editor
   }
   else if (message === true) {
     Git.print(['tag', tag, '-a']);
-  // No message
+    // No message
   }
   else {
     Git(['tag', tag]);
@@ -339,7 +334,7 @@ function createReleaseTag(tag, dstHash, message) {
 }
 
 
-module.exports = {
+export const Release = {
   bump: bumpRelease,
   createDiffBranch: createDiffReleasesBranch,
   printCurrent: printCurrentRelease,

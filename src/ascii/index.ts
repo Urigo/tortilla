@@ -1,6 +1,6 @@
-const Fs = require('fs-extra');
-const Path = require('path');
-const Paths = require('../paths');
+import * as Fs from 'fs-extra';
+import * as Path from 'path';
+import {Paths} from '../paths';
 
 /**
   Responsible for printing ascii art files
@@ -18,8 +18,7 @@ function printAsciiArt(artName) {
   console.log(getAsciiArt(artName));
 }
 
-
-module.exports = {
+export const Ascii = {
   get: getAsciiArt,
   print: printAsciiArt,
 };

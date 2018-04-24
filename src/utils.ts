@@ -246,7 +246,7 @@ function pad(str, length, char) {
 
 // Like pad() only from the right
 // '1' -> '10000'
-function padRight(str, length, char) {
+function padRight(str, length, char?) {
   str = str.toString();
   char = char || ' ';
   const chars = Array(length + 1).join(char);

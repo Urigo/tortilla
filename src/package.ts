@@ -1,10 +1,9 @@
-const Fs = require('fs-extra');
-const Path = require('path');
-const Git = require('./git');
-const Manual = require('./manual');
-const Paths = require('./paths');
-const Step = require('./step');
-const Utils = require('./utils');
+import * as Fs from 'fs-extra';
+import { Git} from './git';
+import { Manual} from './manual';
+import { Paths} from './paths';
+import { Step} from './step';
+import { Utils} from './utils';
 
 /**
   This module contains package.json related methods
@@ -98,10 +97,11 @@ function updateDependencies(updatedDeps) {
     // Reading package.json content and ensuring it's formatted correctly
     let packContent = Fs.readFileSync(Paths.npm.package).toString();
     // Plucking indention
-    let indent = packContent.match(/\{\n([^"]+)/) || [];
+    let indent: any = packContent.match(/\{\n([^"]+)/) || [];
     // Default indention
     indent = indent[1] || '\s\s';
 
+    let currPackContent: any;
     let headPackContent = currPackContent = packContent;
     // Keep replacing conflict notations until we get both unresolved versions
     for (
@@ -182,6 +182,6 @@ function updateDependencies(updatedDeps) {
   }
 }
 
-module.exports = {
+export const Package = {
   updateDependencies,
 };

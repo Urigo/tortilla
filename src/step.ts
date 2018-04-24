@@ -44,7 +44,7 @@ function getRecentSubStepCommit(offset, format?) {
 }
 
 // Extract step json from message
-function getStepDescriptor(message) {
+function getStepDescriptor(message): { number: string, message: string, type: string } {
   if (message == null) {
     throw TypeError('A message must be provided');
   }

@@ -1,20 +1,19 @@
-const Fs = require('fs-extra');
-const Handlebars = require('handlebars');
-const Path = require('path');
-const ReadlineSync = require('readline-sync');
-const Tmp = require('tmp');
-const Ascii = require('./ascii');
-const Git = require('./git');
-const LocalStorage = require('./local-storage');
-const Paths = require('./paths');
-const Rebase = require('./rebase');
-const Step = require('./step');
-const Submodule = require('./submodule');
-const Utils = require('./utils');
+import * as Fs from 'fs-extra';
+import * as Handlebars from 'handlebars';
+import * as Path from 'path';
+import * as Minimist from 'minimist';
+import * as ReadlineSync from 'readline-sync';
+import * as Tmp from 'tmp';
+import { Git } from './git';
+import { localStorage as LocalStorage } from './local-storage';
+import { Paths } from './paths';
+import { Submodule } from './submodule';
+import { Utils } from './utils';
+import { Ascii } from './ascii';
 
 /**
-  Contains some essential utilities that should usually run once to create a project or
-  initialize a project.
+ Contains some essential utilities that should usually run once to create a project or
+ initialize a project.
  */
 
 const tmpDir = Tmp.dirSync({ unsafeCleanup: true });
@@ -47,8 +46,10 @@ const footStart = '[//]: # (foot-start)\n';
   };
 
   switch (method) {
-    case 'create': return createProject(arg1, options);
-    case 'ensure': return ensureTortilla(arg1);
+    case 'create':
+      return createProject(arg1, options);
+    case 'ensure':
+      return ensureTortilla(arg1);
   }
 }());
 
@@ -180,7 +181,7 @@ function ensureTortilla(projectDir) {
 }
 
 function naturalSort(as, bs) {
-  let a1, b1, i = 0, n,  rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
+  let a1, b1, i = 0, n, rx = /(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
 
   if (as === bs) {
     return 0;
@@ -214,7 +215,7 @@ function naturalSort(as, bs) {
 
 // Dumps tutorial into a JSON file
 // Output path defaults to cwd
-function dumpProject(out = Utils.cwd(), options = {}) {
+function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   if (out instanceof Object && !(out instanceof String)) {
     options = out;
     out = Utils.cwd();
@@ -384,8 +385,7 @@ function overwriteTemplateFile(path, scope) {
   Fs.writeFileSync(path, viewContent);
 }
 
-
-module.exports = {
+export const Essentials = {
   create: createProject,
   ensure: ensureTortilla,
   dump: dumpProject,

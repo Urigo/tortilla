@@ -1,19 +1,20 @@
-const Fs = require('fs-extra');
-const Minimist = require('minimist');
-const Path = require('path');
-const Git = require('./git');
-const Paths = require('./paths');
+import * as Fs from 'fs-extra';
+import * as Minimist from 'minimist';
+import * as Path from 'path';
+import { Git } from './git';
+import { Paths } from './paths';
+import { Step } from './step';
+import { Utils } from './utils';
+import { registerCustomTransformations } from './config';
+
 const Renderer = require('./renderer');
-const Step = require('./step');
 const Translator = require('./translator');
-const Utils = require('./utils');
-const Config = require('./config');
 
 // register custom transforations from ./tortilla/config.js
-Config.registerCustomTransformations();
+registerCustomTransformations();
 
 /**
-  Contains manual related utilities.
+ Contains manual related utilities.
  */
 
 (function () {
@@ -39,12 +40,13 @@ Config.registerCustomTransformations();
   }
 
   switch (method) {
-    case 'render': return renderManual(step);
+    case 'render':
+      return renderManual(step);
   }
 }());
 
 // Converts manual into the opposite format
-function renderManual(step) {
+function renderManual(step?) {
   if (step) {
     const isSuperStep = !step.split('.')[1];
 
@@ -55,7 +57,7 @@ function renderManual(step) {
   // Grab recent super step by default
   else {
     const superMessage = Step.recentSuperCommit('%s') || '';
-    const stepDescriptor = Step.descriptor(superMessage) || {};
+    const stepDescriptor: any = Step.descriptor(superMessage) || {};
 
     step = stepDescriptor.number || 'root';
   }
@@ -203,8 +205,7 @@ function getStepCommitMessage(step) {
   return Git(['log', '-1', '--grep', `^Step ${step}:`, '--format=%s']);
 }
 
-
-module.exports = {
+export const Manual = {
   render: renderManual,
   manualTemplatePath: getManualTemplatePath,
   manualViewPath: getManualViewPath,
