@@ -34,6 +34,7 @@
       "url": "http://twitter.com/kamilkisiela"
     }
   ],
+  "main": "./dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Urigo/tortilla.git"

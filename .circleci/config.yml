@@ -67,5 +67,9 @@ jobs:
           command: yarn lint
 
      - run:
+          name: Compile TypeScript
+          command: yarn build
+
+     - run:
           name: Test
           command: yarn test
