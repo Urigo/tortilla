@@ -25,8 +25,6 @@ export function tortillaBeforeAll() {
   // Setup
   // Set environment from which Tortilla calculations are gonna be made from
   process.env.TORTILLA_CWD = this.testDir;
-  // Print test dir so it can be observed in case of failure
-  console.log(`Test Dir: ${this.testDir}`);
 
   const tortillaPath = Path.resolve(__dirname, '../dist/cli/tortilla');
 
@@ -44,7 +42,7 @@ export function tortillaBeforeAll() {
 
   // Executes tortilla
   this.tortilla = (...args) => {
-    const tortillaCLI = Path.resolve(__dirname, '../cli/tortilla');
+    const tortillaCLI = Path.resolve(__dirname, '../dist/cli/tortilla');
     return this.exec(tortillaCLI, ...args);
   };
 

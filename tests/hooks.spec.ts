@@ -7,7 +7,7 @@ describe('Hooks', () => {
   beforeEach(tortillaBeforeEach.bind(context));
 
   it('should disallow new commits to be added', async () => {
-    const commit = context.git.bind(this, [
+    const commit = context.git.bind(context, [
       'commit', '--allow-empty', '--allow-empty-message'
     ], {
       env: {
