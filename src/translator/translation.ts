@@ -1,11 +1,11 @@
-const Utils = require('../utils');
+import { Utils} from '../utils';
 
 /**
   The Translation class delegates the String with additional methods:
   toKebabCase, toStartCase, lowerFirst, upperFirst
  */
 
-function Translation(value) {
+export function Translation(value) {
   if (typeof value !== 'string') {
     throw TypeError('argument 1 must be a string');
   }
@@ -64,6 +64,3 @@ Object.defineProperty(Translation.prototype, 'constructor', {
     },
   });
 });
-
-
-module.exports = Translation;

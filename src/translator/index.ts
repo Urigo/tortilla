@@ -1,9 +1,8 @@
-const i18n = require('i18next');
-const Path = require('path');
-const Paths = require('../paths');
-const Utils = require('../utils');
-const Translation = require('./translation');
-
+import * as i18n from 'i18next';
+import * as Path from 'path';
+import { Paths} from '../paths';
+import { Utils} from '../utils';
+import { Translation } from './translation';
 
 const superTranslate = i18n.t.bind(i18n);
 
@@ -21,7 +20,7 @@ const superTranslate = i18n.t.bind(i18n);
 
 // Gets a locale and returns the full resource object
 function getTranslationResource(locale) {
-  paths = Paths;
+  let paths: any = Paths;
 
   if (process.env.TORTILLA_CWD) {
     paths = Paths.resolveProject(process.env.TORTILLA_CWD);
@@ -49,8 +48,8 @@ function getTranslationResource(locale) {
 }
 
 // Returns i18n translation wrapped with some extra functionality
-function translate() {
-  const result = superTranslate(...arguments);
+function translate(...args) {
+  const result = superTranslate(...args);
 
   return result && new Translation(result);
 }
@@ -61,19 +60,19 @@ function scopeLanguage(language, fn) {
     return fn();
   }
 
-  const oldLanguage = i18n.translator.language;
+  const oldLanguage = (i18n as any).translator.language;
 
   try {
-    i18n.translator.changeLanguage(language);
+    (i18n as any).translator.changeLanguage(language);
     fn();
   } finally {
-    i18n.translator.changeLanguage(oldLanguage);
+    (i18n as any).translator.changeLanguage(oldLanguage);
   }
 }
 
 
 // Shallow cloning i18n so it won't be changed
-module.exports = Utils.extend(i18n, {
+export const Translator = Utils.extend(i18n, {
   translate,
   scopeLanguage,
 });

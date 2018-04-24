@@ -6,9 +6,10 @@ import { Paths } from './paths';
 import { Step } from './step';
 import { Utils } from './utils';
 import { registerCustomTransformations } from './config';
+import { Translator} from './translator';
 
 const Renderer = require('./renderer');
-const Translator = require('./translator');
+
 
 // register custom transforations from ./tortilla/config.js
 registerCustomTransformations();
