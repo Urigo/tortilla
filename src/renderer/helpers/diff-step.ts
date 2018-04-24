@@ -1,6 +1,6 @@
 import * as Handlebars from 'handlebars';
 import * as ParseDiff from 'parse-diff';
-import { getBlacklist } from '../../config';
+import { Config } from '../../config';
 import { Git} from '../../git';
 import {Submodule} from '../../submodule';
 import {Translator} from '../../translator';
@@ -98,7 +98,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
 
   const diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
 
-  const blacklist: any = getBlacklist();
+  const blacklist: any = Config.getBlacklist();
 
   // Convert diff string to json format
   const files = ParseDiff(diff).filter((file) =>

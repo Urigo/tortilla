@@ -17,7 +17,7 @@ if (Utils.exists(Paths.config)) {
   config = require(Paths.config) as TortillaConfig;
 }
 
-export function registerCustomTransformations() {
+function registerCustomTransformations() {
   if (config.render && config.render.transformations) {
     Object.keys(config.render.transformations).forEach((t) => {
       Renderer.registerTransformation(t, 'diffStep', config.render.transformations[t].bind(this, Handlebars));
@@ -25,7 +25,7 @@ export function registerCustomTransformations() {
   }
 }
 
-export function getBlacklist() {
+function getBlacklist() {
   if (config.render && config.render.blacklist) {
     return config.render.blacklist;
   }
@@ -33,4 +33,8 @@ export function getBlacklist() {
   return null;
 }
 
-export const Config = config;
+export const Config = {
+  ...config,
+  registerCustomTransformations,
+  getBlacklist,
+};

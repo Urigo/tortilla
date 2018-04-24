@@ -1,7 +1,7 @@
 import * as Fs from 'fs-extra';
 import * as Minimist from 'minimist';
 import * as Path from 'path';
-import { registerCustomTransformations } from './config';
+import { Config } from './config';
 import { Git } from './git';
 import { Paths } from './paths';
 import { Renderer } from './renderer';
@@ -10,7 +10,7 @@ import { Translator } from './translator';
 import { Utils } from './utils';
 
 // register custom transforations from ./tortilla/config.js
-registerCustomTransformations();
+Config.registerCustomTransformations();
 
 /**
  Contains manual related utilities.

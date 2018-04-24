@@ -22,7 +22,20 @@
     "src/**/*.ts"
   ],
   "files": [
-    "src/index.ts"
+    "src/config.ts",
+    "src/editor.ts",
+    "src/essentials.ts",
+    "src/git.ts",
+    "src/local-cache.ts",
+    "src/local-storage.ts",
+    "src/manual.ts",
+    "src/package.ts",
+    "src/paths.ts",
+    "src/rebase.ts",
+    "src/release.ts",
+    "src/step.ts",
+    "src/submodule.ts",
+    "src/utils.ts"
   ],
   "exclude": [
     "node_modules"
