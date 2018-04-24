@@ -42,7 +42,7 @@ let node;
 
 // Checks if one of the parent processes launched by the provided file and has
 // the provided arguments
-function isChildProcessOf(file, argv, offset) {
+function isChildProcessOf(file, argv, offset?) {
   // There might be nested processes of the same file so we wanna go through all of them,
   // This variable represents how much skips will be done anytime the file is found.
   let trial = offset = offset || 0;

@@ -1,14 +1,12 @@
-const Fs = require('fs-extra');
-const Minimist = require('minimist');
-const Path = require('path');
-const Git = require('./git');
-const Paths = require('./paths');
-const Step = require('./step');
-const Utils = require('./utils');
-
+import * as Fs from 'fs-extra';
+import * as Minimist from 'minimist';
+import * as Path from 'path';
+import { Git} from './git';
+import { Paths} from './paths';
+import { Step } from './step';
+import { Utils} from './utils';
 
 const exec = Utils.exec;
-
 
 (function () {
   if (require.main !== module) {
@@ -268,7 +266,7 @@ function isSubmodule() {
   // the current directory is a git project as well
   try {
     // This command should only work if we're in a git project
-    return !!git(['rev-parse', '--show-toplevel'], {
+    return !!Git(['rev-parse', '--show-toplevel'], {
       cwd: Path.resolve(root, '..'),
     });
   } catch (e) {
@@ -278,7 +276,7 @@ function isSubmodule() {
 
 // Ensures that all submodules are set to the current hash based on the checkouts file
 // and the provided step index
-function ensureSubmodules(step, rebasing) {
+function ensureSubmodules(step, rebasing?) {
   if (step == 'root') {
     step = 0;
   }
@@ -307,7 +305,7 @@ function ensureSubmodules(step, rebasing) {
   }
 }
 
-function getSubmoduleCheckouts(whiteList) {
+function getSubmoduleCheckouts(whiteList?) {
   if (whiteList) {
     whiteList = [].concat(whiteList);
   }
@@ -376,12 +374,12 @@ function getLocalSubmoduleName(givenPath) {
   if (!givenPath) return '';
 
   const givenPackPath = Paths.resolveProject(givenPath).npm.package;
-  const givenPackName = JSON.parse(Fs.readFileSync(givenPackPath)).name;
+  const givenPackName = JSON.parse(Fs.readFileSync(givenPackPath).toString()).name;
 
   const submoduleName = listSubmodules().find((submoduleName) => {
     const submodulePath = `${Utils.cwd()}/${submoduleName}`;
     const submodulePackPath = Paths.resolveProject(submodulePath).npm.package;
-    const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath)).name;
+    const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath).toString()).name;
 
     return submodulePackName == givenPackName;
   });
@@ -403,7 +401,7 @@ function getSubmoduleCwd(name) {
 }
 
 
-module.exports = {
+export const Submodule = {
   add: addSubmodules,
   remove: removeSubmodules,
   update: updateSubmodules,

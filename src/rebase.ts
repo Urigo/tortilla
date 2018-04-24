@@ -1,6 +1,6 @@
-const Minimist = require('minimist');
-const Git = require('./git');
-const LocalStorage = require('./local-storage');
+import * as Minimist from 'minimist';
+import { Git } from './git';
+import { localStorage as LocalStorage} from './local-storage';
 const Step = require('./step');
 const Submodule = require('./submodule');
 
@@ -30,7 +30,7 @@ const Submodule = require('./submodule');
 
 // Responsible for editing the recent commit's message. It will also sort the step's
 // number if needed
-function rewordRecentStep(message) {
+export function rewordRecentStep(message) {
   // Calculate next step based on the current commit's message
   const commitMessage = Git.recentCommit(['--format=%s']);
   const stepDescriptor = Step.descriptor(commitMessage);
@@ -56,7 +56,7 @@ function rewordRecentStep(message) {
 
 // The super-picker is responsible for cherry-picking super steps and
 // rename their manual files
-function superPickStep(hash) {
+export function superPickStep(hash) {
   const message = Git.recentCommit(hash, ['--format=%s']);
   const oldStep = Step.descriptor(message).number;
   const newStep = Step.nextSuper();
@@ -105,7 +105,7 @@ function superPickStep(hash) {
 }
 
 // Updates the branches referencing all super steps
-function rebranchSuperSteps() {
+export function rebranchSuperSteps() {
   const rootBranch = Git.activeBranchName();
 
   // Delete root
@@ -155,9 +155,3 @@ function getNextStep(stepDescriptor) {
   const isSubStep = !!stepDescriptor.number.split('.')[1];
   return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }
-
-module.exports = {
-  rewordRecentStep,
-  superPickStep,
-  rebranchSuperSteps,
-};

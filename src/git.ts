@@ -1,9 +1,7 @@
-const Fs = require('fs-extra');
-const Path = require('path');
-const Tmp = require('tmp');
-const LocalStorage = require('./local-storage');
-const Paths = require('./paths');
-const Utils = require('./utils');
+import * as Fs from 'fs-extra';
+import * as Tmp from 'tmp';
+import { Paths } from './paths';
+import { Utils } from'./utils';
 
 /**
   Contains general git utilities.
@@ -13,13 +11,13 @@ const exec = Utils.exec;
 // This RegExp will help us pluck the versions in a conflict and solve it
 const conflict = /\n\s*<<<<<<< [^\n]+(\n(?:.|\n)+?)\n\s*=======(\n(?:.|\n)+?)\n\s*>>>>>>> [^\n]+/;
 
-git.print = function(argv, options) {
-  return gitBody(Utils.git.print, argv, options);
-};
-
-function git(argv, options) {
+function git(argv, options?) {
   return gitBody(Utils.git, argv, options);
 }
+
+(git as any).print = function(argv, options) {
+  return gitBody(Utils.git.print, argv, options);
+};
 
 // The body of the git execution function, useful since we use the same logic both for
 // exec and spawn
@@ -135,7 +133,7 @@ function edit(initialContent) {
   const file = Tmp.fileSync({ unsafeCleanup: true });
 
   Fs.writeFileSync(file.name, initialContent);
-  exec.print('sh', ['-c', `${editor} ${file.name}`]);
+  (exec as any).print('sh', ['-c', `${editor} ${file.name}`]);
 
   const content = Fs.readFileSync(file.name).toString();
   file.removeCallback();
@@ -168,8 +166,7 @@ function getEditor() {
   return editor;
 }
 
-
-module.exports = Utils.extend(git.bind(null), git, {
+export const Git = Utils.extend(git.bind(null), git, {
   conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,

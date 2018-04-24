@@ -1,11 +1,11 @@
-const Fs = require('fs-extra');
-const Minimist = require('minimist');
-const Path = require('path');
-const Git = require('./git');
-const LocalStorage = require('./local-storage');
-const Paths = require('./paths');
-const Utils = require('./utils');
-let Submodule;
+import * as Fs from 'fs-extra';
+import * as Minimist from 'minimist';
+import * as Path from 'path';
+import { Git } from './git';
+import { localStorage as LocalStorage } from './local-storage';
+import { Paths } from './paths';
+import { Utils } from './utils';
+import { Submodule } from './submodule';
 
 // Get recent commit by specified arguments
 function getRecentCommit(offset, format, grep) {
@@ -29,23 +29,25 @@ function getRecentCommit(offset, format, grep) {
 }
 
 // Get the recent step commit
-function getRecentStepCommit(offset, format) {
+function getRecentStepCommit(offset, format?) {
   return getRecentCommit(offset, format, '^Step [0-9]\\+');
 }
 
 // Get the recent super step commit
-function getRecentSuperStepCommit(offset, format) {
+function getRecentSuperStepCommit(offset, format?) {
   return getRecentCommit(offset, format, '^Step [0-9]\\+:');
 }
 
 // Get the recent sub step commit
-function getRecentSubStepCommit(offset, format) {
+function getRecentSubStepCommit(offset, format?) {
   return getRecentCommit(offset, format, '^Step [0-9]\\+\\.[0-9]\\+:');
 }
 
 // Extract step json from message
 function getStepDescriptor(message) {
-  if (message == null) { throw TypeError('A message must be provided'); }
+  if (message == null) {
+    throw TypeError('A message must be provided');
+  }
 
   const match = message.match(/^Step (\d+(?:\.\d+)?)\: ((?:.|\n)*)$/);
 
@@ -58,7 +60,9 @@ function getStepDescriptor(message) {
 
 // Extract super step json from message
 function getSuperStepDescriptor(message) {
-  if (message == null) { throw TypeError('A message must be provided'); }
+  if (message == null) {
+    throw TypeError('A message must be provided');
+  }
 
   const match = message.match(/^Step (\d+)\: ((?:.|\n)*)$/);
 
@@ -70,7 +74,9 @@ function getSuperStepDescriptor(message) {
 
 // Extract sub step json from message
 function getSubStepDescriptor(message) {
-  if (message == null) { throw TypeError('A message must be provided'); }
+  if (message == null) {
+    throw TypeError('A message must be provided');
+  }
 
   const match = message.match(/^Step ((\d+)\.(\d+))\: ((?:.|\n)*)$/);
 
@@ -175,13 +181,15 @@ function getStepBase(step) {
     '--format=%h',
   ]);
 
-  if (!hash) { throw Error('Step not found'); }
+  if (!hash) {
+    throw Error('Step not found');
+  }
 
   return `${hash}~1`;
 }
 
 // Edit the provided step
-function editStep(steps, options = {}) {
+function editStep(steps, options: any = {}) {
   if (steps instanceof Array) {
     steps = steps.slice().sort((a, b) => {
       const [superA, subA] = a.split('.').concat('Infinity');
@@ -294,7 +302,7 @@ function rewordStep(step, message) {
 }
 
 // Add a new commit of the provided step with the provided message
-function commitStep(step, message, options = {}) {
+function commitStep(step, message, options: any = {}) {
   const argv = ['commit'];
   if (message) {
     argv.push('-m', message);
@@ -310,7 +318,7 @@ function commitStep(step, message, options = {}) {
     // commit
     Git.print(argv);
   }
-  // Can't use finally because local-storage also uses try-catch
+    // Can't use finally because local-storage also uses try-catch
   catch (err) {
     // Clearing storage to prevent conflicts with upcoming commits
     LocalStorage.removeItem('HOOK_STEP');
@@ -353,7 +361,7 @@ function getCurrentSuperStep() {
 }
 
 // Get the next step
-function getNextStep(offset) {
+function getNextStep(offset?) {
   // Fetch data about recent step commit
   const stepCommitMessage = getRecentStepCommit(offset, '%s');
   const followedByStep = !!stepCommitMessage;
@@ -404,7 +412,7 @@ function getNextStep(offset) {
 }
 
 // Get the next super step
-function getNextSuperStep(offset) {
+function getNextSuperStep(offset?) {
   return getNextStep(offset).split('.')[0];
 }
 
@@ -413,13 +421,13 @@ function initializeStepMap(pending) {
   const map = Git([
     'log', '--format=%s', '--grep=^Step [0-9]\\+'
   ])
-  .split('\n')
-  .filter(Boolean)
-  .reduce((map, subject) => {
-    const number = getStepDescriptor(subject).number;
-    map[number] = number;
-    return map;
-  }, {});
+    .split('\n')
+    .filter(Boolean)
+    .reduce((map, subject) => {
+      const number = getStepDescriptor(subject).number;
+      map[number] = number;
+      return map;
+    }, {});
 
   LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
 
@@ -434,7 +442,7 @@ function initializeStepMap(pending) {
 }
 
 // First argument represents the module we would like to read the steps map from
-function getStepMap(submoduleCwd, checkPending) {
+function getStepMap(submoduleCwd?, checkPending?) {
   let localStorage;
 
   // In case this process was launched from a submodule
@@ -452,7 +460,7 @@ function getStepMap(submoduleCwd, checkPending) {
 
 // Provided argument will run an extra condition to check whether the pending flag
 // exists or not
-function ensureStepMap(submoduleCwd, checkPending) {
+function ensureStepMap(submoduleCwd?, checkPending?) {
   // Step map shouldn't be used in this process
   if (checkPending && LocalStorage.getItem('STEP_MAP_PENDING')) {
     return false;
@@ -495,7 +503,7 @@ function updateStepMap(type, payload) {
 }
 
 /**
-  Contains step related utilities.
+ Contains step related utilities.
  */
 
 (() => {
@@ -525,16 +533,22 @@ function updateStepMap(type, payload) {
   };
 
   switch (method) {
-    case 'push': return pushStep(message, options);
-    case 'pop': return popStep();
-    case 'tag': return tagStep(message);
-    case 'edit': return editStep(step, options);
-    case 'sort': return sortStep(step);
-    case 'reword': return rewordStep(step, message);
+    case 'push':
+      return pushStep(message, options);
+    case 'pop':
+      return popStep();
+    case 'tag':
+      return tagStep(message);
+    case 'edit':
+      return editStep(step, options);
+    case 'sort':
+      return sortStep(step);
+    case 'reword':
+      return rewordStep(step, message);
   }
 })();
 
-module.exports = {
+export const Step = {
   push: pushStep,
   pop: popStep,
   tag: tagStep,
@@ -559,5 +573,3 @@ module.exports = {
   disposeStepMap,
   updateStepMap,
 };
-
-Submodule = require('./submodule');
