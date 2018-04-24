@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-var semver = require('semver');
+
+import * as Program from 'commander';
+import * as semver from 'semver';
+import * as Pack from '../../package.json';
+import { Essentials} from '../essentials';
+import { localStorage as LocalStorage} from '../local-storage';
+
 if (!semver.gt(process.version, '6.0.0')) {
   require('babel-register');
 }
-
-const Program = require('commander');
-const Pack = require('../../package.json');
-const Essentials = require('../essentials');
-const LocalStorage = require('../local-storage');
 
 /**
   CLI entry point.

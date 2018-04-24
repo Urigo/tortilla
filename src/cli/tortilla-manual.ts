@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-const Program = require('commander');
-const LocalStorage = require('../local-storage');
-const Manual = require('../manual');
+
+import * as Program from 'commander';
+import { localStorage as LocalStorage} from '../local-storage';
+import { Manual} from '../manual';
 
 /**
   Manual CLI.

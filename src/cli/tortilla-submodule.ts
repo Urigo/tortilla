@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-const Program = require('commander');
-const LocalStorage = require('../local-storage');
-const Submodule = require('../submodule');
+
+import * as Program from 'commander';
+import { localStorage as LocalStorage } from '../local-storage';
+import { Submodule } from '../submodule';
 
 /**
-  Submodule CLI.
+ Submodule CLI.
  */
 
 Program
@@ -31,12 +32,12 @@ Program
     Submodule.update(submodules);
   });
 
-  Program
-    .command('reset [submodules...]')
-    .description('Reset submodules in root commit')
-    .action((submodules) => {
-      LocalStorage.assertTortilla(true);
-      Submodule.reset(submodules);
-    });
+Program
+  .command('reset [submodules...]')
+  .description('Reset submodules in root commit')
+  .action((submodules) => {
+    LocalStorage.assertTortilla(true);
+    Submodule.reset(submodules);
+  });
 
 Program.parse(process.argv);

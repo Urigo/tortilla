@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-const Program = require('commander');
-const LocalStorage = require('../local-storage');
-const Package = require('../package');
+
+import * as Program from 'commander';
+import { localStorage as LocalStorage } from '../local-storage';
+import { Package } from '../package';
 
 /**
-  Package CLI.
+ Package CLI.
  */
 
 Program

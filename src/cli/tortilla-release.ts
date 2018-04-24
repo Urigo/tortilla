@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-const Program = require('commander');
-const LocalStorage = require('../local-storage');
-const Release = require('../release');
+
+import * as Program from 'commander';
+import { localStorage as LocalStorage } from '../local-storage';
+import { Release } from '../release';
 
 /**
-  Release CLI.
+ Release CLI.
  */
 
 Program

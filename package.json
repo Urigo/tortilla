@@ -2,25 +2,36 @@
   "name": "tortilla",
   "version": "0.0.1-alpha.28",
   "description": "A tutorials framework based on git and NodeJS",
-  "author": "Eytan Manor",
+  "contributors": [
+    { "name": "Eytan Manor", "email": "emanor6@gmail.com", "url": "https://twitter.com/eytan_manor" },
+    { "name": "Uri Goldshtein", "email": "uri.goldshtein@gmail.com", "url": "https://github.com/urigo" },
+    { "name": "Dotan Simha", "email": "dotansimha@gmail.com", "url": "https://github.com/dotansimha" },
+    { "name": "Simon Tucker", "email": "srtucker22@gmail.com", "url": "https://glipcode.com" },
+    { "name": "Niccolò Belli", "email": "niccolo.belli@linuxsystems.it", "url": "http://www.linuxsystems.it" },
+    { "name": "Kamil Kisiela", "email": "kamil.kisiela@gmail.com", "url": "http://twitter.com/kamilkisiela" }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Urigo/tortilla.git"
   },
   "bin": {
-    "tortilla": "cli/tortilla"
+    "tortilla": "dist/cli/tortilla"
   },
+  "main": "dist/index.js",
   "scripts": {
+    "prepublishOnly": "yarn build",
     "test": "make test",
     "build": "tsc"
   },
   "dependencies": {
-    "@types/fs-extra": "^5.0.2",
-    "@types/handlebars": "^4.0.37",
-    "@types/i18next": "^8.4.3",
-    "@types/minimist": "^1.2.0",
-    "@types/node": "^9.6.6",
-    "@types/tmp": "^0.0.33",
+    "@types/commander": "2.12.2",
+    "@types/fs-extra": "5.0.2",
+    "@types/handlebars": "4.0.37",
+    "@types/i18next": "8.4.3",
+    "@types/minimist": "1.2.0",
+    "@types/node": "9.6.6",
+    "@types/semver": "5.5.0",
+    "@types/tmp": "0.0.33",
     "commander": "2.15.1",
     "fs-extra": "5.0.0",
     "handlebars": "4.0.11",
@@ -41,7 +52,7 @@
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-plugin-import": "2.11.0",
     "mocha": "5.1.1",
-    "typescript": "^2.8.3"
+    "typescript": "2.8.3"
   },
   "engines": {
     "node": ">=0.10",

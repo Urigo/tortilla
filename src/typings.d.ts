@@ -1,6 +1,11 @@
-declare module "*.json" {
+declare module "*{!package}.json" {
   const value: any;
   export default value;
+}
+
+declare module "*package.json" {
+  export const version: string;
+  export const description: string;
 }
 
 declare module 'node-localstorage' {

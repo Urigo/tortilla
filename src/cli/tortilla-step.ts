@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-const Program = require('commander');
-const LocalStorage = require('../local-storage');
-const Step = require('../step');
+
+import * as Program from 'commander';
+import { localStorage as LocalStorage } from '../local-storage';
+import { Step } from '../step';
 
 /**
-  Step CLI.
+ Step CLI.
  */
 
 Program

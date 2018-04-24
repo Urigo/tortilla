@@ -12,7 +12,7 @@ import { Utils} from './utils';
 // Updates all the dependencies in the package.json file based on a provided manifest.
 // If no manifest was provided an editor will be provided where we will be able to create
 // the manifest on the run. Rebase conflicts will be resolved automatically
-function updateDependencies(updatedDeps) {
+function updateDependencies(updatedDeps?) {
   if (updatedDeps) {
     if (!(updatedDeps instanceof Object)) {
       throw TypeError('New dependencies must be described using an object');
