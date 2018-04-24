@@ -1,10 +1,10 @@
-import * as Fs from 'fs-extra';
-import * as Handlebars from 'handlebars';
-import * as Path from 'path';
-import { Git} from '../git';
-import { Paths} from '../paths';
-import { Release} from '../release';
-import { Utils} from '../utils';
+import * as Fs from "fs-extra";
+import * as Handlebars from "handlebars";
+import * as Path from "path";
+import { Git} from "../git";
+import { Paths} from "../paths";
+import { Release} from "../release";
+import { Utils} from "../utils";
 
 /**
   A wrapper for Handlebars with several additions which are essential for Tortilla
@@ -20,7 +20,6 @@ const transformations = {};
 // Cache for templates which were already compiled
 const cache = {};
 
-
 // Read the provided file, render it, and overwrite it. Use with caution!
 function overwriteTemplateFile(templatePath, scope) {
   templatePath = resolveTemplatePath(templatePath);
@@ -35,7 +34,7 @@ function renderTemplateFile(templatePath, scope) {
   templatePath = resolveTemplatePath(templatePath);
 
   if (process.env.TORTILLA_CACHE_DISABLED || !cache[templatePath]) {
-    const templateContent = Fs.readFileSync(templatePath, 'utf8');
+    const templateContent = Fs.readFileSync(templatePath, "utf8");
     cache[templatePath] = handlebars.compile(templateContent);
   }
 
@@ -46,7 +45,7 @@ function renderTemplateFile(templatePath, scope) {
 // Render provided template
 function renderTemplate(template, scope) {
   // Template can either be a string or a compiled template object
-  if (typeof template === 'string') {
+  if (typeof template === "string") {
     template = handlebars.compile(template);
   }
   scope = scope || {};
@@ -54,7 +53,7 @@ function renderTemplate(template, scope) {
   if (scope.viewPath) {
     // Relative path of view dir
     // e.g. manuals/views
-    var viewDir = Path.dirname(scope.viewPath);
+    let viewDir = Path.dirname(scope.viewPath);
   }
 
   const oldResolve = (handlebars as any).resolve;
@@ -64,8 +63,7 @@ function renderTemplate(template, scope) {
     // resolve function below still won't work
     (handlebars as any).resolve = resolvePath.bind(null, viewDir);
     return template(scope);
-  }
-  finally {
+  } finally {
     // Either if an error was thrown or not, unbind it
     (handlebars as any).resolve = oldResolve;
   }
@@ -73,8 +71,8 @@ function renderTemplate(template, scope) {
 
 // Returns a template path relative to tortilla with an '.tmpl' extension
 function resolveTemplatePath(templatePath) {
-  if (templatePath.indexOf('.tmpl') == -1) {
-    templatePath += '.tmpl';
+  if (templatePath.indexOf(".tmpl") == -1) {
+    templatePath += ".tmpl";
   }
 
   // User defined templates
@@ -92,24 +90,24 @@ function resolveTemplatePath(templatePath) {
 function registerHelper(name, helper, options) {
   options = options || {};
 
-  const wrappedHelper = function () {
+  const wrappedHelper = function() {
     const oldCall = (handlebars as any).call;
 
     try {
       // Bind the call method to the current context
       (handlebars as any).call = callHelper.bind(this);
-      var out = helper.apply(this, arguments);
+      let out = helper.apply(this, arguments);
     } finally { // Fallback
       // Restore method to its original
       (handlebars as any).call = oldCall;
     }
 
-    if (typeof out !== 'string' &&
+    if (typeof out !== "string" &&
         !(out instanceof String)) {
       throw Error([
-        'Template helper', name, 'must return a string!',
-        'Instead it returned', out,
-      ].join(' '));
+        "Template helper", name, "must return a string!",
+        "Instead it returned", out,
+      ].join(" "));
     }
 
     const target = process.env.TORTILLA_RENDER_TARGET;
@@ -123,7 +121,7 @@ function registerHelper(name, helper, options) {
 
     // Wrap helper output
     if (options.mdWrap) {
-      out = mdWrapComponent('helper', name, args, out);
+      out = mdWrapComponent("helper", name, args, out);
     }
 
     return out;
@@ -139,7 +137,7 @@ function registerPartial(name, partial, options) {
 
   // Wrap partial template
   if (options.mdWrap) {
-    partial = mdWrapComponent('partial', name, partial);
+    partial = mdWrapComponent("partial", name, partial);
   }
 
   return superRegisterPartial(name, partial);
@@ -163,7 +161,7 @@ function registerTransformation(targetName, helperName, transformation) {
 function mdWrapComponent(type, name, args, content?) {
   let hash = {};
 
-  if (typeof content !== 'string') {
+  if (typeof content !== "string") {
     content = args;
     args = [];
   }
@@ -173,7 +171,7 @@ function mdWrapComponent(type, name, args, content?) {
   }
 
   // Stringify arguments
-  const params = args.map(param => typeof param === 'string' ? `"${param}"` : param).join(' ');
+  const params = args.map((param) => typeof param === "string" ? `"${param}"` : param).join(" ");
 
   hash = stringifyHash(hash);
 
@@ -181,7 +179,7 @@ function mdWrapComponent(type, name, args, content?) {
   args = [name, params, hash]
     // Get rid of empty strings
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return `[{]: <${type}> (${Utils.escapeBrackets(args)})\n\n${content}\n\n[}]: #`;
 }
@@ -191,11 +189,11 @@ function mdWrapComponent(type, name, args, content?) {
 function stringifyHash(hash) {
   return Object.keys(hash).map((key) => {
     let value = hash[key];
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       value = `"${value}"`;
     }
     return `${key}=${value}`;
-  }).join(' ');
+  }).join(" ");
 }
 
 // Calls a template helper with the provided context and arguments
@@ -218,16 +216,16 @@ function resolvePath(/* reserved path, user defined path */) {
   let paths = [].slice.call(arguments);
 
   // A default path that the host's markdown renderer will know how to resolve by its own
-  let defaultPath = paths.slice(1).join('/');
+  let defaultPath = paths.slice(1).join("/");
   defaultPath = new String(defaultPath);
   // The 'isRelative' flag can be used later on to determine if this is an absolute path
   // or a relative path
   defaultPath.isRelative = true;
 
-  const cwd = paths.shift()
+  const cwd = paths.shift();
 
   // If function is unbound, return default path
-  if (typeof cwd != 'string') {
+  if (typeof cwd != "string") {
     return defaultPath;
   }
 
@@ -237,7 +235,7 @@ function resolvePath(/* reserved path, user defined path */) {
   // repository type is not git, or
   // no repository url is defined, return default path
   if (repository == null ||
-      repository.type != 'git' ||
+      repository.type != "git" ||
       repository.url == null) {
     return defaultPath;
   }
@@ -245,24 +243,24 @@ function resolvePath(/* reserved path, user defined path */) {
   const currentRelease = Release.format(Release.current());
 
   // Any release is yet to exist
-  if (currentRelease == '0.0.0') {
+  if (currentRelease == "0.0.0") {
     return defaultPath;
   }
 
   // Compose branch path for current release tree
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
   const releaseTag = `${Git.activeBranchName()}@${currentRelease}`;
-  const repositoryUrl = repository.url.replace('.git', '');
-  const branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
-  const protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
+  const repositoryUrl = repository.url.replace(".git", "");
+  const branchUrl = [repositoryUrl, "tree", releaseTag].join("\/");
+  const protocol = (branchUrl.match(/^.+\:\/\//) || [""])[0];
   const branchPath = `/${branchUrl.substr(protocol.length)}`;
 
   // If we use tilde (~) at the beginning of the path, we will be referenced to the
   // repo's root URL. This is useful when we want to compose links which are
   // completely disconnected from the current state, like commits, issues and PRs
   paths = paths
-    .map(path => path.replace(/~/g, Path.resolve(branchPath, '../..')))
-    .map(path => Path.isAbsolute(path) ? Path.relative(cwd, path) : Path.resolve(branchPath, Path.join(cwd, path)));
+    .map((path) => path.replace(/~/g, Path.resolve(branchPath, "../..")))
+    .map((path) => Path.isAbsolute(path) ? Path.relative(cwd, path) : Path.resolve(branchPath, Path.join(cwd, path)));
 
   // Resolve full path
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
@@ -285,8 +283,8 @@ export const Renderer = Utils.extend(handlebars, {
 });
 
 // Built-in helpers and partials
-import './helpers/diff-step';
-import './helpers/nav-step';
-import './helpers/resolve-path';
-import './helpers/step-message';
-import './helpers/translate';
+import "./helpers/diff-step";
+import "./helpers/nav-step";
+import "./helpers/resolve-path";
+import "./helpers/step-message";
+import "./helpers/translate";

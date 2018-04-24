@@ -1,4 +1,4 @@
-import { Utils} from '../utils';
+import { Utils} from "../utils";
 
 /**
   The Translation class delegates the String with additional methods:
@@ -6,8 +6,8 @@ import { Utils} from '../utils';
  */
 
 export function Translation(value) {
-  if (typeof value !== 'string') {
-    throw TypeError('argument 1 must be a string');
+  if (typeof value !== "string") {
+    throw TypeError("argument 1 must be a string");
   }
 
   Utils.delegateProperties(this, value, {
@@ -41,17 +41,17 @@ Utils.delegateProperties(Translation.prototype, String.prototype, {
   },
 });
 
-Object.defineProperty(Translation.prototype, 'constructor', {
+Object.defineProperty(Translation.prototype, "constructor", {
   writable: true,
   configurable: true,
   value: Translation,
 });
 
 [
-  'toKebabCase',
-  'toStartCase',
-  'lowerFirst',
-  'upperFirst',
+  "toKebabCase",
+  "toStartCase",
+  "lowerFirst",
+  "upperFirst",
 ]
 .forEach((methodName) => {
   const methodHandler = Utils[methodName];

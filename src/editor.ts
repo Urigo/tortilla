@@ -1,11 +1,11 @@
-import * as Fs from 'fs-extra';
-import * as Minimist from 'minimist';
-import * as Path from 'path';
-import { Git } from './git';
-import { localStorage as LocalStorage } from './local-storage';
-import { Paths } from './paths';
-import { Step } from './step';
-import { Utils } from './utils';
+import * as Fs from "fs-extra";
+import * as Minimist from "minimist";
+import * as Path from "path";
+import { Git } from "./git";
+import { localStorage as LocalStorage } from "./local-storage";
+import { Paths } from "./paths";
+import { Step } from "./step";
+import { Utils } from "./utils";
 
 /**
  This is the editor for interactive rebases and amended commits. Instead of opening
@@ -13,13 +13,13 @@ import { Utils } from './utils';
  methods we choose.
  */
 
-(function () {
+(function() {
   if (require.main !== module) {
     return;
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm', 'udiff'],
+    string: ["_", "message", "m", "udiff"],
   });
 
   // The first argument will be the rebase file path provided to us by git
@@ -33,32 +33,32 @@ import { Utils } from './utils';
   // therefore udiff has to have a value, otherwise it will be matched with the wrong
   // argument
   const options = {
-    udiff: udiff === 'true' ? '' : udiff
+    udiff: udiff === "true" ? "" : udiff,
   };
 
-  const rebaseFileContent = Fs.readFileSync(rebaseFilePath, 'utf8');
+  const rebaseFileContent = Fs.readFileSync(rebaseFilePath, "utf8");
   // Convert to array of jsons so it would be more comfortable to word with
   const operations = disassemblyOperations(rebaseFileContent);
 
   // Set flag just in case recent rebase was aborted
-  LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
+  LocalStorage.removeItem("REBASE_HOOKS_DISABLED");
 
   // Automatically invoke a method by the provided arguments.
   // The methods will manipulate the operations array.
   switch (method) {
-    case 'edit':
+    case "edit":
       editStep(operations, steps, options);
       break;
-    case 'edit-head':
+    case "edit-head":
       editHead(operations);
       break;
-    case 'sort':
+    case "sort":
       sortSteps(operations, options);
       break;
-    case 'reword':
+    case "reword":
       rewordStep(operations, message);
       break;
-    case 'render':
+    case "render":
       renderManuals(operations);
       break;
   }
@@ -79,37 +79,36 @@ function editStep(operations, steps, options) {
 
   if (!steps) {
     const descriptor = Step.descriptor(operations[0].message);
-    const step = (descriptor && descriptor.number) || 'root';
+    const step = (descriptor && descriptor.number) || "root";
 
     steps = [step];
   }
 
   // This way we can store data on each step string
-  steps = steps.map(step => new String(step));
+  steps = steps.map((step) => new String(step));
 
   // Edit each commit which is relevant to the specified steps
   steps.forEach((step) => {
-    if (step == 'root') {
+    if (step == "root") {
       const operation = operations[0];
-      operation.method = 'edit';
+      operation.method = "edit";
       step.operation = operation;
 
       // Ensure submodules hashes at root
       operations.splice(1, 0, {
-        method: 'exec',
+        method: "exec",
         command: `node ${Paths.tortilla.submodule} ensure root`,
       });
-    }
-    else {
+    } else {
       const operation = operations.find(({ message }) => {
-        if (!message) return;
+        if (!message) { return; }
         const descriptor = Step.descriptor(message);
         return descriptor && descriptor.number == step;
       });
 
-      if (!operation) return;
+      if (!operation) { return; }
 
-      operation.method = 'edit';
+      operation.method = "edit";
       step.operation = operation;
     }
   });
@@ -121,13 +120,11 @@ function editStep(operations, steps, options) {
 
     // Step exists
     if (descriptor) {
-      LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
-      LocalStorage.setItem('REBASE_NEW_STEP', descriptor.number);
-    }
-    // Probably root commit
-    else {
-      LocalStorage.setItem('REBASE_OLD_STEP', 'root');
-      LocalStorage.setItem('REBASE_NEW_STEP', 'root');
+      LocalStorage.setItem("REBASE_OLD_STEP", descriptor.number);
+      LocalStorage.setItem("REBASE_NEW_STEP", descriptor.number);
+    } else {
+      LocalStorage.setItem("REBASE_OLD_STEP", "root");
+      LocalStorage.setItem("REBASE_NEW_STEP", "root");
     }
 
     // Building sort command
@@ -143,28 +140,28 @@ function editStep(operations, steps, options) {
     steps.forEach((step) => {
       const operation = step.operation;
 
-      if (!operation) return;
+      if (!operation) { return; }
 
       const index = operations.indexOf(operation);
 
       // Insert the following operation AFTER the step's operation
       operations.splice(index + 1, 0, {
-        method: 'exec',
+        method: "exec",
         command: `${sort} git rebase --edit-todo`,
       });
     });
   }
 
   operations.slice().reduce((offset, { message }, index) => {
-    if (!message) return offset;
+    if (!message) { return offset; }
 
     const superStep = Step.superDescriptor(message);
 
-    if (!superStep) return offset;
+    if (!superStep) { return offset; }
 
     // Ensure submodules hashes at root
     operations.splice(index + ++offset, 0, {
-      method: 'exec',
+      method: "exec",
       command: `node ${Paths.tortilla.submodule} ensure ${superStep.number}`,
     });
 
@@ -176,7 +173,7 @@ function editStep(operations, steps, options) {
 
   // After rebase has finished, update the brancehs referencing the super steps
   operations.push({
-    method: 'exec',
+    method: "exec",
     command: `${rebranchSuper} git rebase --edit-todo`,
   });
 }
@@ -184,16 +181,16 @@ function editStep(operations, steps, options) {
 // Adjusts upcoming step numbers in rebase
 function sortSteps(operations, options) {
   // Grab meta-data
-  const oldStep = LocalStorage.getItem('REBASE_OLD_STEP');
-  const newStep = LocalStorage.getItem('REBASE_NEW_STEP');
-  const submoduleCwd = LocalStorage.getItem('SUBMODULE_CWD');
+  const oldStep = LocalStorage.getItem("REBASE_OLD_STEP");
+  const newStep = LocalStorage.getItem("REBASE_NEW_STEP");
+  const submoduleCwd = LocalStorage.getItem("SUBMODULE_CWD");
 
   // If delta is 0 no sortments are needed
   if (oldStep == newStep) {
-    LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
+    LocalStorage.setItem("REBASE_HOOKS_DISABLED", 1);
 
     // Escape unless we need to update stepDiffs for submodules
-    if (!submoduleCwd) return;
+    if (!submoduleCwd) { return; }
   }
 
   const stepLimit = getStepLimit(oldStep, newStep);
@@ -201,13 +198,13 @@ function sortSteps(operations, options) {
   let offset = 0;
 
   operations.slice().some((operation, index) => {
-    const currStepDescriptor = Step.descriptor(operation.message || '');
+    const currStepDescriptor = Step.descriptor(operation.message || "");
     // Skip commits which are not step commits
     if (!currStepDescriptor) {
       return;
     }
 
-    const currStepSplit = currStepDescriptor.number.split('.');
+    const currStepSplit = currStepDescriptor.number.split(".");
     const currSuperStep = currStepSplit[0];
     const currSubStep = currStepSplit[1];
 
@@ -215,17 +212,15 @@ function sortSteps(operations, options) {
       // If this is a super step, replace pick operation with the super pick
       if (!currSubStep) {
         operations.splice(index + offset, 1, {
-          method: 'exec',
+          method: "exec",
           command: `node ${Paths.tortilla.rebase} super-pick ${operation.hash}`,
         });
       }
-    }
-    // If limit reached
-    else if (currSuperStep > stepLimit) {
+    } else if (currSuperStep > stepLimit) {
       // Prepend local storage item setting operation, this would be a flag which will be
       // used in git-hooks
       operations.splice(index + offset++, 0, {
-        method: 'exec',
+        method: "exec",
         command: `node ${Paths.tortilla.localStorage} set REBASE_HOOKS_DISABLED 1`,
       });
 
@@ -236,7 +231,7 @@ function sortSteps(operations, options) {
     // If this is a super step, replace pick operation with the super pick
     if (!currSubStep) {
       operations.splice(index + offset, 1, {
-        method: 'exec',
+        method: "exec",
         command: `node ${Paths.tortilla.rebase} super-pick ${operation.hash}`,
       });
     }
@@ -244,15 +239,15 @@ function sortSteps(operations, options) {
     // If another step edit is pending, we will first perform the reword and only then
     // we will proceed to the editing itself, since we wanna ensure that all the previous
     // step indexes are already sorted
-    if (operation.method == 'edit') {
+    if (operation.method == "edit") {
       // Pick BEFORE edit
       operations.splice(index + offset++, 0, Object.assign({}, operation, {
-        method: 'pick'
+        method: "pick",
       }));
 
       // Update commit's step number
       operations.splice(index + offset++, 0, {
-        method: 'exec',
+        method: "exec",
         command: `GIT_EDITOR=true node ${Paths.tortilla.rebase} reword`,
       });
 
@@ -260,7 +255,7 @@ function sortSteps(operations, options) {
 
       // Replace edited step with the reworded one
       operations.splice(index + offset++, 0, {
-        method: 'exec',
+        method: "exec",
         command: `${editor} git rebase --edit-todo`,
       });
 
@@ -273,7 +268,7 @@ function sortSteps(operations, options) {
 
     // Update commit's step number
     operations.splice(index + ++offset, 0, {
-      method: 'exec',
+      method: "exec",
       command: `GIT_EDITOR=true node ${Paths.tortilla.rebase} reword`,
     });
   });
@@ -282,20 +277,20 @@ function sortSteps(operations, options) {
   // there are no any further step edits pending
   if (!editFlag) {
     operations.push({
-      method: 'exec',
+      method: "exec",
       command: `node ${Paths.tortilla.localStorage} remove HOOK_STEP`,
     });
 
     // If specified udiff is a path to another tortilla repo
     if (options.udiff) {
       const subCwd = Utils.cwd();
-      const cwd = Path.resolve(Utils.cwd(), options.udiff)
+      const cwd = Path.resolve(Utils.cwd(), options.udiff);
 
       // Update the specified repo's manual files
       // Note that TORTILLA_CHILD_PROCESS and TORTILLA_CWD flags are set to
       // prevent external interventions, mostly because of tests
       operations.push({
-        method: 'exec',
+        method: "exec",
         command: Utils.shCmd(`
           export GIT_DIR=${cwd}/.git
           export GIT_WORK_TREE=${cwd}
@@ -308,13 +303,13 @@ function sortSteps(operations, options) {
           else
             git rebase --abort
           fi
-        `)
+        `),
       });
     }
 
     // Ensure step map is being disposed
     operations.push({
-      method: 'exec',
+      method: "exec",
       command: `node ${Paths.tortilla.localStorage} remove STEP_MAP STEP_MAP_PENDING`,
     });
   }
@@ -327,38 +322,38 @@ function editHead(operations) {
 
   // Descriptor should always exist, but just in case
   if (descriptor) {
-    LocalStorage.setItem('REBASE_OLD_STEP', descriptor.number);
+    LocalStorage.setItem("REBASE_OLD_STEP", descriptor.number);
   }
 
-  const head = Git.recentCommit(['--format=%h m']).split(' ');
+  const head = Git.recentCommit(["--format=%h m"]).split(" ");
   const hash = head.shift();
-  const message = head.join(' ');
+  const message = head.join(" ");
 
   // Remove head commit so there won't be any conflicts
   operations.push({
-    method: 'exec',
-    command: 'git reset --hard HEAD~1'
+    method: "exec",
+    command: "git reset --hard HEAD~1",
   });
 
   // Re-pick and edit head commit
   operations.push({
-    method: 'edit',
+    method: "edit",
     hash,
-    message
+    message,
   });
 }
 
 // Reword the last step in the rebase file
 function rewordStep(operations, message) {
-  const argv = [Paths.tortilla.rebase, 'reword'];
+  const argv = [Paths.tortilla.rebase, "reword"];
   if (message) {
     argv.push(`"${message}"`);
   }
 
   // Replace original message with the provided message
   operations.splice(1, 0, {
-    method: 'exec',
-    command: `node ${argv.join(' ')}`,
+    method: "exec",
+    command: `node ${argv.join(" ")}`,
   });
 }
 
@@ -368,7 +363,7 @@ function renderManuals(operations) {
 
   // Render README.md
   operations.splice(1, 0, {
-    method: 'exec',
+    method: "exec",
     command: `node ${Paths.tortilla.manual} render --root`,
   });
 
@@ -380,7 +375,7 @@ function renderManuals(operations) {
 
     // Render step manual file
     operations.splice(index + ++offset, 0, {
-      method: 'exec',
+      method: "exec",
       command: `node ${Paths.tortilla.manual} render ${stepDescriptor.number}`,
     });
 
@@ -391,14 +386,14 @@ function renderManuals(operations) {
 // The step limit of which sortments are needed would be determined by the step
 // which is greater
 function getStepLimit(oldStep, newStep) {
-  oldStep = oldStep == 'root' ? '0' : oldStep;
-  newSuperStep = newStep == 'root' ? '0' : newStep;
+  oldStep = oldStep == "root" ? "0" : oldStep;
+  newSuperStep = newStep == "root" ? "0" : newStep;
 
   // Grabbing step splits for easy access
-  const oldStepSplits = oldStep.split('.');
-  const newStepSplits = newStep.split('.');
+  const oldStepSplits = oldStep.split(".");
+  const newStepSplits = newStep.split(".");
   const oldSuperStep = oldStepSplits[0];
-  var newSuperStep = newStepSplits[0];
+  let newSuperStep = newStepSplits[0];
   const oldSubStep = oldStepSplits[1];
   const newSubStep = newStepSplits[1];
 
@@ -434,12 +429,12 @@ function disassemblyOperations(rebaseFileContent) {
   }
 
   return operations.map((line) => {
-    const split = line.split(' ');
+    const split = line.split(" ");
 
     return {
       method: split[0],
       hash: split[1],
-      message: split.slice(2).join(' '),
+      message: split.slice(2).join(" "),
     };
   });
 }
@@ -448,11 +443,11 @@ function disassemblyOperations(rebaseFileContent) {
 function assemblyOperations(operations) {
   return operations
   // Compose lines
-    .map(operation => Object
+    .map((operation) => Object
       .keys(operation)
-      .map(k => operation[k])
-      .join(' ')
+      .map((k) => operation[k])
+      .join(" "),
     )
     // Connect lines
-    .join('\n') + '\n';
+    .join("\n") + "\n";
 }

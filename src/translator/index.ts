@@ -1,19 +1,18 @@
-import * as i18n from 'i18next';
-import * as Path from 'path';
-import { Paths} from '../paths';
-import { Utils} from '../utils';
-import { Translation } from './translation';
+import * as i18n from "i18next";
+import * as Path from "path";
+import { Paths} from "../paths";
+import { Utils} from "../utils";
+import { Translation } from "./translation";
 
 const superTranslate = i18n.t.bind(i18n);
 
-
-(function () {
+(function() {
   i18n.init({
-    lng: 'en',
+    lng: "en",
     initImmediate: true,
     resources: {
-      en: { translation: getTranslationResource('en') },
-      he: { translation: getTranslationResource('he') },
+      en: { translation: getTranslationResource("en") },
+      he: { translation: getTranslationResource("he") },
     },
   });
 }());
@@ -69,7 +68,6 @@ function scopeLanguage(language, fn) {
     (i18n as any).translator.changeLanguage(oldLanguage);
   }
 }
-
 
 // Shallow cloning i18n so it won't be changed
 export const Translator = Utils.extend(i18n, {

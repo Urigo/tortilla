@@ -1,15 +1,14 @@
-import * as Fs from 'fs-extra';
-import * as Minimist from 'minimist';
-import * as Path from 'path';
-import { Git } from './git';
-import { Paths } from './paths';
-import { Step } from './step';
-import { Utils } from './utils';
-import { registerCustomTransformations } from './config';
-import { Translator} from './translator';
+import * as Fs from "fs-extra";
+import * as Minimist from "minimist";
+import * as Path from "path";
+import { registerCustomTransformations } from "./config";
+import { Git } from "./git";
+import { Paths } from "./paths";
+import { Step } from "./step";
+import { Translator} from "./translator";
+import { Utils } from "./utils";
 
-const Renderer = require('./renderer');
-
+const Renderer = require("./renderer");
 
 // register custom transforations from ./tortilla/config.js
 registerCustomTransformations();
@@ -18,14 +17,14 @@ registerCustomTransformations();
  Contains manual related utilities.
  */
 
-(function () {
+(function() {
   if (require.main !== module) {
     return;
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_'],
-    boolean: ['all', 'root'],
+    string: ["_"],
+    boolean: ["all", "root"],
   });
 
   const method = argv._[0];
@@ -34,14 +33,14 @@ registerCustomTransformations();
   const root = argv.root;
 
   if (!step && all) {
-    step = 'all';
+    step = "all";
   }
   if (!step && root) {
-    step = 'root';
+    step = "root";
   }
 
   switch (method) {
-    case 'render':
+    case "render":
       return renderManual(step);
   }
 }());
@@ -49,23 +48,21 @@ registerCustomTransformations();
 // Converts manual into the opposite format
 function renderManual(step?) {
   if (step) {
-    const isSuperStep = !step.split('.')[1];
+    const isSuperStep = !step.split(".")[1];
 
     if (!isSuperStep) {
-      throw TypeError('Provided step must be a super step');
+      throw TypeError("Provided step must be a super step");
     }
-  }
-  // Grab recent super step by default
-  else {
-    const superMessage = Step.recentSuperCommit('%s') || '';
+  } else {
+    const superMessage = Step.recentSuperCommit("%s") || "";
     const stepDescriptor: any = Step.descriptor(superMessage) || {};
 
-    step = stepDescriptor.number || 'root';
+    step = stepDescriptor.number || "root";
   }
 
   // Convert all manuals since the beginning of history
-  if (step === 'all') {
-    return Git.print(['rebase', '-i', '--root', '--keep-empty'], {
+  if (step === "all") {
+    return Git.print(["rebase", "-i", "--root", "--keep-empty"], {
       env: {
         GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} render`,
       },
@@ -79,12 +76,12 @@ function renderManual(step?) {
   // Enter rebase, after all this is what rebase-continue is all about
   if (shouldContinue) {
     Utils.scopeEnv(Step.edit.bind(Step, step), {
-      TORTILLA_STDIO: 'ignore',
+      TORTILLA_STDIO: "ignore",
     });
   }
 
   const localesDir = `${Paths.manuals.templates}/locales`;
-  let locales = [''];
+  let locales = [""];
 
   if (Utils.exists(localesDir)) {
     locales = locales.concat(Fs.readdirSync(localesDir));
@@ -94,7 +91,7 @@ function renderManual(step?) {
   locales.forEach((locale) => {
     // Fetch the current manual and other useful models
     const manualTemplatePath = getManualTemplatePath(step, locale);
-    const manualTemplate = Fs.readFileSync(manualTemplatePath, 'utf8');
+    const manualTemplate = Fs.readFileSync(manualTemplatePath, "utf8");
     const manualViewPath = getManualViewPath(step, locale);
     const commitMessage = getStepCommitMessage(step);
 
@@ -120,26 +117,26 @@ function renderManual(step?) {
     Fs.writeFileSync(manualViewPath, manualView);
 
     // Amend changes
-    Git(['add', manualViewPath]);
+    Git(["add", manualViewPath]);
 
     // The following code is dedicated for locale-free manuals
     if (locale) {
       return;
     }
 
-    const symlinkPath = Path.resolve(Paths.manuals.views, 'root.md');
+    const symlinkPath = Path.resolve(Paths.manuals.views, "root.md");
 
     // If this is the root step, create a symlink to README.md if not yet exists
-    if (step !== 'root' || Utils.exists(symlinkPath)) {
+    if (step !== "root" || Utils.exists(symlinkPath)) {
       return;
     }
 
     const relativeSymlink = Path.relative(Path.dirname(symlinkPath), manualViewPath);
     Fs.symlinkSync(relativeSymlink, symlinkPath);
-    Git(['add', symlinkPath]);
+    Git(["add", symlinkPath]);
   });
 
-  Git.print(['commit', '--amend'], {
+  Git.print(["commit", "--amend"], {
     env: {
       GIT_EDITOR: true,
     },
@@ -147,7 +144,7 @@ function renderManual(step?) {
 
   // Continue if should
   if (shouldContinue) {
-    Git.print(['rebase', '--continue']);
+    Git.print(["rebase", "--continue"]);
   }
 }
 
@@ -158,38 +155,38 @@ function renderManualView(manual, scope) {
   let footer;
 
   Translator.scopeLanguage(scope.language, () => {
-    header = Renderer.renderTemplateFile('header', scope);
+    header = Renderer.renderTemplateFile("header", scope);
     body = Renderer.renderTemplate(manual, scope);
-    footer = Renderer.renderTemplateFile('footer', scope);
+    footer = Renderer.renderTemplateFile("footer", scope);
   });
 
-  return [header, body, footer].join('\n');
+  return [header, body, footer].join("\n");
 }
 
 // Gets the manual template belonging to the given step
 function getManualTemplatePath(step, locale) {
-  locale = locale ? (`locales/${locale}`) : '';
+  locale = locale ? (`locales/${locale}`) : "";
 
   const baseDir = Path.resolve(Paths.manuals.templates, locale);
-  const fileName = step === 'root' ? 'root.tmpl' : (`step${step}.tmpl`);
+  const fileName = step === "root" ? "root.tmpl" : (`step${step}.tmpl`);
 
   return Path.resolve(baseDir, fileName);
 }
 
 // Gets the manual view belonging to the given step
 function getManualViewPath(step, locale) {
-  locale = locale ? (`locales/${locale}`) : '';
+  locale = locale ? (`locales/${locale}`) : "";
 
   // The sub-dir of our views in case a custom render target is specified
-  const subDir = process.env.TORTILLA_RENDER_TARGET || '';
-  const fileName = step === 'root' ? 'root.md' : (`step${step}.md`);
+  const subDir = process.env.TORTILLA_RENDER_TARGET || "";
+  const fileName = step === "root" ? "root.md" : (`step${step}.md`);
 
   // If sub-dir exists, return its path e.g. manuals/view/medium
   if (subDir) {
     return Path.resolve(Paths.manuals.views, subDir, locale, fileName);
   }
   // If we're trying to render root step, return README.md
-  if (step == 'root' && !locale) {
+  if (step == "root" && !locale) {
     return Paths.readme;
   }
   // Resolve normally e.g. manuals/views/step1.md
@@ -198,12 +195,12 @@ function getManualViewPath(step, locale) {
 
 // Gets the commit message belonging to the given step
 function getStepCommitMessage(step) {
-  if (step == 'root') {
+  if (step == "root") {
     const rootHash = Git.rootHash();
-    return Git(['log', '-1', rootHash, '--format=%s']);
+    return Git(["log", "-1", rootHash, "--format=%s"]);
   }
 
-  return Git(['log', '-1', '--grep', `^Step ${step}:`, '--format=%s']);
+  return Git(["log", "-1", "--grep", `^Step ${step}:`, "--format=%s"]);
 }
 
 export const Manual = {

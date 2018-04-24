@@ -1,8 +1,8 @@
-import { LocalStorage } from 'node-localstorage';
-import * as Minimist from'minimist';
-import { LocalCache } from './local-cache';
-import { Paths } from './paths';
-import { Utils } from './utils';
+import * as Minimist from "minimist";
+import { LocalStorage } from "node-localstorage";
+import { LocalCache } from "./local-cache";
+import { Paths } from "./paths";
+import { Utils } from "./utils";
 
 /**
   A local storage whose storage dir is located under '.git/.tortilla'.
@@ -40,9 +40,7 @@ function createLocalStorage(cwd) {
   // If git dir exists use it as a local-storage dir
   if (Utils.exists(paths.git.resolve())) {
     localStorage = new LocalStorage(paths.storage);
-  }
-  // Else, create local cache
-  else {
+  } else {
     localStorage = new LocalCache();
   }
 
@@ -54,19 +52,19 @@ function createLocalStorage(cwd) {
 
 // Asserts if tortilla is initialized or not
 function assertTortilla(exists) {
-  const isInit = this.getItem('INIT');
+  const isInit = this.getItem("INIT");
 
   if (exists && !isInit) {
     throw Error([
-      'Tortilla essentials must be initialized!',
-      'Please run `$ tortilla init` before proceeding.',
-    ].join('\n'));
+      "Tortilla essentials must be initialized!",
+      "Please run `$ tortilla init` before proceeding.",
+    ].join("\n"));
   }
 
   if (!exists && isInit) {
     throw Error([
-      'Tortilla essentials are already initialized!',
-    ].join('\n'));
+      "Tortilla essentials are already initialized!",
+    ].join("\n"));
   }
 }
 
@@ -78,19 +76,19 @@ localStorage = createLocalStorage(Paths.resolve());
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_'],
+    string: ["_"],
   });
 
   const method = argv._[0];
   const args = argv._.slice(1);
 
   switch (method) {
-    case 'set':
+    case "set":
       for (let i = 0; i < args.length; i += 2) {
         localStorage.setItem(args[i], args[i + 1]);
       }
       break;
-    case 'remove':
+    case "remove":
       for (let i = 0; i < args.length; i++) {
         localStorage.removeItem(args[i]);
       }

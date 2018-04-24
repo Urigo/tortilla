@@ -1,6 +1,6 @@
-import * as Fs from 'fs-extra';
-import * as Path from 'path';
-import {Paths} from '../paths';
+import * as Fs from "fs-extra";
+import * as Path from "path";
+import {Paths} from "../paths";
 
 /**
   Responsible for printing ascii art files

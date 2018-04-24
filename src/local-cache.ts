@@ -4,13 +4,13 @@
  */
 
 export class LocalCache<T = any> {
-  _cache: {[key: string]: T};
+  public _cache: {[key: string]: T};
 
   constructor() {
     this._cache = {};
   }
 
-  getItem(key: string): T | null {
+  public getItem(key: string): T | null {
     if (this._cache.hasOwnProperty(key)) {
       return this._cache[key];
     }
@@ -18,20 +18,20 @@ export class LocalCache<T = any> {
     return null;
   }
 
-  setItem(key: string, value: T): void {
+  public setItem(key: string, value: T): void {
     this._cache[key] = value;
   }
 
-  removeItem(key): void {
+  public removeItem(key): void {
     delete this._cache[key];
   }
 
-  key(n: number): string {
+  public key(n: number): string {
     return Object.keys(this._cache)[n];
   }
 
-  clear(): void {
-    Object.keys(this._cache).forEach(function (key) {
+  public clear(): void {
+    Object.keys(this._cache).forEach(function(key) {
       delete this._cache[key];
     });
   }

@@ -8,19 +8,19 @@ declare module "*package.json" {
   export const description: string;
 }
 
-declare module 'node-localstorage' {
+declare module "node-localstorage" {
   export class LocalStorage {
     constructor(path: string)
 
     /**
      * Amount of keys stored
      */
-    length: number;
+    public length: number;
 
-    setItem(key: string, value: string | number): void
-    getItem(key: string): string
-    removeItem(key: string): void
-    key(keyIndex: number): string
-    clear(): void
+    public setItem(key: string, value: string | number): void;
+    public getItem(key: string): string;
+    public removeItem(key: string): void;
+    public key(keyIndex: number): string;
+    public clear(): void;
   }
 }

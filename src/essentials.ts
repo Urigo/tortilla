@@ -1,15 +1,15 @@
-import * as Fs from 'fs-extra';
-import * as Handlebars from 'handlebars';
-import * as Path from 'path';
-import * as Minimist from 'minimist';
-import * as ReadlineSync from 'readline-sync';
-import * as Tmp from 'tmp';
-import { Git } from './git';
-import { localStorage as LocalStorage } from './local-storage';
-import { Paths } from './paths';
-import { Submodule } from './submodule';
-import { Utils } from './utils';
-import { Ascii } from './ascii';
+import * as Fs from "fs-extra";
+import * as Handlebars from "handlebars";
+import * as Minimist from "minimist";
+import * as Path from "path";
+import * as ReadlineSync from "readline-sync";
+import * as Tmp from "tmp";
+import { Ascii } from "./ascii";
+import { Git } from "./git";
+import { localStorage as LocalStorage } from "./local-storage";
+import { Paths } from "./paths";
+import { Submodule } from "./submodule";
+import { Utils } from "./utils";
 
 /**
  Contains some essential utilities that should usually run once to create a project or
@@ -20,19 +20,18 @@ const tmpDir = Tmp.dirSync({ unsafeCleanup: true });
 const tmpPaths = Paths.resolveProject(tmpDir.name);
 const exec = Utils.exec;
 
-const defaultDumpFileName = 'tutorial.json';
-const headEnd = '[//]: # (head-end)\n';
-const footStart = '[//]: # (foot-start)\n';
+const defaultDumpFileName = "tutorial.json";
+const headEnd = "[//]: # (head-end)\n";
+const footStart = "[//]: # (foot-start)\n";
 
-
-(function () {
+(function() {
   if (require.main !== module) {
     return;
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ['_', 'message', 'm', 'output', 'o'],
-    boolean: ['override'],
+    string: ["_", "message", "m", "output", "o"],
+    boolean: ["override"],
   });
 
   const method = argv._[0];
@@ -46,9 +45,9 @@ const footStart = '[//]: # (foot-start)\n';
   };
 
   switch (method) {
-    case 'create':
+    case "create":
       return createProject(arg1, options);
-    case 'ensure':
+    case "ensure":
       return ensureTortilla(arg1);
   }
 }());
@@ -56,7 +55,7 @@ const footStart = '[//]: # (foot-start)\n';
 // Initialize tortilla project, it will use the skeleton as the template and it will fill
 // it up with the provided details. Usually should only run once
 function createProject(projectName, options) {
-  projectName = projectName || 'tortilla-project';
+  projectName = projectName || "tortilla-project";
 
   options = Utils.extend({
     output: Path.resolve(projectName),
@@ -65,9 +64,9 @@ function createProject(projectName, options) {
   // In case dir already exists verify the user's decision
   if (Utils.exists(options.output)) {
     options.override = options.override || ReadlineSync.keyInYN([
-      'Output path already exists.',
-      'Would you like to override it and continue?',
-    ].join('\n'));
+      "Output path already exists.",
+      "Would you like to override it and continue?",
+    ].join("\n"));
 
     if (!options.override) {
       return;
@@ -76,9 +75,9 @@ function createProject(projectName, options) {
 
   Fs.removeSync(tmpDir.name);
   // Clone skeleton
-  Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
+  Git.print(["clone", Paths.tortilla.skeleton, tmpDir.name], { cwd: "/tmp" });
   // Checkout desired release
-  Git(['checkout', '0.0.1-alpha.4'], { cwd: tmpDir.name });
+  Git(["checkout", "0.0.1-alpha.4"], { cwd: tmpDir.name });
   // Remove .git to remove unnecessary meta-data, git essentials should be
   // initialized later on
   Fs.removeSync(tmpPaths.git.resolve());
@@ -96,14 +95,14 @@ function createProject(projectName, options) {
   });
 
   // Git chores
-  Git(['init'], { cwd: tmpDir.name });
-  Git(['add', '.'], { cwd: tmpDir.name });
-  Git(['commit', '-m', title], { cwd: tmpDir.name });
+  Git(["init"], { cwd: tmpDir.name });
+  Git(["add", "."], { cwd: tmpDir.name });
+  Git(["commit", "-m", title], { cwd: tmpDir.name });
 
   if (options.message) {
-    Git.print(['commit', '--amend', '-m', options.message], { cwd: tmpDir.name });
+    Git.print(["commit", "--amend", "-m", options.message], { cwd: tmpDir.name });
   } else {
-    Git.print(['commit', '--amend'], { cwd: tmpDir.name });
+    Git.print(["commit", "--amend"], { cwd: tmpDir.name });
   }
 
   // Initializing
@@ -125,7 +124,7 @@ function ensureTortilla(projectDir) {
   const cwd = projectPaths.resolve();
 
   // If tortilla is already initialized don't do anything
-  const isInitialized = localStorage.getItem('INIT');
+  const isInitialized = localStorage.getItem("INIT");
   if (isInitialized) {
     return;
   }
@@ -135,48 +134,47 @@ function ensureTortilla(projectDir) {
   // For each hook file in the hooks directory
   hookFiles.forEach((hookFile) => {
     const handlerPath = Path.resolve(projectPaths.tortilla.hooks, hookFile);
-    const hookName = Path.basename(hookFile, '.js');
+    const hookName = Path.basename(hookFile, ".js");
     const hookPath = Path.resolve(projectPaths.git.hooks, hookName);
 
     // Place an executor in the project's git hooks
     const hook = [
-      '',
-      '# Tortilla',
-      'cd .',
+      "",
+      "# Tortilla",
+      "cd .",
       `node ${handlerPath} "$@"`,
-    ].join('\n');
+    ].join("\n");
 
     // If exists, append logic
-    if (Utils.exists(hookPath, 'file')) {
+    if (Utils.exists(hookPath, "file")) {
       Fs.appendFileSync(hookPath, `\n${hook}`);
     } else { // Else, create file
       Fs.writeFileSync(hookPath, `#!/bin/sh${hook}`);
     }
 
     // Give read permissions to hooks so git can execute properly
-    Fs.chmodSync(hookPath, '755');
+    Fs.chmodSync(hookPath, "755");
   });
 
   // Create root branch reference for continues integration testing
-  const activeBranchName = Git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd });
+  const activeBranchName = Git(["rev-parse", "--abbrev-ref", "HEAD"], { cwd });
   try {
-    Git(['rev-parse', `${activeBranchName}-root`], { cwd });
-  }
-  catch (e) {
-    Git(['branch', `${activeBranchName}-root`, activeBranchName], { cwd });
+    Git(["rev-parse", `${activeBranchName}-root`], { cwd });
+  } catch (e) {
+    Git(["branch", `${activeBranchName}-root`, activeBranchName], { cwd });
   }
 
   // Ensure submodules are initialized
-  Git.print(['submodule', 'init'], { cwd });
-  Git.print(['submodule', 'update'], { cwd });
+  Git.print(["submodule", "init"], { cwd });
+  Git.print(["submodule", "update"], { cwd });
 
   // Mark tortilla flag as initialized
-  localStorage.setItem('INIT', true);
-  localStorage.setItem('USE_STRICT', true);
+  localStorage.setItem("INIT", true);
+  localStorage.setItem("USE_STRICT", true);
 
   // The art should be printed only if the operation finished for all submodules
   if (!Submodule.isOne()) {
-    Ascii.print('ready');
+    Ascii.print("ready");
   }
 }
 
@@ -230,15 +228,15 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   out = Path.resolve(Utils.cwd(), out);
 
   // If provided output path is a dir assume the dump file should be created inside of it
-  if (Utils.exists(out, 'dir')) {
+  if (Utils.exists(out, "dir")) {
     out = Path.join(out, defaultDumpFileName);
   }
 
-  if (Utils.exists(out, 'file')) {
+  if (Utils.exists(out, "file")) {
     options.override = options.override || ReadlineSync.keyInYN([
-      'Output path already exists.',
-      'Would you like to override it and continue?',
-    ].join('\n'));
+      "Output path already exists.",
+      "Would you like to override it and continue?",
+    ].join("\n"));
 
     if (!options.override) {
       return;
@@ -253,8 +251,8 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   Fs.ensureFileSync(out);
 
   // Run command once
-  const tagNames = Git(['tag', '-l'])
-    .split('\n')
+  const tagNames = Git(["tag", "-l"])
+    .split("\n")
     .filter(Boolean);
 
   let branchNames = tagNames
@@ -262,7 +260,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
       return /^[^@]+?@\d+\.\d+\.\d+$/.test(tagName);
     })
     .map((tagName) => {
-      return tagName.split('@')[0];
+      return tagName.split("@")[0];
     })
     .reduce((branchNames, branchName) => {
       if (!branchNames.includes(branchName)) {
@@ -300,41 +298,39 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
 
     const releases = releaseVersions.map((releaseVersion) => {
       const tagName = `${branchName}@${releaseVersion}`;
-      const tagRevision = Git(['rev-parse', tagName]);
+      const tagRevision = Git(["rev-parse", tagName]);
 
       const historyRevision = Git([
-        'log', historyBranchName, `--grep=^${tagName}:`, '--format=%H'
-      ]).split('\n')
+        "log", historyBranchName, `--grep=^${tagName}:`, "--format=%H",
+      ]).split("\n")
         .filter(Boolean)
         .pop();
 
       const manuals = Fs.readdirSync(Paths.manuals.views).sort(naturalSort).map((manualName, stepIndex) => {
-        const format = '%H %s';
+        const format = "%H %s";
         let stepLog, manualPath;
 
         // Step
         if (stepIndex) {
           manualPath = Path.resolve(Paths.manuals.views, manualName);
           stepLog = Git([
-            'log', branchName, `--grep=^Step ${stepIndex}:`, `--format=${format}`
+            "log", branchName, `--grep=^Step ${stepIndex}:`, `--format=${format}`,
           ]);
-        }
-        // Root
-        else {
+        } else {
           manualPath = Paths.readme;
           stepLog = Git([
-            'log', Git.rootHash(branchName), `--format=${format}`
+            "log", Git.rootHash(branchName), `--format=${format}`,
           ]);
         }
 
         manualPath = Path.relative(Utils.cwd(), manualPath);
-        stepLog = stepLog.split(' ');
+        stepLog = stepLog.split(" ");
         const stepRevision = stepLog.shift();
-        const manualTitle = stepLog.join(' ');
+        const manualTitle = stepLog.join(" ");
 
         // Removing header and footer, since the view should be used externally on a
         // different host which will make sure to show these two
-        let manualView = Git(['show', `${stepRevision}:${manualPath}`]);
+        let manualView = Git(["show", `${stepRevision}:${manualPath}`]);
 
         if (manualView.includes(headEnd)) {
           manualView = manualView
@@ -379,7 +375,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
 }
 
 function overwriteTemplateFile(path, scope) {
-  const templateContent = Fs.readFileSync(path, 'utf8');
+  const templateContent = Fs.readFileSync(path, "utf8");
   const viewContent = Handlebars.compile(templateContent)(scope);
 
   Fs.writeFileSync(path, viewContent);

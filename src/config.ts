@@ -1,14 +1,14 @@
-import * as Handlebars from 'handlebars';
-import { Paths } from './paths';
-import { Utils } from './utils';
+import * as Handlebars from "handlebars";
+import { Paths } from "./paths";
+import { Utils } from "./utils";
 
-const Renderer = require('./renderer');
+const Renderer = require("./renderer");
 
 export interface TortillaConfig {
   render?: {
     transformations: any[];
     blacklist: any[];
-  }
+  };
 }
 
 let config: TortillaConfig = {};
@@ -20,7 +20,7 @@ if (Utils.exists(Paths.config)) {
 export function registerCustomTransformations() {
   if (config.render && config.render.transformations) {
     Object.keys(config.render.transformations).forEach((t) => {
-      Renderer.registerTransformation(t, 'diffStep', config.render.transformations[t].bind(this, Handlebars));
+      Renderer.registerTransformation(t, "diffStep", config.render.transformations[t].bind(this, Handlebars));
     });
   }
 }

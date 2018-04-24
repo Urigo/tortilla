@@ -3,12 +3,36 @@
   "version": "0.0.1-alpha.30",
   "description": "A tutorials framework based on git and NodeJS",
   "contributors": [
-    { "name": "Eytan Manor", "email": "emanor6@gmail.com", "url": "https://twitter.com/eytan_manor" },
-    { "name": "Uri Goldshtein", "email": "uri.goldshtein@gmail.com", "url": "https://github.com/urigo" },
-    { "name": "Dotan Simha", "email": "dotansimha@gmail.com", "url": "https://github.com/dotansimha" },
-    { "name": "Simon Tucker", "email": "srtucker22@gmail.com", "url": "https://glipcode.com" },
-    { "name": "Niccolò Belli", "email": "niccolo.belli@linuxsystems.it", "url": "http://www.linuxsystems.it" },
-    { "name": "Kamil Kisiela", "email": "kamil.kisiela@gmail.com", "url": "http://twitter.com/kamilkisiela" }
+    {
+      "name": "Eytan Manor",
+      "email": "emanor6@gmail.com",
+      "url": "https://twitter.com/eytan_manor"
+    },
+    {
+      "name": "Uri Goldshtein",
+      "email": "uri.goldshtein@gmail.com",
+      "url": "https://github.com/urigo"
+    },
+    {
+      "name": "Dotan Simha",
+      "email": "dotansimha@gmail.com",
+      "url": "https://github.com/dotansimha"
+    },
+    {
+      "name": "Simon Tucker",
+      "email": "srtucker22@gmail.com",
+      "url": "https://glipcode.com"
+    },
+    {
+      "name": "Niccolò Belli",
+      "email": "niccolo.belli@linuxsystems.it",
+      "url": "http://www.linuxsystems.it"
+    },
+    {
+      "name": "Kamil Kisiela",
+      "email": "kamil.kisiela@gmail.com",
+      "url": "http://twitter.com/kamilkisiela"
+    }
   ],
   "repository": {
     "type": "git",
@@ -20,10 +44,10 @@
   "scripts": {
     "prepublishOnly": "yarn build",
     "test": "make test",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "tslint --format stylish -c tslint.json 'src/**/*.ts'"
   },
   "dependencies": {
-    "@types/commander": "2.12.2",
     "@types/fs-extra": "5.0.2",
     "@types/handlebars": "4.0.37",
     "@types/i18next": "8.4.3",
@@ -45,6 +69,7 @@
   "devDependencies": {
     "babel-register": "6.26.0",
     "escape-string-regexp": "1.0.5",
+    "tslint": "5.9.1",
     "typescript": "2.8.3"
   },
   "engines": {
