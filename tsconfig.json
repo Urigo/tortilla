@@ -21,9 +21,6 @@
     "src/typings.d.ts",
     "src/cli/**/*.ts"
   ],
-  "files": [
-    "src/index.ts"
-  ],
   "exclude": [
     "node_modules"
   ]

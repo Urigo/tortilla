@@ -11,7 +11,8 @@
     "tortilla": "cli/tortilla"
   },
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/fs-extra": "^5.0.2",
