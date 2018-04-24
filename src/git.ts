@@ -1,7 +1,7 @@
-import * as Fs from "fs-extra";
-import * as Tmp from "tmp";
-import { Paths } from "./paths";
-import { Utils } from "./utils";
+import * as Fs from 'fs-extra';
+import * as Tmp from 'tmp';
+import { Paths } from './paths';
+import { Utils } from './utils';
 
 /**
   Contains general git utilities.
@@ -15,7 +15,7 @@ function git(argv, options?) {
   return gitBody(Utils.git, argv, options);
 }
 
-(git as any).print = function(argv, options) {
+(git as any).print = (argv, options) => {
   return gitBody(Utils.git.print, argv, options);
 };
 
@@ -47,13 +47,13 @@ function isCherryPicking() {
 
 // Tells if going to amend or not
 function gonnaAmend() {
-  return Utils.childProcessOf("git", ["commit", "--amend"]);
+  return Utils.childProcessOf('git', ['commit', '--amend']);
 }
 
 // Tells if a tag exists or not
 function tagExists(tag) {
   try {
-    git(["rev-parse", tag]);
+    git(['rev-parse', tag]);
     return true;
   } catch (err) {
     return false;
@@ -72,17 +72,17 @@ function getRecentCommit(offset, argv, options) {
     offset = offset || 0;
   }
 
-  const hash = typeof offset === "string" ? offset : (`HEAD~${offset}`);
+  const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
 
-  argv = ["log", hash, "-1"].concat(argv);
+  argv = ['log', hash, '-1'].concat(argv);
   return git(argv, options);
 }
 
 // Gets a list of the modified files reported by git matching the provided pattern.
 // This includes untracked files, changed files and deleted files
 function getStagedFiles(pattern) {
-  const stagedFiles = git(["diff", "--name-only", "--cached"])
-    .split("\n")
+  const stagedFiles = git(['diff', '--name-only', '--cached'])
+    .split('\n')
     .filter(Boolean);
 
   return Utils.filterMatches(stagedFiles, pattern);
@@ -91,40 +91,40 @@ function getStagedFiles(pattern) {
 // Gets active branch name
 function getActiveBranchName() {
   if (!isRebasing()) {
-    return git(["rev-parse", "--abbrev-ref", "HEAD"]);
+    return git(['rev-parse', '--abbrev-ref', 'HEAD']);
   }
 
   // Getting a reference for the hash of which the rebase have started
-  const branchHash = git(["reflog", "--format=%gd %gs"])
-    .split("\n")
+  const branchHash = git(['reflog', '--format=%gd %gs'])
+    .split('\n')
     .filter(Boolean)
-    .map((line) => line.split(" "))
-    .map((split) => [split.shift(), split.join(" ")])
+    .map((line) => line.split(' '))
+    .map((split) => [split.shift(), split.join(' ')])
     .find(([ref, msg]) => msg.match(/^rebase -i \(start\)/))
     .shift()
     .match(/^HEAD@\{(\d+)\}$/)
     .slice(1)
     .map((i) => `HEAD@{${++i}}`)
-    .map((ref) => git(["rev-parse", ref]))
+    .map((ref) => git(['rev-parse', ref]))
     .pop();
 
   // Comparing the found hash to each of the branches' hashes
   return Fs.readdirSync(Paths.git.refs.heads).find((branchName) => {
-    return git(["rev-parse", branchName]) == branchHash;
+    return git(['rev-parse', branchName]) === branchHash;
   });
 }
 
 // Gets the root hash of HEAD
-function getRootHash(head = "HEAD") {
-  return git(["rev-list", "--max-parents=0", head]);
+function getRootHash(head = 'HEAD') {
+  return git(['rev-list', '--max-parents=0', head]);
 }
 
 function getRoot() {
   try {
-    return git(["rev-parse", "--show-toplevel"]);
+    return git(['rev-parse', '--show-toplevel']);
   // Not a git project
   } catch (e) {
-    return "";
+    return '';
   }
 }
 
@@ -133,7 +133,7 @@ function edit(initialContent) {
   const file = Tmp.fileSync({ unsafeCleanup: true });
 
   Fs.writeFileSync(file.name, initialContent);
-  (exec as any).print("sh", ["-c", `${editor} ${file.name}`]);
+  (exec as any).print('sh', ['-c', `${editor} ${file.name}`]);
 
   const content = Fs.readFileSync(file.name).toString();
   file.removeCallback();
@@ -146,21 +146,21 @@ function getEditor() {
   let editor = process.env.GIT_EDITOR;
 
   if (!editor) { try {
-    editor = git(["config", "core.editor"]);
+    editor = git(['config', 'core.editor']);
   } catch (e) {
     // Ignore
   }
   }
 
   if (!editor) { try {
-    editor = git(["var", "GIT_EDITOR"]);
+    editor = git(['var', 'GIT_EDITOR']);
   } catch (e) {
     // Ignore
   }
   }
 
   if (!editor) {
-    throw Error("Git editor could not be found");
+    throw Error('Git editor could not be found');
   }
 
   return editor;

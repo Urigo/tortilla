@@ -63,5 +63,9 @@ jobs:
             - node_modules/
 
      - run:
+          name: Lint
+          command: yarn lint
+
+     - run:
           name: Test
           command: yarn test

@@ -1,8 +1,8 @@
-import * as ChildProcess from "child_process";
-import * as Fs from "fs-extra";
+import * as ChildProcess from 'child_process';
+import * as Fs from 'fs-extra';
 
 /**
-  Contains general utilities.
+ Contains general utilities.
  */
 
 let cwd: () => string;
@@ -10,34 +10,36 @@ let git;
 let npm;
 let node;
 
-(function() {
+function init() {
   // Defaults to process's current working dir
   let tempCwd = process.env.TORTILLA_CWD || process.cwd();
 
   try {
-    tempCwd = ChildProcess.execFileSync("git", [
-      "rev-parse", "--show-toplevel",
+    tempCwd = ChildProcess.execFileSync('git', [
+      'rev-parse', '--show-toplevel',
     ], {
       cwd: tempCwd,
-      stdio: ["pipe", "pipe", "ignore"],
+      stdio: ['pipe', 'pipe', 'ignore'],
     }).toString()
       .trim();
   } catch (err) {
     // If no git-exists nor git-failed use default value instead
   }
 
-  // Setting all relative utils
+// Setting all relative utils
   (exec as any).print = spawn;
-  git = exec.bind(null, "git");
-  git.print = spawn.bind(null, "git");
-  npm = exec.bind(null, "npm");
-  npm.print = spawn.bind(null, "npm");
-  node = exec.bind(null, "node");
-  node.print = spawn.bind(null, "node");
-  // It's better to have a getter rather than an explicit value otherwise
-  // it might be reset
+  git = exec.bind(null, 'git');
+  git.print = spawn.bind(null, 'git');
+  npm = exec.bind(null, 'npm');
+  npm.print = spawn.bind(null, 'npm');
+  node = exec.bind(null, 'node');
+  node.print = spawn.bind(null, 'node');
+// It's better to have a getter rather than an explicit value otherwise
+// it might be reset
   cwd = String.bind(null, tempCwd);
-}());
+}
+
+init();
 
 // Checks if one of the parent processes launched by the provided file and has
 // the provided arguments
@@ -54,16 +56,16 @@ function isChildProcessOf(file, argv, offset?) {
   };
 
   // Will abort once the file is found and there are no more skips left to be done
-  while (currProcess.file != file || trial--) {
+  while (currProcess.file !== file || trial--) {
     // Get the parent process id
-    currProcess.pid = Number(getProcessData(currProcess.pid, "ppid"));
+    currProcess.pid = Number(getProcessData(currProcess.pid, 'ppid'));
     // The root process'es id is 0 which means we've reached the limit
     if (!currProcess.pid) {
       return false;
     }
 
-    currProcess.argv = getProcessData(currProcess.pid, "command")
-      .split(" ")
+    currProcess.argv = getProcessData(currProcess.pid, 'command')
+      .split(' ')
       .filter(Boolean);
 
     // The first word in the command would be the file name
@@ -73,7 +75,7 @@ function isChildProcessOf(file, argv, offset?) {
   }
 
   // Make sure it has the provided arguments
-  const result = argv.every((arg) => currProcess.argv.indexOf(arg) != -1);
+  const result = argv.every((arg) => currProcess.argv.indexOf(arg) !== -1);
 
   // If this is not the file we're looking for keep going up in the processes tree
   return result || isChildProcessOf(file, argv, ++offset);
@@ -81,15 +83,15 @@ function isChildProcessOf(file, argv, offset?) {
 
 // Gets process data using 'ps' formatting
 function getProcessData(pid, format) {
-  if (arguments.length == 1) {
+  if (arguments.length === 1) {
     format = pid;
     pid = process.pid;
   }
 
-  const result = exec("ps", ["-p", pid, "-o", format]).split("\n");
+  const result = exec('ps', ['-p', pid, '-o', format]).split('\n');
   result.shift();
 
-  return result.join("\n");
+  return result.join('\n');
 }
 
 // Spawn new process and print result to the terminal
@@ -98,7 +100,7 @@ function spawn(file, argv, options) {
 
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
-    stdio: process.env.TORTILLA_STDIO || "inherit",
+    stdio: process.env.TORTILLA_STDIO || 'inherit',
     env: {},
   }, options);
 
@@ -123,7 +125,7 @@ function exec(file, argv?, options?) {
 
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
-    stdio: "pipe",
+    stdio: 'pipe',
     env: {},
   }, options);
 
@@ -142,7 +144,9 @@ function exec(file, argv?, options?) {
   const out = ChildProcess.execFileSync(file, argv, options);
 
   // In case of stdio inherit
-  if (!out) { return ""; }
+  if (!out) {
+    return '';
+  }
 
   return out.toString().trim();
 }
@@ -153,10 +157,14 @@ function exists(path, type?) {
     const stats = Fs.lstatSync(path);
 
     switch (type) {
-      case "dir": return stats.isDirectory();
-      case "file": return stats.isFile();
-      case "symlink": return stats.isSymbolicLink();
-      default: return true;
+      case 'dir':
+        return stats.isDirectory();
+      case 'file':
+        return stats.isFile();
+      case 'symlink':
+        return stats.isSymbolicLink();
+      default:
+        return true;
     }
   } catch (err) {
     return false;
@@ -182,7 +190,7 @@ function scopeEnv(fn, env) {
 
 // Filter all strings matching the provided pattern in an array
 function filterMatches(arr, pattern) {
-  pattern = pattern || "";
+  pattern = pattern || '';
 
   return arr.filter((str) => str.match(pattern));
 }
@@ -190,7 +198,7 @@ function filterMatches(arr, pattern) {
 // Deeply merges destination object with source object
 function merge(destination, source) {
   if (!(destination instanceof Object) ||
-      !(source instanceof Object)) {
+    !(source instanceof Object)) {
     return source;
   }
 
@@ -237,7 +245,7 @@ function pluck(obj, keys) {
 // '1' -> '00001'
 function pad(str, length, char?) {
   str = str.toString();
-  char = char || " ";
+  char = char || ' ';
   const chars = Array(length + 1).join(char);
 
   return chars.substr(0, chars.length - str.length) + str;
@@ -247,7 +255,7 @@ function pad(str, length, char?) {
 // '1' -> '10000'
 function padRight(str, length, char?) {
   str = str.toString();
-  char = char || " ";
+  char = char || ' ';
   const chars = Array(length + 1).join(char);
 
   return str + chars.substr(0, chars.length - str.length);
@@ -257,14 +265,14 @@ function padRight(str, length, char?) {
 function toKebabCase(str) {
   return splitWords(str)
     .map(lowerFirst)
-    .join("-");
+    .join('-');
 }
 
 // foo_barBaz -> Foo Bar Baz
 function toStartCase(str) {
   return splitWords(str)
     .map(upperFirst)
-    .join(" ");
+    .join(' ');
 }
 
 // Lower -> lower
@@ -280,7 +288,7 @@ function upperFirst(str) {
 // foo_barBaz -> ['foo', 'bar', 'Baz']
 function splitWords(str) {
   return str
-    .replace(/[A-Z]/, " $&")
+    .replace(/[A-Z]/, ' $&')
     .split(/[^a-zA-Z0-9]+/);
 }
 
@@ -294,7 +302,7 @@ function delegateProperties(destination, source, modifiers) {
   Object.getOwnPropertyNames(source).forEach((propertyName) => {
     const propertyDescriptor = Object.getOwnPropertyDescriptor(source, propertyName);
 
-    if (typeof propertyDescriptor.value === "function" && modifiers.value) {
+    if (typeof propertyDescriptor.value === 'function' && modifiers.value) {
       const superValue = propertyDescriptor.value;
 
       propertyDescriptor.value = function() {
@@ -327,15 +335,25 @@ function delegateProperties(destination, source, modifiers) {
 }
 
 function isEqual(objA, objB) {
-  if (objA === objB) { return true; }
-  if (typeof objA != typeof objB) { return false; }
-  if (!(objA instanceof Object) || !(objB instanceof Object)) { return false; }
-  if ((objA as any).__proto__ !== (objB as any).__proto__) { return false; }
+  if (objA === objB) {
+    return true;
+  }
+  if (typeof objA !== typeof objB) {
+    return false;
+  }
+  if (!(objA instanceof Object) || !(objB instanceof Object)) {
+    return false;
+  }
+  if ((objA as any).__proto__ !== (objB as any).__proto__) {
+    return false;
+  }
 
   const objAKeys = Object.keys(objA);
   const objBKeys = Object.keys(objB);
 
-  if (objAKeys.length != objBKeys.length) { return; }
+  if (objAKeys.length !== objBKeys.length) {
+    return;
+  }
 
   objAKeys.sort();
   objBKeys.sort();
@@ -343,7 +361,9 @@ function isEqual(objA, objB) {
   return objAKeys.every((keyA, index) => {
     const keyB = objBKeys[index];
 
-    if (keyA != keyB) { return false; }
+    if (keyA !== keyB) {
+      return false;
+    }
 
     const valueA = objA[keyA];
     const valueB = objB[keyB];
@@ -354,25 +374,25 @@ function isEqual(objA, objB) {
 
 function escapeBrackets(str) {
   return str
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)")
-    .replace(/\[/g, "\\[")
-    .replace(/\]/g, "\\]")
-    .replace(/\{/g, "\\{")
-    .replace(/\}/g, "\\}")
-    .replace(/\</g, "\\<")
-    .replace(/\>/g, "\\>");
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    .replace(/\</g, '\\<')
+    .replace(/\>/g, '\\>');
 }
 
 // Takes a shell script string and transforms it into a one liner
 function shCmd(cmd) {
   return cmd
     .trim()
-    .replace(/\n+/g, ";")
-    .replace(/\s+/g, " ")
-    .replace(/then\s*;/g, "then")
-    .replace(/else\s*;/g, "else")
-    .replace(/;\s*;/g, ";")
+    .replace(/\n+/g, ';')
+    .replace(/\s+/g, ' ')
+    .replace(/then\s*;/g, 'then')
+    .replace(/else\s*;/g, 'else')
+    .replace(/;\s*;/g, ';')
     .trim();
 }
 

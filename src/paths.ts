@@ -1,5 +1,5 @@
-import * as Path from "path";
-import { Utils } from "./utils";
+import * as Path from 'path';
+import { Utils } from './utils';
 
 export interface TortillaPaths {
   resolve: () => string;
@@ -101,49 +101,49 @@ export interface TortillaPaths {
 const cache = {};
 const resolve = Path.resolve.bind(Path);
 
-const ascii = resolveTree(resolve(__dirname, "ascii"), {
-  views: resolve(__dirname, "ascii/views"),
+const ascii = resolveTree(resolve(__dirname, 'ascii'), {
+  views: resolve(__dirname, 'ascii/views'),
 });
 
-const renderer = resolveTree(resolve(__dirname, "renderer"), {
-  helpers: resolve(__dirname, "renderer/helpers"),
-  templates: resolve(__dirname, "renderer/templates"),
+const renderer = resolveTree(resolve(__dirname, 'renderer'), {
+  helpers: resolve(__dirname, 'renderer/helpers'),
+  templates: resolve(__dirname, 'renderer/templates'),
 });
 
-const translator = resolveTree(resolve(__dirname, "translator"), {
-  translation: resolve(__dirname, "translator/translation"),
-  locales: resolve(__dirname, "translator/locales"),
+const translator = resolveTree(resolve(__dirname, 'translator'), {
+  translation: resolve(__dirname, 'translator/translation'),
+  locales: resolve(__dirname, 'translator/locales'),
 });
 
-const tortilla = resolveTree(resolve(__dirname, ".."), {
-  editor: resolve(__dirname, "editor.js"),
-  essentials: resolve(__dirname, "essentials.js"),
-  git: resolve(__dirname, "git.js"),
-  initializer: resolve(__dirname, "initializer.js"),
-  localCache: resolve(__dirname, "local-cache.js"),
-  localStorage: resolve(__dirname, "local-storage.js"),
-  manual: resolve(__dirname, "manual.js"),
-  package: resolve(__dirname, "package.js"),
-  paths: resolve(__dirname, "paths.js"),
-  rebase: resolve(__dirname, "rebase.js"),
-  release: resolve(__dirname, "release.js"),
-  step: resolve(__dirname, "step.js"),
-  submodule: resolve(__dirname, "submodule.js"),
-  utils: resolve(__dirname, "utils.js"),
-  hooks: resolve(__dirname, "hooks"),
-  skeleton: "https://github.com/Urigo/tortilla-skeleton.git",
+const tortilla = resolveTree(resolve(__dirname, '..'), {
+  editor: resolve(__dirname, 'editor.js'),
+  essentials: resolve(__dirname, 'essentials.js'),
+  git: resolve(__dirname, 'git.js'),
+  initializer: resolve(__dirname, 'initializer.js'),
+  localCache: resolve(__dirname, 'local-cache.js'),
+  localStorage: resolve(__dirname, 'local-storage.js'),
+  manual: resolve(__dirname, 'manual.js'),
+  package: resolve(__dirname, 'package.js'),
+  paths: resolve(__dirname, 'paths.js'),
+  rebase: resolve(__dirname, 'rebase.js'),
+  release: resolve(__dirname, 'release.js'),
+  step: resolve(__dirname, 'step.js'),
+  submodule: resolve(__dirname, 'submodule.js'),
+  utils: resolve(__dirname, 'utils.js'),
+  hooks: resolve(__dirname, 'hooks'),
+  skeleton: 'https://github.com/Urigo/tortilla-skeleton.git',
   ascii,
   renderer,
   translator,
 });
 
-const cli = resolveTree(resolve(__dirname, "../cli"), {
-  tortilla: resolve(__dirname, "../cli/tortilla"),
-  tortillaManual: resolve(__dirname, "../cli/tortilla-manual"),
-  tortillaRelease: resolve(__dirname, "../cli/tortilla-release"),
-  tortillaStep: resolve(__dirname, "../cli/tortilla-step"),
-  tortillaStrict: resolve(__dirname, "../cli/tortilla-strict"),
-  tortillaSubmodule: resolve(__dirname, "../cli/tortilla-submodule"),
+const cli = resolveTree(resolve(__dirname, '../cli'), {
+  tortilla: resolve(__dirname, '../cli/tortilla'),
+  tortillaManual: resolve(__dirname, '../cli/tortilla-manual'),
+  tortillaRelease: resolve(__dirname, '../cli/tortilla-release'),
+  tortillaStep: resolve(__dirname, '../cli/tortilla-step'),
+  tortillaStrict: resolve(__dirname, '../cli/tortilla-strict'),
+  tortillaSubmodule: resolve(__dirname, '../cli/tortilla-submodule'),
 });
 
 // Makes the root path available in the branches object using a 'resolve()' method
@@ -161,59 +161,59 @@ function resolveTree(root, branches): any {
 
 // Resolves a bunch of paths to a given tortilla project path
 function resolveProject(cwd: string): TortillaPaths {
-  if (!cwd) { throw TypeError("A project path must be provided"); }
+  if (!cwd) { throw TypeError('A project path must be provided'); }
 
   if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) {
     return cache[cwd];
   }
 
-  const gitHeads = resolveTree(resolve(cwd, ".git/HEAD"), {
-    cherryPick: resolve(cwd, ".git/CHERRY_PICK_HEAD"),
-    orig: resolve(cwd, ".git/ORIG_HEAD"),
-    revert: resolve(cwd, ".git/REVERT_HEAD"),
+  const gitHeads = resolveTree(resolve(cwd, '.git/HEAD'), {
+    cherryPick: resolve(cwd, '.git/CHERRY_PICK_HEAD'),
+    orig: resolve(cwd, '.git/ORIG_HEAD'),
+    revert: resolve(cwd, '.git/REVERT_HEAD'),
   });
 
   const gitMessages = {
-    commit: resolve(cwd, ".git/COMMIT_EDITMSG"),
-    merge: resolve(cwd, ".git/MERGE_MSG"),
-    squash: resolve(cwd, ".git/SQUASH_MSG"),
+    commit: resolve(cwd, '.git/COMMIT_EDITMSG'),
+    merge: resolve(cwd, '.git/MERGE_MSG'),
+    squash: resolve(cwd, '.git/SQUASH_MSG'),
   };
 
-  const gitRefs = resolveTree(resolve(cwd, ".git/refs"), {
-    heads: resolve(cwd, ".git/refs/heads"),
-    remotes: resolve(cwd, ".git/refs/remotes"),
-    tags: resolve(cwd, ".git/refs/tags"),
+  const gitRefs = resolveTree(resolve(cwd, '.git/refs'), {
+    heads: resolve(cwd, '.git/refs/heads'),
+    remotes: resolve(cwd, '.git/refs/remotes'),
+    tags: resolve(cwd, '.git/refs/tags'),
   });
 
-  const git = resolveTree(resolve(cwd, ".git"), {
-    ignore: resolve(cwd, ".gitignore"),
-    hooks: resolve(cwd, ".git/hooks"),
-    rebaseApply: resolve(cwd, ".git/rebase-apply"),
-    rebaseMerge: resolve(cwd, ".git/rebase-merge"),
+  const git = resolveTree(resolve(cwd, '.git'), {
+    ignore: resolve(cwd, '.gitignore'),
+    hooks: resolve(cwd, '.git/hooks'),
+    rebaseApply: resolve(cwd, '.git/rebase-apply'),
+    rebaseMerge: resolve(cwd, '.git/rebase-merge'),
     heads: gitHeads,
     messages: gitMessages,
     refs: gitRefs,
   });
 
   const npm = {
-    ignore: resolve(cwd, ".npmignore"),
-    package: resolve(cwd, "package.json"),
-    modules: resolve(cwd, "node_modules"),
+    ignore: resolve(cwd, '.npmignore'),
+    package: resolve(cwd, 'package.json'),
+    modules: resolve(cwd, 'node_modules'),
   };
 
-  const manuals = resolveTree(resolve(cwd, ".tortilla/manuals"), {
-    templates: resolve(cwd, ".tortilla/manuals/templates"),
-    views: resolve(cwd, ".tortilla/manuals/views"),
+  const manuals = resolveTree(resolve(cwd, '.tortilla/manuals'), {
+    templates: resolve(cwd, '.tortilla/manuals/templates'),
+    views: resolve(cwd, '.tortilla/manuals/views'),
   });
 
   return cache[cwd] = resolveTree(cwd, {
-    config: resolve(cwd, ".tortilla/config.js"),
-    checkouts: resolve(cwd, ".tortilla/checkouts.json"),
-    locales: resolve(cwd, ".tortilla/locales"),
-    readme: resolve(cwd, "README.md"),
-    renovate: resolve(cwd, "renovate.json"),
-    storage: resolve(cwd, ".git/.tortilla"),
-    travis: resolve(cwd, "travis.yml"),
+    config: resolve(cwd, '.tortilla/config.js'),
+    checkouts: resolve(cwd, '.tortilla/checkouts.json'),
+    locales: resolve(cwd, '.tortilla/locales'),
+    readme: resolve(cwd, 'README.md'),
+    renovate: resolve(cwd, 'renovate.json'),
+    storage: resolve(cwd, '.git/.tortilla'),
+    travis: resolve(cwd, 'travis.yml'),
     manuals,
     tortilla,
     cli,

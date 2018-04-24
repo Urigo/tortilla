@@ -1,10 +1,10 @@
-import * as Fs from "fs-extra";
-import * as Tmp from "tmp";
-import { Git } from "./git";
-import { localStorage as LocalStorage } from "./local-storage";
-import { Manual } from "./manual";
-import { Paths } from "./paths";
-import { Step } from "./step";
+import * as Fs from 'fs-extra';
+import * as Tmp from 'tmp';
+import { Git } from './git';
+import { localStorage as LocalStorage } from './local-storage';
+import { Manual } from './manual';
+import { Paths } from './paths';
+import { Step } from './step';
 
 /**
  The 'release' module contains different utilities and methods which are responsible
@@ -25,16 +25,16 @@ function bumpRelease(releaseType, options) {
 
   // Increase release type
   switch (releaseType) {
-    case "major":
+    case 'major':
       currentRelease.major++;
       currentRelease.minor = 0;
       currentRelease.patch = 0;
       break;
-    case "minor":
+    case 'minor':
       currentRelease.minor++;
       currentRelease.patch = 0;
       break;
-    case "patch":
+    case 'patch':
       currentRelease.patch++;
       break;
     default:
@@ -43,12 +43,12 @@ function bumpRelease(releaseType, options) {
 
   try {
     // Store potential release so it can be used during rendering
-    LocalStorage.setItem("POTENTIAL_RELEASE", JSON.stringify(currentRelease));
+    LocalStorage.setItem('POTENTIAL_RELEASE', JSON.stringify(currentRelease));
     // Render manuals before bumping version to make sure the views are correlated with
     // the templates
-    Manual.render("all");
+    Manual.render('all');
   } finally {
-    LocalStorage.removeItem("POTENTIAL_RELEASE");
+    LocalStorage.removeItem('POTENTIAL_RELEASE');
   }
 
   const branch = Git.activeBranchName();
@@ -57,7 +57,7 @@ function bumpRelease(releaseType, options) {
 
   // Extract root data
   const rootHash = Git.rootHash();
-  const rootTag = [branch, "root", formattedRelease].join("@");
+  const rootTag = [branch, 'root', formattedRelease].join('@');
 
   // Create root tag
   // e.g. master@root@1.0.1
@@ -66,24 +66,24 @@ function bumpRelease(releaseType, options) {
   // Create a release tag for each super step
   Git([
     // Log commits
-    "log",
+    'log',
     // Specifically for steps
-    "--grep", "^Step [0-9]\\+:",
+    '--grep', '^Step [0-9]\\+:',
     // Formatted with their subject followed by their hash
-    "--format=%s %H",
-  ]).split("\n")
+    '--format=%s %H',
+  ]).split('\n')
     .filter(Boolean)
     .forEach((line) => {
       // Extract data
-      const words = line.split(" ");
+      const words = line.split(' ');
       const hash = words.pop();
-      const subject = words.join(" ");
+      const subject = words.join(' ');
       const descriptor = Step.descriptor(subject);
-      const tag = [branch, `step${descriptor.number}`, formattedRelease].join("@");
+      const currentTag = [branch, `step${descriptor.number}`, formattedRelease].join('@');
 
       // Create tag
       // e.g. master@step1@1.0.1
-      createReleaseTag(tag, hash);
+      createReleaseTag(currentTag, hash);
     });
 
   const tag = `${branch}@${formattedRelease}`;
@@ -91,10 +91,10 @@ function bumpRelease(releaseType, options) {
   // Create a tag with the provided message which will reference to HEAD
   // e.g. 'master@1.0.1'
   if (options.message) {
-    createReleaseTag(tag, "HEAD", options.message);
+    createReleaseTag(tag, 'HEAD', options.message);
     // If no message provided, open the editor
   } else {
-    createReleaseTag(tag, "HEAD", true);
+    createReleaseTag(tag, 'HEAD', true);
   }
 
   createDiffReleasesBranch();
@@ -105,7 +105,7 @@ function bumpRelease(releaseType, options) {
 // diff combination in the git-host
 function createDiffReleasesBranch() {
   const destinationDir = createDiffReleasesRepo();
-  const sourceDir = destinationDir == tmp1Dir.name ? tmp2Dir.name : tmp1Dir.name;
+  const sourceDir = destinationDir === tmp1Dir.name ? tmp2Dir.name : tmp1Dir.name;
 
   // e.g. master
   const currBranch = Git.activeBranchName();
@@ -116,16 +116,16 @@ function createDiffReleasesBranch() {
   Fs.emptyDirSync(sourceDir);
 
   // Create dummy repo in source
-  Git(["init", sourceDir, "--bare"]);
-  Git(["checkout", "-b", historyBranch], { cwd: destinationDir });
-  Git(["push", sourceDir, historyBranch], { cwd: destinationDir });
+  Git(['init', sourceDir, '--bare']);
+  Git(['checkout', '-b', historyBranch], { cwd: destinationDir });
+  Git(['push', sourceDir, historyBranch], { cwd: destinationDir });
 
   // Pull the newly created project to the branch name above
   if (Git.tagExists(historyBranch)) {
-    Git(["branch", "-D", historyBranch]);
+    Git(['branch', '-D', historyBranch]);
   }
-  Git(["fetch", sourceDir, historyBranch]);
-  Git(["branch", historyBranch, "FETCH_HEAD"]);
+  Git(['fetch', sourceDir, historyBranch]);
+  Git(['branch', historyBranch, 'FETCH_HEAD']);
 
   // Clear registers
   tmp1Dir.removeCallback();
@@ -145,7 +145,7 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
   const destinationDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
 
   // Run 'diff' between the newly created commits
-  Git.print(["diff", "HEAD^", "HEAD"].concat(argv), { cwd: destinationDir });
+  Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
 
   // Clear registers
   tmp1Dir.removeCallback();
@@ -155,7 +155,7 @@ function diffRelease(sourceRelease, destinationRelease, argv) {
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
 // newly created repo
 function createDiffReleasesRepo(...tags) {
-  if (tags.length == 0) {
+  if (tags.length === 0) {
     const branch = Git.activeBranchName();
 
     // Fetch all releases in reversed order, since the commits are going to be stacked
@@ -174,7 +174,7 @@ function createDiffReleasesRepo(...tags) {
   Fs.emptyDirSync(sourceDir);
 
   // Initialize an empty git repo in register2
-  Git(["init"], { cwd: sourceDir });
+  Git(['init'], { cwd: sourceDir });
 
   // Start building the diff-branch by stacking releases on top of each-other
   return tags.reduce((registers, tag, index) => {
@@ -189,13 +189,13 @@ function createDiffReleasesRepo(...tags) {
     // Copy current git dir to destination
     Fs.copySync(Paths.git.resolve(), destinationPaths.git.resolve(), {
       filter(filePath) {
-        return filePath.split("/").indexOf(".tortilla") == -1;
+        return filePath.split('/').indexOf('.tortilla') === -1;
       },
     });
 
     // Checkout release
-    Git(["checkout", tag], { cwd: destinationDir });
-    Git(["checkout", "."], { cwd: destinationDir });
+    Git(['checkout', tag], { cwd: destinationDir });
+    Git(['checkout', '.'], { cwd: destinationDir });
 
     // Copy destination to source, but without the git dir so there won't be any
     // conflicts with the commits
@@ -203,15 +203,15 @@ function createDiffReleasesRepo(...tags) {
     Fs.copySync(sourcePaths.git.resolve(), destinationPaths.git.resolve());
 
     // Add commit for release
-    Git(["add", "."], { cwd: destinationDir });
-    Git(["add", "-u"], { cwd: destinationDir });
+    Git(['add', '.'], { cwd: destinationDir });
+    Git(['add', '-u'], { cwd: destinationDir });
 
     // Extracting tag message
-    const tagLine = Git(["tag", "-l", tag, "-n99"]);
-    const tagMessage = tagLine.replace(/([^\s]+)\s+((?:.|\n)+)/, "$1: $2");
+    const tagLine = Git(['tag', '-l', tag, '-n99']);
+    const tagMessage = tagLine.replace(/([^\s]+)\s+((?:.|\n)+)/, '$1: $2');
 
     // Creating a new commit with the tag's message
-    Git(["commit", "-m", tagMessage, "--allow-empty"], {
+    Git(['commit', '-m', tagMessage, '--allow-empty'], {
       cwd: destinationDir,
     });
 
@@ -237,7 +237,7 @@ function printCurrentRelease() {
 // will return { major: 0, minor: 1, patch: 0 }
 function getCurrentRelease() {
   // Return potential release, if defined
-  const potentialRelease = LocalStorage.getItem("POTENTIAL_RELEASE");
+  const potentialRelease = LocalStorage.getItem('POTENTIAL_RELEASE');
 
   if (potentialRelease) {
     return JSON.parse(potentialRelease);
@@ -256,9 +256,9 @@ function getCurrentRelease() {
 function getAllReleases() {
   const branch = Git.activeBranchName();
 
-  return Git(["tag"])
+  return Git(['tag'])
   // Put tags into an array
-    .split("\n")
+    .split('\n')
     // If no tags found, filter the empty string
     .filter(Boolean)
     // Filter all the release tags which are proceeded by their release
@@ -267,7 +267,7 @@ function getAllReleases() {
       return tagName.match(pattern);
     })
     // Map all the release strings
-    .map((tagName) => tagName.split("@").pop())
+    .map((tagName) => tagName.split('@').pop())
     // Deformat all the releases into a json so it would be more comfortable to work with
     .map((releaseString) => deformatRelease(releaseString))
     // Put the latest release first
@@ -285,13 +285,13 @@ function formatRelease(releaseJson) {
     releaseJson.major,
     releaseJson.minor,
     releaseJson.patch,
-  ].join(".");
+  ].join('.');
 }
 
 // Takes a release string and puts it into a pretty json object
 // e.g. '1.1.1' -> { major: 1, minor: 1, patch: 1 }
 function deformatRelease(releaseString) {
-  const releaseSlices = releaseString.split(".").map(Number);
+  const releaseSlices = releaseString.split('.').map(Number);
 
   return {
     major: releaseSlices[0],
@@ -302,9 +302,9 @@ function deformatRelease(releaseString) {
 
 function createReleaseTag(tag, dstHash, message?) {
   let srcHash = Git.activeBranchName();
-  if (srcHash == "HEAD") { srcHash = Git(["rev-parse", "HEAD"]); }
+  if (srcHash === 'HEAD') { srcHash = Git(['rev-parse', 'HEAD']); }
 
-  Git(["checkout", dstHash]);
+  Git(['checkout', dstHash]);
 
   // Remove files which shouldn't be included in releases
   // TODO: Remove files based on a user defined blacklist
@@ -312,23 +312,23 @@ function createReleaseTag(tag, dstHash, message?) {
   Fs.removeSync(Paths.renovate);
 
   // Releasing a version
-  Git(["commit", "--amend"], { env: { GIT_EDITOR: true } });
+  Git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
 
   // Provide a quick message
-  if (typeof message == "string") {
-    Git.print(["tag", tag, "-m", message]);
+  if (typeof message === 'string') {
+    Git.print(['tag', tag, '-m', message]);
     // Open editor
   } else if (message === true) {
-    Git.print(["tag", tag, "-a"]);
+    Git.print(['tag', tag, '-a']);
     // No message
   } else {
-    Git(["tag", tag]);
+    Git(['tag', tag]);
   }
 
   // Returning to the original hash
-  Git(["checkout", srcHash]);
+  Git(['checkout', srcHash]);
   // Restore renovate.json and .travis.yml
-  Git(["checkout", "."]);
+  Git(['checkout', '.']);
 }
 
 export const Release = {

@@ -1,10 +1,10 @@
-import * as Path from "path";
-import { Git} from "../../git";
-import { Paths} from "../../paths";
-import { Step} from "../../step";
-import {Translator} from "../../translator";
-import { Utils} from "../../utils";
-import { Renderer} from "../index";
+import * as Path from 'path';
+import { Git} from '../../git';
+import { Paths} from '../../paths';
+import { Step} from '../../step';
+import {Translator} from '../../translator';
+import { Utils} from '../../utils';
+import { Renderer} from '../index';
 
 /**
   Provides a navigation bar between steps. The navigation bar should be rendered
@@ -13,28 +13,28 @@ import { Renderer} from "../index";
 
 const t = Translator.translate.bind(Translator);
 
-Renderer.registerHelper("navStep", (options) => {
+Renderer.registerHelper('navStep', (options) => {
   let step = options.hash.step || this.step || Step.currentSuper();
   // If there is no belonging step, don't render anything
   if (!step) {
-    return "";
+    return '';
   }
 
   // Editing root
-  if (step === "root") {
-    const anySuperStep = !!Git(["log", "ORIG_HEAD", "-1", "--grep", "^Step [0-9]\\+:"]);
+  if (step === 'root') {
+    const anySuperStep = !!Git(['log', 'ORIG_HEAD', '-1', '--grep', '^Step [0-9]\\+:']);
     // If there are no any steps yet, don't show nav bar
     if (!anySuperStep) {
-      return "";
+      return '';
     }
 
     const ref = options.hash.ref || Path.relative(
-      Utils.cwd(), Path.resolve(Paths.manuals.views, "step1.md"),
+      Utils.cwd(), Path.resolve(Paths.manuals.views, 'step1.md'),
     );
 
-    return Renderer.renderTemplateFile("nav-step", {
+    return Renderer.renderTemplateFile('nav-step', {
       nextOnly: true,
-      text: t("nav.begin"),
+      text: t('nav.begin'),
       ref,
     });
   }
@@ -44,17 +44,17 @@ Renderer.registerHelper("navStep", (options) => {
 
   // Get an array of all super steps in the current tutorial
   const superSteps = Git([
-    "log", Git.activeBranchName(),
-    "--grep", "^Step [0-9]\\+:",
-    "--format=%s",
-  ]).split("\n")
+    'log', Git.activeBranchName(),
+    '--grep', '^Step [0-9]\\+:',
+    '--format=%s',
+  ]).split('\n')
     .filter(Boolean)
     .map((commitMessage) => commitMessage.match(/^Step (\d+)/)[1])
     .map(Number);
 
   // If there are no super steps at all
   if (superSteps.length === 0) {
-    return "";
+    return '';
   }
 
   // The order is the other way around, this way we save ourselves the sorting
@@ -63,16 +63,16 @@ Renderer.registerHelper("navStep", (options) => {
   // If this is the last step
   if (step === recentSuperStep) {
     // If we only have a single step
-    if (step == 1) {
-      return Renderer.renderTemplateFile("nav-step", {
+    if (step === 1) {
+      return Renderer.renderTemplateFile('nav-step', {
         prevOnly: true,
-        text: t("nav.intro"),
-        ref: options.hash.ref || Renderer.resolve(`../../../README.md`),
+        text: t('nav.intro'),
+        ref: options.hash.ref || Renderer.resolve('../../../README.md'),
       });
     } else {
-      return Renderer.renderTemplateFile("nav-step", {
+      return Renderer.renderTemplateFile('nav-step', {
         prevOnly: true,
-        text: t("nav.prev"),
+        text: t('nav.prev'),
         ref: options.hash.ref || Renderer.resolve(`step${step - 1}.md`),
       });
     }
@@ -80,30 +80,30 @@ Renderer.registerHelper("navStep", (options) => {
 
   // If this is the first super step
   if (step === 1) {
-    return Renderer.renderTemplateFile("nav-step", {
+    return Renderer.renderTemplateFile('nav-step', {
       bidirectional: true,
-      nextText: t("nav.next"),
-      nextRef: options.hash.nextRef || Renderer.resolve("step2.md"),
-      prevText: t("nav.intro"),
-      prevRef: options.hash.prevRef || Renderer.resolve("../../../README.md"),
+      nextText: t('nav.next'),
+      nextRef: options.hash.nextRef || Renderer.resolve('step2.md'),
+      prevText: t('nav.intro'),
+      prevRef: options.hash.prevRef || Renderer.resolve('../../../README.md'),
     });
   }
 
   // Any other case
-  return Renderer.renderTemplateFile("nav-step", {
+  return Renderer.renderTemplateFile('nav-step', {
     bidirectional: true,
-    nextText: t("nav.next"),
+    nextText: t('nav.next'),
     nextRef: options.hash.nextRef || Renderer.resolve(`step${step + 1}.md`),
-    prevText: t("nav.prev"),
+    prevText: t('nav.prev'),
     prevRef: options.hash.prevRef || Renderer.resolve(`step${step - 1}.md`),
   });
 }, {
   mdWrap: true,
 });
 
-Renderer.registerTransformation("medium", "navStep", (view) => {
-  const isPrev = !!view.match("\\|:-");
-  const isNext = !!view.match("-:\\|");
+Renderer.registerTransformation('medium', 'navStep', (view) => {
+  const isPrev = !!view.match('\\|:-');
+  const isNext = !!view.match('-:\\|');
 
   // ⟸ PREVIOUS STEP ║ NEXT STEP ⟹
   if (isPrev && isNext) {

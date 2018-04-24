@@ -1,12 +1,12 @@
-import * as Fs from "fs-extra";
-import { Git} from "./git";
-import { Manual} from "./manual";
-import { Paths} from "./paths";
-import { Step} from "./step";
-import { Utils} from "./utils";
+import * as Fs from 'fs-extra';
+import { Git } from './git';
+import { Manual } from './manual';
+import { Paths } from './paths';
+import { Step } from './step';
+import { Utils } from './utils';
 
 /**
-  This module contains package.json related methods
+ This module contains package.json related methods
  */
 
 // Updates all the dependencies in the package.json file based on a provided manifest.
@@ -15,7 +15,7 @@ import { Utils} from "./utils";
 function updateDependencies(updatedDeps?) {
   if (updatedDeps) {
     if (!(updatedDeps instanceof Object)) {
-      throw TypeError("New dependencies must be described using an object");
+      throw TypeError('New dependencies must be described using an object');
     }
   } else {
     const pack = Fs.readJsonSync(Paths.npm.package);
@@ -31,46 +31,49 @@ function updateDependencies(updatedDeps?) {
     }, 0);
 
     let initialContent =
-      "# Please pick the new versions of the project's dependencies\n\n";
+      '# Please pick the new versions of the project\'s dependencies\n\n';
 
     initialContent += Object.keys(deps).sort().map((dep) => {
       return `${Utils.padRight(dep, versionColumn)} ${deps[dep]}`;
-    }).join("\n");
+    }).join('\n');
 
     const editedContent = Git.edit(initialContent);
 
-    if (initialContent == editedContent) { return; }
+    if (initialContent === editedContent) {
+      return;
+    }
 
     updatedDeps = editedContent
       .trim()
-      .replace(/# .+/g, "")
-      .split("\n")
+      .replace(/# .+/g, '')
+      .split('\n')
       .map((line) => line.trim())
       .filter(Boolean)
       .map((line) => line.split(/\s+/))
-      .reduce((updatedDeps, [dep, version]) => {
-        updatedDeps[dep] = version;
-        return updatedDeps;
+      .reduce((prev, [dep, version]) => {
+        prev[dep] = version;
+
+        return prev;
       }, {});
   }
 
   const packSteps = Git([
-    "log",
-    "--format=%s",
-    "--grep=^Step [0-9]\\+",
-    "--",
+    'log',
+    '--format=%s',
+    '--grep=^Step [0-9]\\+',
+    '--',
     Paths.npm.package,
-  ]).split("\n")
+  ]).split('\n')
     .filter(Boolean)
     .map((line) => Step.descriptor(line).number);
 
   const minPackSuperStep = Math.min.apply(Math, packSteps).toFixed();
 
   const missingSuperSteps = Git([
-    "log",
-    "--format=%s",
-    "--grep=^Step [0-9]\\+:",
-  ]).split("\n")
+    'log',
+    '--format=%s',
+    '--grep=^Step [0-9]\\+:',
+  ]).split('\n')
     .filter(Boolean)
     .map((line) => Step.descriptor(line).number.toString())
     .filter((step) => !packSteps.includes(step))
@@ -83,11 +86,11 @@ function updateDependencies(updatedDeps?) {
   // Checking if the root commit has affected the package.json, since it has been
   // filtered in the last operation
   const shouldEditRoot = Git([
-    "diff-tree", "--no-commit-id", "--name-only", "-r", Git.rootHash(),
-  ]).includes("package.json");
+    'diff-tree', '--no-commit-id', '--name-only', '-r', Git.rootHash(),
+  ]).includes('package.json');
 
   if (shouldEditRoot) {
-    steps.push("root");
+    steps.push('root');
   }
 
   Step.edit(steps);
@@ -98,20 +101,22 @@ function updateDependencies(updatedDeps?) {
     // Plucking indention
     let indent: any = packContent.match(/\{\n([^"]+)/) || [];
     // Default indention
-    indent = indent[1] || "\s\s";
+    indent = indent[1] || '\s\s';
 
     let currPackContent: any;
     let headPackContent = currPackContent = packContent;
     // Keep replacing conflict notations until we get both unresolved versions
     for (
       let newHeadPackContent, newCurrPackContent;
-      newHeadPackContent != headPackContent &&
-      newCurrPackContent != currPackContent;
-      newHeadPackContent = headPackContent.replace(Git.conflict, "$1"),
-      newCurrPackContent = currPackContent.replace(Git.conflict, "$2")
+      newHeadPackContent !== headPackContent &&
+      newCurrPackContent !== currPackContent;
+      newHeadPackContent = headPackContent.replace(Git.conflict, '$1'),
+        newCurrPackContent = currPackContent.replace(Git.conflict, '$2')
     ) {
       // Force initialization
-      if (!newHeadPackContent || !newCurrPackContent) { continue; }
+      if (!newHeadPackContent || !newCurrPackContent) {
+        continue;
+      }
 
       headPackContent = newHeadPackContent;
       currPackContent = newCurrPackContent;
@@ -119,13 +124,15 @@ function updateDependencies(updatedDeps?) {
 
     const headPack = JSON.parse(headPackContent);
     const currPack = JSON.parse(currPackContent);
-    const depsTypes = ["dependencies", "devDependencies", "peerDependencies"];
+    const depsTypes = ['dependencies', 'devDependencies', 'peerDependencies'];
 
     // We have some conflicts to resolve
-    if (headPackContent != currPackContent) {
+    if (headPackContent !== currPackContent) {
       // Picking the updated dependencies versions
       depsTypes.forEach((depsType) => {
-        if (!currPack[depsType]) { return; }
+        if (!currPack[depsType]) {
+          return;
+        }
 
         Object.keys(headPack[depsType]).forEach((dep) => {
           if (currPack[depsType][dep]) {
@@ -139,11 +146,13 @@ function updateDependencies(updatedDeps?) {
     Object.keys(updatedDeps).forEach((dep) => {
       // Picking the updated dependencies versions
       depsTypes.forEach((depsType) => {
-        if (!currPack[depsType]) { return; }
+        if (!currPack[depsType]) {
+          return;
+        }
 
-        Object.keys(updatedDeps).forEach((dep) => {
-          if (currPack[depsType][dep]) {
-            currPack[depsType][dep] = updatedDeps[dep];
+        Object.keys(updatedDeps).forEach((dependencyName) => {
+          if (currPack[depsType][dependencyName]) {
+            currPack[depsType][dependencyName] = updatedDeps[dependencyName];
           }
         });
       });
@@ -151,11 +160,11 @@ function updateDependencies(updatedDeps?) {
 
     Fs.writeFileSync(Paths.npm.package, JSON.stringify(currPack, null, indent));
 
-    Git.print(["add", Paths.npm.package]);
-    Git.print(["commit", "--amend"], { env: { GIT_EDITOR: true } });
+    Git.print(['add', Paths.npm.package]);
+    Git.print(['commit', '--amend'], { env: { GIT_EDITOR: true } });
 
     // If this is root commit or a super-step, re-render the correlated manual
-    const commitMsg = Git.recentCommit(["--format=%s"]);
+    const commitMsg = Git.recentCommit(['--format=%s']);
     const isSuperStep = !!Step.superDescriptor(commitMsg);
 
     if (isSuperStep) {
@@ -163,18 +172,20 @@ function updateDependencies(updatedDeps?) {
     }
 
     try {
-      Git.print(["rebase", "--continue"]);
+      Git.print(['rebase', '--continue']);
     } catch (e) {
-      const modifiedFiles = Git(["diff", "--name-only"])
-        .split("\n")
+      const modifiedFiles = Git(['diff', '--name-only'])
+        .split('\n')
         .filter(Boolean);
 
       // Checking if only package.json is both modified
-      const expectedConflict = modifiedFiles.length == 2 && modifiedFiles.every((file) => {
-        return file == "package.json";
+      const expectedConflict = modifiedFiles.length === 2 && modifiedFiles.every((file) => {
+        return file === 'package.json';
       });
 
-      if (!expectedConflict) { throw e; }
+      if (!expectedConflict) {
+        throw e;
+      }
     }
   }
 }

@@ -1,21 +1,19 @@
-import * as i18n from "i18next";
-import * as Path from "path";
-import { Paths} from "../paths";
-import { Utils} from "../utils";
-import { Translation } from "./translation";
+import * as i18n from 'i18next';
+import * as Path from 'path';
+import { Paths } from '../paths';
+import { Utils } from '../utils';
+import { Translation } from './translation';
 
 const superTranslate = i18n.t.bind(i18n);
 
-(function() {
-  i18n.init({
-    lng: "en",
-    initImmediate: true,
-    resources: {
-      en: { translation: getTranslationResource("en") },
-      he: { translation: getTranslationResource("he") },
-    },
-  });
-}());
+i18n.init({
+  lng: 'en',
+  initImmediate: true,
+  resources: {
+    en: { translation: getTranslationResource('en') },
+    he: { translation: getTranslationResource('he') },
+  },
+});
 
 // Gets a locale and returns the full resource object
 function getTranslationResource(locale) {
@@ -40,6 +38,7 @@ function getTranslationResource(locale) {
       const extension = require(path);
       Utils.merge(resource, extension);
     } catch (err) {
+      // nothing to do here...
     }
 
     return resource;

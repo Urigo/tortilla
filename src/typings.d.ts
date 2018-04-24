@@ -1,21 +1,18 @@
-declare module "*{!package}.json" {
+declare module '*{!package}.json' {
   const value: any;
   export default value;
 }
 
-declare module "*package.json" {
+declare module '*package.json' {
   export const version: string;
   export const description: string;
 }
 
-declare module "node-localstorage" {
+declare module 'node-localstorage' {
   export class LocalStorage {
-    constructor(path: string)
-
-    /**
-     * Amount of keys stored
-     */
     public length: number;
+
+    constructor(path: string)
 
     public setItem(key: string, value: string | number): void;
     public getItem(key: string): string;

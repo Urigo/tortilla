@@ -4,39 +4,39 @@
  */
 
 export class LocalCache<T = any> {
-  public _cache: {[key: string]: T};
+  public cache: {[key: string]: T};
 
   constructor() {
-    this._cache = {};
+    this.cache = {};
   }
 
   public getItem(key: string): T | null {
-    if (this._cache.hasOwnProperty(key)) {
-      return this._cache[key];
+    if (this.cache.hasOwnProperty(key)) {
+      return this.cache[key];
     }
 
     return null;
   }
 
   public setItem(key: string, value: T): void {
-    this._cache[key] = value;
+    this.cache[key] = value;
   }
 
   public removeItem(key): void {
-    delete this._cache[key];
+    delete this.cache[key];
   }
 
   public key(n: number): string {
-    return Object.keys(this._cache)[n];
+    return Object.keys(this.cache)[n];
   }
 
   public clear(): void {
-    Object.keys(this._cache).forEach(function(key) {
-      delete this._cache[key];
+    Object.keys(this.cache).forEach(function(key) {
+      delete this.cache[key];
     });
   }
 
   get length(): number {
-    return Object.keys(this._cache).length;
+    return Object.keys(this.cache).length;
   }
 }

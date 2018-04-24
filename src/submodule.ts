@@ -1,29 +1,32 @@
-import * as Fs from "fs-extra";
-import * as Minimist from "minimist";
-import * as Path from "path";
-import { Git} from "./git";
-import { Paths} from "./paths";
-import { Step } from "./step";
-import { Utils} from "./utils";
+import * as Fs from 'fs-extra';
+import * as Minimist from 'minimist';
+import * as Path from 'path';
+import { Git } from './git';
+import { Paths } from './paths';
+import { Step } from './step';
+import { Utils } from './utils';
 
 const exec = Utils.exec;
 
-(function() {
+function init() {
   if (require.main !== module) {
     return;
   }
 
   const argv = Minimist(process.argv.slice(2), {
-    string: ["_"],
+    string: ['_'],
   });
 
   const method = argv._[0];
   const arg1 = argv._[1];
 
   switch (method) {
-    case "ensure": return ensureSubmodules(arg1);
+    case 'ensure':
+      return ensureSubmodules(arg1);
   }
-}());
+}
+
+init();
 
 function addSubmodules(remotes) {
   // remote-name mapping loop
@@ -32,7 +35,7 @@ function addSubmodules(remotes) {
     let name = remotes[i + 1];
 
     // No remote name was provided, but yet another remote
-    if (name && !name.includes("/")) {
+    if (name && !name.includes('/')) {
       remotes[i++] = { remote, name };
 
       continue;
@@ -40,52 +43,52 @@ function addSubmodules(remotes) {
 
     name = getRemoteSubmoduleName(remote);
 
-    if (!remote.includes("/")) {
-      throw Error("Provided remote is not a path");
+    if (!remote.includes('/')) {
+      throw Error('Provided remote is not a path');
     }
 
     remotes[i] = { remote, name };
   }
 
   // Cleanup names leftovers
-  remotes = remotes.filter((raw) => typeof raw != "string");
+  remotes = remotes.filter((raw) => typeof raw !== 'string');
 
   const rebasing = Git.rebasing();
 
   // Submodule can only be added in the root commit, therefore in case we're rebasing
   // we should check whether we're editing the root or not
   if (rebasing) {
-    const commitHash = Git.recentCommit(["--format=%H"]);
+    const commitHash = Git.recentCommit(['--format=%H']);
     const rootHash = Git.rootHash();
 
-    if (commitHash != rootHash) {
-      throw TypeError("Can't add submodules in the middle of the stack");
+    if (commitHash !== rootHash) {
+      throw TypeError('Can\'t add submodules in the middle of the stack');
     }
   } else {
-    Step.edit("root");
+    Step.edit('root');
   }
 
   remotes.forEach(({ remote, name }) => {
-    Git.print(["submodule", "add", remote, name]);
-    Git.print(["add", name]);
+    Git.print(['submodule', 'add', remote, name]);
+    Git.print(['add', name]);
   });
 
-  Git.print(["add", ".gitmodules"]);
+  Git.print(['add', '.gitmodules']);
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
-    Git.print(["commit", "--amend"], {
+    Git.print(['commit', '--amend'], {
       env: {
         GIT_EDITOR: true,
       },
     });
-    Git.print(["rebase", "--continue"]);
+    Git.print(['rebase', '--continue']);
   }
 }
 
 // Source: https://github.com/tj/git-extras/blob/master/bin/git-delete-submodule
 function removeSubmodules(submodules) {
-  if (!submodules || submodules.length == 0) {
+  if (!submodules || submodules.length === 0) {
     submodules = listSubmodules();
   }
 
@@ -94,45 +97,45 @@ function removeSubmodules(submodules) {
   // Submodule can only be removed from the root commit, therefore in case we're rebasing
   // we should check whether we're editing the root or not
   if (rebasing) {
-    const commitHash = Git.recentCommit(["--format=%H"]);
+    const commitHash = Git.recentCommit(['--format=%H']);
     const rootHash = Git.rootHash();
 
-    if (commitHash != rootHash) {
-      throw TypeError("Can't remove submodules from the middle of the stack");
+    if (commitHash !== rootHash) {
+      throw TypeError('Can\'t remove submodules from the middle of the stack');
     }
   } else {
-    Step.edit("root");
+    Step.edit('root');
   }
 
   submodules.forEach((submodule) => {
-    Git.print(["submodule", "deinit", "-f", submodule]);
-    exec("rmdir", [submodule]);
-    exec("rm", ["-rf", `.git/modules/${submodule}`]);
+    Git.print(['submodule', 'deinit', '-f', submodule]);
+    exec('rmdir', [submodule]);
+    exec('rm', ['-rf', `.git/modules/${submodule}`]);
     Git([
-      "config", "--file=.gitmodules", "--remove-section", `submodule.${submodule}`,
+      'config', '--file=.gitmodules', '--remove-section', `submodule.${submodule}`,
     ]);
-    Git(["add", ".gitmodules"]);
+    Git(['add', '.gitmodules']);
     // This will also stage the submodule
-    Git(["rm", "--cached", "-rf", submodule]);
+    Git(['rm', '--cached', '-rf', submodule]);
   });
 
-  ensureSubmodules("root", rebasing);
+  ensureSubmodules('root', rebasing);
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
-    Git.print(["commit", "--amend"], {
+    Git.print(['commit', '--amend'], {
       env: {
         GIT_EDITOR: true,
       },
     });
-    Git.print(["rebase", "--continue"]);
+    Git.print(['rebase', '--continue']);
   }
 }
 
 // This is useful when we not only want to update the files inside the submodules,
 // but rather ensure that the hash is set to the latest after rebasing the submodule
 function resetSubmodules(submodules) {
-  if (!submodules || submodules.length == 0) {
+  if (!submodules || submodules.length === 0) {
     submodules = listSubmodules();
   }
 
@@ -141,14 +144,14 @@ function resetSubmodules(submodules) {
   // Submodule can only be reseted from the root commit, therefore in case we're rebasing
   // we should check whether we're editing the root or not
   if (rebasing) {
-    const commitHash = Git.recentCommit(["--format=%H"]);
+    const commitHash = Git.recentCommit(['--format=%H']);
     const rootHash = Git.rootHash();
 
-    if (commitHash != rootHash) {
-      throw TypeError("Can't remove submodules from the middle of the stack");
+    if (commitHash !== rootHash) {
+      throw TypeError('Can\'t remove submodules from the middle of the stack');
     }
   } else {
-    Step.edit("root");
+    Step.edit('root');
   }
 
   // After removing submodules they need to be re-added with the right url
@@ -168,17 +171,17 @@ function resetSubmodules(submodules) {
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
-    Git.print(["commit", "--amend"], {
+    Git.print(['commit', '--amend'], {
       env: {
         GIT_EDITOR: true,
       },
     });
-    Git.print(["rebase", "--continue"]);
+    Git.print(['rebase', '--continue']);
   }
 }
 
 function updateSubmodules(submodules) {
-  if (!submodules || submodules.length == 0) {
+  if (!submodules || submodules.length === 0) {
     submodules = listSubmodules();
   }
 
@@ -187,61 +190,65 @@ function updateSubmodules(submodules) {
   // Submodule can only be removed from the root commit, therefore in case we're rebasing
   // we should check whether we're editing the root or not
   if (rebasing) {
-    const commitHash = Git.recentCommit(["--format=%H"]);
+    const commitHash = Git.recentCommit(['--format=%H']);
     const rootHash = Git.rootHash();
 
-    if (commitHash != rootHash) {
-      throw TypeError("Can't remove submodules from the middle of the stack");
+    if (commitHash !== rootHash) {
+      throw TypeError('Can\'t remove submodules from the middle of the stack');
     }
   } else {
-    Step.edit("root");
+    Step.edit('root');
   }
 
   submodules.forEach((submodule) => {
-    Git.print(["submodule", "update", submodule]);
-    Git.print(["add", submodule]);
+    Git.print(['submodule', 'update', submodule]);
+    Git.print(['add', submodule]);
   });
 
   // If we're not in rebase mode, amend the changes
   if (!rebasing) {
-    Git.print(["commit", "--amend"], {
+    Git.print(['commit', '--amend'], {
       env: {
         GIT_EDITOR: true,
       },
     });
-    Git.print(["rebase", "--continue"]);
+    Git.print(['rebase', '--continue']);
   }
 }
 
 function listSubmodules() {
   const root = Git.root();
 
-  if (!root) { return []; }
+  if (!root) {
+    return [];
+  }
 
   let configData;
   try {
     configData = Git([
-      "config", "--file", ".gitmodules", "--name-only", "--get-regexp", "path",
+      'config', '--file', '.gitmodules', '--name-only', '--get-regexp', 'path',
     ]);
-  // No submodules exit
+    // No submodules exit
   } catch (e) {
     return [];
   }
 
-  return configData.split("\n").map((submodule) => {
-    return submodule.split(".")[1];
+  return configData.split('\n').map((submodule) => {
+    return submodule.split('.')[1];
   });
 }
 
 function listUrls(whiteList = []) {
   return Git([
-    "config", "--file", ".gitmodules", "--get-regexp", "url",
-  ]).split("\n")
+    'config', '--file', '.gitmodules', '--get-regexp', 'url',
+  ]).split('\n')
     .filter(Boolean)
     .map((line) => {
       const match = line.match(/^submodule\.([^\.]+)\.url\s(.+)$/);
 
-      if (!match) { return; }
+      if (!match) {
+        return;
+      }
 
       const submodule = match[1];
       const url = match[2];
@@ -256,14 +263,16 @@ function listUrls(whiteList = []) {
 function isSubmodule() {
   const root = Git.root();
 
-  if (!root) { return false; }
+  if (!root) {
+    return false;
+  }
 
   // If the directory one level up the root is a git project then it means that
   // the current directory is a git project as well
   try {
     // This command should only work if we're in a git project
-    return !!Git(["rev-parse", "--show-toplevel"], {
-      cwd: Path.resolve(root, ".."),
+    return !!Git(['rev-parse', '--show-toplevel'], {
+      cwd: Path.resolve(root, '..'),
     });
   } catch (e) {
     return false;
@@ -273,7 +282,7 @@ function isSubmodule() {
 // Ensures that all submodules are set to the current hash based on the checkouts file
 // and the provided step index
 function ensureSubmodules(step, rebasing?) {
-  if (step == "root") {
+  if (step === 'root') {
     step = 0;
   }
 
@@ -283,16 +292,16 @@ function ensureSubmodules(step, rebasing?) {
   Object.keys(checkouts).forEach((submodule) => {
     const hash = checkouts[submodule].hashes[step];
 
-    Git(["checkout", hash], {
+    Git(['checkout', hash], {
       cwd: `${Utils.cwd()}/${submodule}`,
     });
 
-    Git(["add", submodule]);
+    Git(['add', submodule]);
   });
 
   // If not rebasing to begin with, amend the changes
   if (!rebasing) {
-    Git(["commit", "--amend", "--allow-empty"], {
+    Git(['commit', '--amend', '--allow-empty'], {
       env: {
         TORTILLA_CHILD_PROCESS: true,
         GIT_EDITOR: true,
@@ -338,11 +347,11 @@ function getSubmoduleCheckouts(whiteList?) {
       const cwd = `${Utils.cwd()}/${coSubmodule}`;
       let coSuperHash;
 
-      if (coSuperIndex == "root") {
-        coSuperHash = Git(["rev-list", "--max-parents=0", "HEAD"], { cwd });
+      if (coSuperIndex === 'root') {
+        coSuperHash = Git(['rev-list', '--max-parents=0', 'HEAD'], { cwd });
       } else {
         coSuperHash = Git([
-          "log", head, `--grep=^Step ${coSuperIndex}:`, "--format=%H",
+          'log', head, `--grep=^Step ${coSuperIndex}:`, '--format=%H',
         ], { cwd });
       }
 
@@ -359,38 +368,42 @@ function getSubmoduleCheckouts(whiteList?) {
 
 function getRemoteSubmoduleName(remote) {
   return remote
-    .split("/")
+    .split('/')
     .pop()
-    .split(".")
+    .split('.')
     .shift();
 }
 
 function getLocalSubmoduleName(givenPath) {
-  if (!givenPath) { return ""; }
+  if (!givenPath) {
+    return '';
+  }
 
   const givenPackPath = Paths.resolveProject(givenPath).npm.package;
   const givenPackName = JSON.parse(Fs.readFileSync(givenPackPath).toString()).name;
 
-  const submoduleName = listSubmodules().find((submoduleName) => {
-    const submodulePath = `${Utils.cwd()}/${submoduleName}`;
+  const submoduleName = listSubmodules().find((name) => {
+    const submodulePath = `${Utils.cwd()}/${name}`;
     const submodulePackPath = Paths.resolveProject(submodulePath).npm.package;
     const submodulePackName = JSON.parse(Fs.readFileSync(submodulePackPath).toString()).name;
 
-    return submodulePackName == givenPackName;
+    return submodulePackName === givenPackName;
   });
 
-  return submoduleName || "";
+  return submoduleName || '';
 }
 
 // Will get the path of the development sub-repo
 function getSubmoduleCwd(name) {
   const configLine = Git([
-    "config", "--file", ".gitmodules", "--get-regexp", `submodule.${name}.url`,
+    'config', '--file', '.gitmodules', '--get-regexp', `submodule.${name}.url`,
   ]);
 
-  if (!configLine) { return; }
+  if (!configLine) {
+    return;
+  }
 
-  const relativePath = configLine.split(" ")[1];
+  const relativePath = configLine.split(' ')[1];
 
   return Path.resolve(Utils.cwd(), relativePath);
 }
