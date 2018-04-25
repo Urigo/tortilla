@@ -87,11 +87,13 @@ function editStep(operations, steps, options) {
   }
 
   // This way we can store data on each step string
-  steps = steps.map((step) => String(step));
+  // We have to keep it as `new String` and not `String`!
+  /* tslint:disable-next-line */
+  steps = steps.map((step) => new String(step));
 
   // Edit each commit which is relevant to the specified steps
   steps.forEach((step) => {
-    if (step === 'root') {
+    if (String(step) === 'root') {
       const operation = operations[0];
       operation.method = 'edit';
       step.operation = operation;
@@ -105,7 +107,7 @@ function editStep(operations, steps, options) {
       const operation = operations.find(({ message }) => {
         if (!message) { return; }
         const descriptor = Step.descriptor(message);
-        return descriptor && descriptor.number === step;
+        return descriptor && descriptor.number === String(step);
       });
 
       if (!operation) { return; }

@@ -6,6 +6,7 @@ import { type } from 'os';
 import { Utils } from '../src/utils';
 
 process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
+// process.env.DEBUG = '1';
 
 export function tortillaBeforeAll() {
   if (type() === 'Darwin') {
@@ -26,7 +27,7 @@ export function tortillaBeforeAll() {
   // Set environment from which Tortilla calculations are gonna be made from
   process.env.TORTILLA_CWD = this.testDir;
 
-  const tortillaPath = Path.resolve(__dirname, '../dist/cli/tortilla');
+  const tortillaPath = Path.resolve(__dirname, '../dist/cli/tortilla.js');
 
   // Initializing test tortilla project
   ChildProcess.execFileSync('node', [
@@ -41,10 +42,7 @@ export function tortillaBeforeAll() {
   Object.assign(this, Utils);
 
   // Executes tortilla
-  this.tortilla = (...args) => {
-    const tortillaCLI = Path.resolve(__dirname, '../dist/cli/tortilla');
-    return this.exec(tortillaCLI, ...args);
-  };
+  this.tortilla = args => this.exec('node', [tortillaPath, ...args]);
 
   // Read the provided test data located in 'fs-data'
   this.readTestData = (put, file) => {
@@ -95,6 +93,8 @@ export function tortillaBeforeAll() {
 
     return `node ${scriptFile.name}`;
   };
+
+  this.wait = async (time = 1000) => new Promise(resolve => setTimeout(resolve, time));
 }
 
 export function tortillaBeforeEach() {

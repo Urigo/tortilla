@@ -133,13 +133,17 @@ function exec(file, argv?, options?) {
     return options.env[key] == null;
   });
 
-  options.env = extend({
+  options.env = {
     TORTILLA_CHILD_PROCESS: true,
-  }, process.env, options.env);
+    ...process.env,
+    ...options.env,
+  };
 
   envRedundantKeys.forEach((key) => {
     delete options.env[key];
   });
+
+  debug(`Executing (execFileSync) command "${file} ${argv.join(' ')}" (${options.cwd})`);
 
   const out = ChildProcess.execFileSync(file, argv, options);
 
@@ -396,6 +400,16 @@ function shCmd(cmd) {
     .trim();
 }
 
+function log(...args) {
+  console.log(...args);
+}
+
+function debug(...args) {
+  if (process.env.DEBUG) {
+    console.log(...args);
+  }
+}
+
 export const Utils = {
   cwd,
   exec,
@@ -420,4 +434,6 @@ export const Utils = {
   isEqual,
   escapeBrackets,
   shCmd,
+  log,
+  debug,
 };

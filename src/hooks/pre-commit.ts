@@ -14,6 +14,7 @@ function run() {
   if (process.env.TORTILLA_CHILD_PROCESS) {
     return;
   }
+
   if (!LocalStorage.getItem('USE_STRICT')) {
     return;
   }
