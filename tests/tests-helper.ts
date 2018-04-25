@@ -3,10 +3,11 @@ import * as Path from 'path';
 import * as Fs from 'fs-extra';
 import * as ChildProcess from 'child_process';
 import { type } from 'os';
-import { Utils } from '../src/utils';
 
 process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 // process.env.DEBUG = '1';
+
+import { Utils } from '../src/utils';
 
 export function tortillaBeforeAll() {
   if (type() === 'Darwin') {

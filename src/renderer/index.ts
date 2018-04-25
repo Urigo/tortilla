@@ -220,7 +220,8 @@ function resolvePath(/* reserved path, user defined path */) {
 
   // A default path that the host's markdown renderer will know how to resolve by its own
   let defaultPath = paths.slice(1).join('/');
-  defaultPath = String(defaultPath);
+  /* tslint:disable-next-line */
+  defaultPath = new String(defaultPath);
   // The 'isRelative' flag can be used later on to determine if this is an absolute path
   // or a relative path
   defaultPath.isRelative = true;
@@ -237,7 +238,7 @@ function resolvePath(/* reserved path, user defined path */) {
   // If no repository was defined, or
   // repository type is not git, or
   // no repository url is defined, return default path
-  if (repository === null ||
+  if (!repository ||
       repository.type !== 'git' ||
       repository.url === null) {
     return defaultPath;

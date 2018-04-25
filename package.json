@@ -87,7 +87,7 @@
   "jest": {
     "globals": {
       "ts-jest": {
-        "enableTsDiagnostics": true
+        "enableTsDiagnostics": false
       }
     },
     "transform": {
