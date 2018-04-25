@@ -43,7 +43,7 @@ export function tortillaBeforeAll() {
   Object.assign(this, Utils);
 
   // Executes tortilla
-  this.tortilla = args => this.exec('node', [tortillaPath, ...args]);
+  this.tortilla = (args, options?) => this.exec('node', [tortillaPath, ...args], options);
 
   // Read the provided test data located in 'fs-data'
   this.readTestData = (put, file) => {
@@ -79,7 +79,7 @@ export function tortillaBeforeAll() {
   };
 
   this.newEditor = (fn) => {
-    const body = fn.toString().replace(/`/g, '\\`');
+    const body = fn.toString().replace(/`/g, '\\`').replace(/\\/g, '\\\\');
     const scriptFile = Tmp.fileSync({ unsafeCleanup: true });
 
     Fs.writeFileSync(scriptFile.name, `

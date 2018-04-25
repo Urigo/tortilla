@@ -9,8 +9,8 @@ describe('Package', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
 
-  describe.only('updateDependencies()', function () {
-    it.only('should update the dependencies at each commit without having conflicts', function () {
+  describe('updateDependencies()', function () {
+    it('should update the dependencies at each commit without having conflicts', function () {
       let pack;
 
       pack = Fs.readJsonSync(Paths.npm.package);
