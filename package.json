@@ -48,7 +48,7 @@
     "build": "tsc",
     "lint": "tslint --format stylish -c tslint.json 'src/**/*.ts'",
     "pretest": "yarn build",
-    "test": "yarn jest --runInBand"
+    "test": "yarn jest"
   },
   "dependencies": {
     "@types/fs-extra": "5.0.2",
