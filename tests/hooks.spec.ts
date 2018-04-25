@@ -11,8 +11,9 @@ describe('Hooks', () => {
       'commit', '--allow-empty', '--allow-empty-message'
     ], {
       env: {
+        ...process.env,
         TORTILLA_CHILD_PROCESS: '',
-        GIT_EDITOR: true
+        GIT_EDITOR: true,
       }
     });
 
