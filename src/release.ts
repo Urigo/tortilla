@@ -5,6 +5,7 @@ import { localStorage as LocalStorage } from './local-storage';
 import { Manual } from './manual';
 import { Paths } from './paths';
 import { Step } from './step';
+import { Utils } from './utils';
 
 /**
  The 'release' module contains different utilities and methods which are responsible
@@ -312,7 +313,7 @@ function createReleaseTag(tag, dstHash, message?) {
   Fs.removeSync(Paths.renovate);
 
   // Releasing a version
-  Git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+  Git.print(['commit', '--amend', '--all'], { env: { GIT_EDITOR: true } });
 
   // Provide a quick message
   if (typeof message === 'string') {

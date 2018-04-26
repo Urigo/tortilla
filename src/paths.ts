@@ -213,7 +213,7 @@ function resolveProject(cwd: string): TortillaPaths {
     readme: resolve(cwd, 'README.md'),
     renovate: resolve(cwd, 'renovate.json'),
     storage: resolve(cwd, '.git/.tortilla'),
-    travis: resolve(cwd, 'travis.yml'),
+    travis: resolve(cwd, '.travis.yml'),
     manuals,
     tortilla,
     cli,
