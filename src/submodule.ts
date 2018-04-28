@@ -201,7 +201,7 @@ function updateSubmodules(submodules) {
   }
 
   submodules.forEach((submodule) => {
-    Git.print(['submodule', 'update', submodule]);
+    Git.print(['submodule', 'update', '--remote', submodule]);
     Git.print(['add', submodule]);
   });
 
