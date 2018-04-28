@@ -210,6 +210,9 @@ function getStepCommitMessage(step) {
 
 
 
+
+
+
     return Git(['log', '-1', rootHash, '--format=%s']);
   }
 
