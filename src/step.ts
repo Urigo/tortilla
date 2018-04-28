@@ -381,6 +381,7 @@ function getNextStep(offset?) {
     if (isSuperStep) {
       return `${superStepNumber + 1}.${1}`;
     }
+
     // Else, return the next step as expected
     return `${superStepNumber}.${subStepNumber + 1}`;
   }
@@ -397,6 +398,7 @@ function getNextStep(offset?) {
     if (isSuperStep) {
       return (superStepNumber + 1).toString();
     }
+
     // Else, return the current super step
     return superStepNumber.toString();
   }
@@ -405,6 +407,7 @@ function getNextStep(offset?) {
   if (isSuperStep) {
     return `${superStepNumber + 1}.${1}`;
   }
+
   // Else, return the next step as expected
   return `${superStepNumber}.${subStepNumber + 1}`;
 }

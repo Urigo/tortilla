@@ -54,6 +54,7 @@ function gonnaAmend() {
 function tagExists(tag) {
   try {
     git(['rev-parse', tag]);
+
     return true;
   } catch (err) {
     return false;
@@ -73,8 +74,8 @@ function getRecentCommit(offset, argv, options) {
   }
 
   const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
-
   argv = ['log', hash, '-1'].concat(argv);
+
   return git(argv, options);
 }
 

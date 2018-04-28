@@ -407,6 +407,7 @@ function getStepLimit(oldStep, newStep) {
     if (oldSubStep) {
       return oldSuperStep;
     }
+
     // 1, 1.1
     return Infinity;
   }

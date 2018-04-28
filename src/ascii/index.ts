@@ -10,6 +10,7 @@ import {Paths} from '../paths';
 function getAsciiArt(artName) {
   const artFile = `${artName}.txt`;
   const artPath = Path.resolve(Paths.tortilla.ascii.views, artFile);
+
   return Fs.readFileSync(artPath).toString();
 }
 

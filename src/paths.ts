@@ -153,6 +153,7 @@ function resolveTree(root, branches): any {
 
   return Object.keys(branches).reduce((tree, name) => {
     tree[name] = branches[name];
+
     return tree;
   }, {
     resolve: Path.resolve.bind(Path, root),

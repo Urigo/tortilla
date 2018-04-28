@@ -240,6 +240,7 @@ function contract(destination, keys) {
 function pluck(obj, keys) {
   return keys.reduce((result, key) => {
     result[key] = obj[key];
+
     return result;
   }, {});
 }

@@ -159,5 +159,6 @@ function getNextStep(stepDescriptor) {
   }
 
   const isSubStep = !!stepDescriptor.number.split('.')[1];
+
   return isSubStep ? Step.next(1) : Step.nextSuper(1);
 }

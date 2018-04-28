@@ -265,6 +265,7 @@ function getAllReleases() {
     // Filter all the release tags which are proceeded by their release
     .filter((tagName) => {
       const pattern = new RegExp(`${branch}@\\d+\\.\\d+\\.\\d+`);
+
       return tagName.match(pattern);
     })
     // Map all the release strings

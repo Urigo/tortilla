@@ -39,6 +39,7 @@ function renderTemplateFile(templatePath, scope) {
   }
 
   const template = cache[templatePath];
+
   return renderTemplate(template, scope);
 }
 
@@ -64,6 +65,7 @@ function renderTemplate(template, scope) {
     // Set the view file for the resolve utility. If no view path was provided, the
     // resolve function below still won't work
     (handlebars as any).resolve = resolvePath.bind(null, viewDir);
+
     return template(scope);
   } finally {
     // Either if an error was thrown or not, unbind it
@@ -192,9 +194,11 @@ function mdWrapComponent(type, name, args, content?) {
 function stringifyHash(hash) {
   return Object.keys(hash).map((key) => {
     let value = hash[key];
+
     if (typeof value === 'string') {
       value = `"${value}"`;
     }
+
     return `${key}=${value}`;
   }).join(' ');
 }
@@ -270,6 +274,7 @@ function resolvePath(/* reserved path, user defined path */) {
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
   // /manuals/views/step1.md
   paths.unshift(branchPath);
+
   return protocol + Path.resolve(...paths).substr(1);
 }
 

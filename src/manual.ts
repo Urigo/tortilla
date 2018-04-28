@@ -190,6 +190,7 @@ function getManualViewPath(step, locale) {
   if (step === 'root' && !locale) {
     return Paths.readme;
   }
+
   // Resolve normally e.g. manuals/views/step1.md
   return Path.resolve(Paths.manuals.views, locale, fileName);
 }
@@ -198,6 +199,7 @@ function getManualViewPath(step, locale) {
 function getStepCommitMessage(step) {
   if (step === 'root') {
     const rootHash = Git.rootHash();
+
     return Git(['log', '-1', rootHash, '--format=%s']);
   }
 

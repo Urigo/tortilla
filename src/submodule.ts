@@ -323,6 +323,7 @@ function getSubmoduleCheckouts(whiteList?) {
     // Filter based on white list
     if (whiteList && !whiteList.includes(coSubmodule)) {
       delete checkouts[coSubmodule];
+
       return;
     }
 
