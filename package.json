@@ -103,8 +103,8 @@
     "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
   },
   "lint-staged": {
-    "*.{ts}": ["tslint --fix", "git add"],
-    "*.{json}": ["prettier --write", "git add"]
+    "src/**/*.{ts}": ["tslint --fix", "git add"],
+    "**/*.{json}": ["prettier --write", "git add"]
   },
   "prettier": {
     "printWidth": 200,
