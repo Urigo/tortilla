@@ -79,7 +79,7 @@ function editStep(operations, steps, options) {
     Step.initializeStepMap(!!options.udiff);
   }
 
-  if (!steps) {
+  if (!steps || steps.length === 0) {
     const descriptor = Step.descriptor(operations[0].message);
     const step = (descriptor && descriptor.number) || 'root';
 
@@ -107,6 +107,7 @@ function editStep(operations, steps, options) {
       const operation = operations.find(({ message }) => {
         if (!message) { return; }
         const descriptor = Step.descriptor(message);
+
         return descriptor && descriptor.number === String(step);
       });
 
@@ -302,7 +303,7 @@ function sortSteps(operations, options) {
           export TORTILLA_CWD=${cwd}
           export TORTILLA_SUBMODULE_CWD=${subCwd}
 
-          if ${Paths.cli.tortilla} step edit --root ; then
+          if node ${Paths.cli.tortilla} step edit --root ; then
             git rebase --continue
           else
             git rebase --abort

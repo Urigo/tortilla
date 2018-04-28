@@ -179,7 +179,6 @@ function exists(path, type?) {
 function scopeEnv(fn, env) {
   const keys = Object.keys(env);
   const originalEnv = pluck(process.env, keys);
-
   const nullKeys = keys.filter((key) => process.env[key] == null);
 
   extend(process.env, env);

@@ -138,12 +138,12 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
 });
 
 const cli = resolveTree(resolve(__dirname, '../cli'), {
-  tortilla: resolve(__dirname, '../cli/tortilla'),
-  tortillaManual: resolve(__dirname, '../cli/tortilla-manual'),
-  tortillaRelease: resolve(__dirname, '../cli/tortilla-release'),
-  tortillaStep: resolve(__dirname, '../cli/tortilla-step'),
-  tortillaStrict: resolve(__dirname, '../cli/tortilla-strict'),
-  tortillaSubmodule: resolve(__dirname, '../cli/tortilla-submodule'),
+  tortilla: resolve(__dirname, '../dist/cli/tortilla.js'),
+  tortillaManual: resolve(__dirname, '../dist/cli/tortilla-manual.js'),
+  tortillaRelease: resolve(__dirname, '../dist/cli/tortilla-release.js'),
+  tortillaStep: resolve(__dirname, '../dist/cli/tortilla-step.js'),
+  tortillaStrict: resolve(__dirname, '../dist/cli/tortilla-strict.js'),
+  tortillaSubmodule: resolve(__dirname, '../dist/cli/tortilla-submodule.js'),
 });
 
 // Makes the root path available in the branches object using a 'resolve()' method

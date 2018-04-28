@@ -53,7 +53,6 @@ function run() {
       const locales = Fs.readdirSync(localesDir);
 
       allowedFiles = allowedFiles.concat(locales.map((locale) => `.tortilla/manuals/templates/locales/${locale}/${tag}.tmpl`));
-
       allowedFiles = allowedFiles.concat(locales.map((locale) => `.tortilla/manuals/views/locales/${locale}/${tag}.md`));
     }
 

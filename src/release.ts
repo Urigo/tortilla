@@ -313,7 +313,7 @@ function createReleaseTag(tag, dstHash, message?) {
   Fs.removeSync(Paths.renovate);
 
   // Releasing a version
-  Git.print(['commit', '--amend', '--all'], { env: { GIT_EDITOR: true } });
+  Git.print(['commit', '--amend'], { env: { GIT_EDITOR: true } });
 
   // Provide a quick message
   if (typeof message === 'string') {

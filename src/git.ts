@@ -80,7 +80,7 @@ function getRecentCommit(offset, argv, options) {
 
 // Gets a list of the modified files reported by git matching the provided pattern.
 // This includes untracked files, changed files and deleted files
-function getStagedFiles(pattern) {
+function getStagedFiles(pattern?) {
   const stagedFiles = git(['diff', '--name-only', '--cached'])
     .split('\n')
     .filter(Boolean);
