@@ -200,19 +200,6 @@ function getStepCommitMessage(step) {
   if (step === 'root') {
     const rootHash = Git.rootHash();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     return Git(['log', '-1', rootHash, '--format=%s']);
   }
 
