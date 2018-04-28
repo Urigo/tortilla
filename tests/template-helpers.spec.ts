@@ -1,67 +1,68 @@
-const Chai = require('chai');
-const Fs = require('fs-extra');
-const Path = require('path');
+import { tortillaBeforeAll, tortillaBeforeEach } from './tests-helper';
+import './custom-matchers';
+import * as Fs from 'fs-extra';
+import * as Path from 'path';
+import { Renderer } from '../src/renderer';
+import { Translator } from '../src/translator';
+
 const Pack = require('../package.json');
-const Renderer = require('../src/renderer');
-const Translator = require('../src/translator');
 
+let context: any = {};
 
-const expect = Chai.expect;
+describe('Template Helpers', () => {
+  beforeAll(tortillaBeforeAll.bind(context));
+  beforeEach(tortillaBeforeEach.bind(context));
 
-
-describe('Template Helpers', function() {
   describe('diffStep', function() {
-    this.slow(150);
-
     it('should render an added file', function () {
-      this.applyTestPatch('add-file');
+      context.applyTestPatch('add-file');
 
       const view = Renderer.renderTemplate('{{{diffStep 1.1}}}');
-      expect(view).to.be.a.file('add-file.md');
+      expect(view).toContainSameContentAsFile('add-file.md');
     });
 
     it('should render changes made in file', function () {
-      this.applyTestPatch('add-file');
-      this.applyTestPatch('change-file');
+      context.applyTestPatch('add-file');
+      context.applyTestPatch('change-file');
 
       const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-      expect(view).to.be.a.file('change-file.md');
+      expect(view).toContainSameContentAsFile('change-file.md');
     });
 
     it('should render a deleted file', function () {
-      this.applyTestPatch('add-file');
-      this.applyTestPatch('delete-file');
+      context.applyTestPatch('add-file');
+      context.applyTestPatch('delete-file');
 
       const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-      expect(view).to.be.a.file('delete-file.md');
+      expect(view).toContainSameContentAsFile('delete-file.md');
     });
 
     it('should render a renamed file', function () {
-      this.applyTestPatch('add-file');
-      this.applyTestPatch('rename-file');
+      context.applyTestPatch('add-file');
+      context.applyTestPatch('rename-file');
 
       const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-      expect(view).to.be.a.file('rename-file.md');
+      expect(view).toContainSameContentAsFile('rename-file.md');
     });
 
     it('should render only the file matching the pattern', function () {
-      this.applyTestPatch('add-multiple-files');
+      context.applyTestPatch('add-multiple-files');
 
       const view = Renderer.renderTemplate('{{{diffStep 1.1 files="test-file.js"}}}');
-      expect(view).to.be.a.file('add-multiple-files.md');
+      expect(view).toContainSameContentAsFile('add-multiple-files.md');
     });
 
     it('should render an error message if step not found', function () {
-      this.applyTestPatch('add-file');
+      context.applyTestPatch('add-file');
 
       const view = Renderer.renderTemplate('{{{diffStep 1.3}}}');
-      expect(view).to.be.a.file('step-not-found.md');
+      expect(view).toContainSameContentAsFile('step-not-found.md');
     });
 
     it('should reference commit if repo URL is defined in package.json', function () {
-      this.applyTestPatch('add-file');
+      context.applyTestPatch('add-file');
 
-      const packPath = this.exec('realpath', ['package.json']);
+      const packPath = context.exec('realpath', ['package.json']);
       const pack = Fs.readJsonSync(packPath);
 
       pack.repository = Pack.repository;
@@ -71,81 +72,79 @@ describe('Template Helpers', function() {
         viewPath: 'dummy'
       });
 
-      expect(view).to.be.a.file('referenced-diff.md');
+      expect(view).toContainSameContentAsFile('referenced-diff.md');
     });
 
     it('should render step from the specified submodule', function () {
-      this.slow(4000);
+      const repoDir = context.createRepo();
 
-      const repoDir = this.createRepo();
-
-      this.tortilla(['submodule', 'add', repoDir]);
+      context.tortilla(['submodule', 'add', repoDir]);
 
       const view = Renderer.renderTemplate(`{{{diffStep 1.1 module="${Path.basename(repoDir)}"}}}`);
 
-      expect(view).to.be.a.file('submodule-diff.md');
+      expect(view).toContainSameContentAsFile('submodule-diff.md');
     });
 
     describe('render target set to Medium', function () {
-      before(function () {
+      beforeAll(function () {
         process.env.TORTILLA_RENDER_TARGET = 'medium';
       });
 
-      after(function () {
+      afterAll(function () {
         delete process.env.TORTILLA_RENDER_TARGET;
       });
 
       it('should render an added file', function () {
-        this.applyTestPatch('add-file');
+        context.applyTestPatch('add-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.1}}}');
-        expect(view).to.be.a.file('medium/add-file.md');
+        expect(view).toContainSameContentAsFile('medium/add-file.md');
       });
 
       it('should render changes made in file', function () {
-        this.applyTestPatch('add-file');
-        this.applyTestPatch('change-file');
+        context.applyTestPatch('add-file');
+        context.applyTestPatch('change-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-        expect(view).to.be.a.file('medium/change-file.md');
+        expect(view).toContainSameContentAsFile('medium/change-file.md');
       });
 
       it('should render only the file matching the pattern', function () {
-        this.applyTestPatch('add-multiple-files');
+        context.applyTestPatch('add-multiple-files');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.1 files="test-file.js"}}}');
-        expect(view).to.be.a.file('medium/add-multiple-files.md');
+        expect(view).toContainSameContentAsFile('medium/add-multiple-files.md');
       });
 
       it('should render an error message if step not found', function () {
-        this.applyTestPatch('add-file');
+        context.applyTestPatch('add-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.3}}}');
-        expect(view).to.be.a.file('medium/step-not-found.md');
+        expect(view).toContainSameContentAsFile('medium/step-not-found.md');
       });
 
       it('it should escape expressions', function () {
-        this.applyTestPatch('change-view');
+        context.applyTestPatch('change-view');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-        expect(view).to.be.a.file('medium/escaped-diff.md');
+        expect(view).toContainSameContentAsFile('medium/escaped-diff.md');
       });
     });
 
     describe('translations', function () {
-      before(function () {
+      beforeAll(function () {
         Translator.translator.changeLanguage('he');
       });
 
       beforeEach(function () {
-        this.oldHEResource = Translator.getResourceBundle('he', 'translation');
+        context.oldHEResource = Translator.getResourceBundle('he', 'translation');
       });
 
       afterEach(function () {
-        Translator.addResourceBundle('he', 'translation', this.oldHEResource);
+        Translator.addResourceBundle('he', 'translation', context.oldHEResource);
       });
 
-      after(function () {
+      afterAll(function () {
         Translator.translator.changeLanguage('en');
       });
 
@@ -156,11 +155,11 @@ describe('Template Helpers', function() {
           }
         });
 
-        this.applyTestPatch('add-file');
+        context.applyTestPatch('add-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.1}}}');
 
-        expect(view).to.be.a.file('he/add-file.md');
+        expect(view).toContainSameContentAsFile('he/add-file.md');
       });
 
       it('should render changes made in file', function () {
@@ -170,11 +169,11 @@ describe('Template Helpers', function() {
           }
         });
 
-        this.applyTestPatch('add-file');
-        this.applyTestPatch('change-file');
+        context.applyTestPatch('add-file');
+        context.applyTestPatch('change-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-        expect(view).to.be.a.file('he/change-file.md');
+        expect(view).toContainSameContentAsFile('he/change-file.md');
       });
 
       it('should render a deleted file', function () {
@@ -184,11 +183,11 @@ describe('Template Helpers', function() {
           }
         });
 
-        this.applyTestPatch('add-file');
-        this.applyTestPatch('delete-file');
+        context.applyTestPatch('add-file');
+        context.applyTestPatch('delete-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-        expect(view).to.be.a.file('he/delete-file.md');
+        expect(view).toContainSameContentAsFile('he/delete-file.md');
       });
 
       it('should render a renamed file', function () {
@@ -198,11 +197,11 @@ describe('Template Helpers', function() {
           }
         });
 
-        this.applyTestPatch('add-file');
-        this.applyTestPatch('rename-file');
+        context.applyTestPatch('add-file');
+        context.applyTestPatch('rename-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.2}}}');
-        expect(view).to.be.a.file('he/rename-file.md');
+        expect(view).toContainSameContentAsFile('he/rename-file.md');
       });
 
       it('should render only the file matching the pattern', function () {
@@ -212,184 +211,182 @@ describe('Template Helpers', function() {
           }
         });
 
-        this.applyTestPatch('add-multiple-files');
+        context.applyTestPatch('add-multiple-files');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.1 files="test-file.js"}}}');
-        expect(view).to.be.a.file('he/add-multiple-files.md');
+        expect(view).toContainSameContentAsFile('he/add-multiple-files.md');
       });
 
       it('should render an error message if step not found', function () {
-        this.applyTestPatch('add-file');
+        context.applyTestPatch('add-file');
 
         const view = Renderer.renderTemplate('{{{diffStep 1.3}}}');
-        expect(view).to.be.a.file('he/step-not-found.md');
+        expect(view).toContainSameContentAsFile('he/step-not-found.md');
       });
     });
   });
 
   describe('navStep', function () {
-    this.slow(1000);
-
     beforeEach(function () {
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
-      this.tortilla(['step', 'tag', '-m', 'dummy']);
+      context.tortilla(['step', 'tag', '-m', 'dummy']);
+      context.tortilla(['step', 'tag', '-m', 'dummy']);
+      context.tortilla(['step', 'tag', '-m', 'dummy']);
     });
 
     it('should render a button referencing to the first step when editing the root commit', function () {
-      this.tortilla(['step', 'edit', '--root']);
+      context.tortilla(['step', 'edit', '--root']);
 
       const view = Renderer.renderTemplate('{{{navStep}}}');
-      expect(view).to.be.a.file('begin-tutorial.md');
+      expect(view).toContainSameContentAsFile('begin-tutorial.md');
     });
 
     it('should render a button referencing to the second step when editing the first step', function () {
-      this.tortilla(['step', 'edit', '1']);
+      context.tortilla(['step', 'edit', '1']);
 
       const view = Renderer.renderTemplate('{{{navStep}}}');
-      expect(view).to.be.a.file('next-step.md');
+      expect(view).toContainSameContentAsFile('next-step.md');
     });
 
     it('should render a button referencing to the previous step when editing the last step', function () {
-      this.tortilla(['step', 'edit', '3']);
+      context.tortilla(['step', 'edit', '3']);
 
       const view = Renderer.renderTemplate('{{{navStep}}}');
-      expect(view).to.be.a.file('prev-step.md');
+      expect(view).toContainSameContentAsFile('prev-step.md');
     });
 
     it('should render navigation buttons when editing a step in the middle of the stack', function () {
-      this.tortilla(['step', 'edit', '2']);
+      context.tortilla(['step', 'edit', '2']);
 
       const view = Renderer.renderTemplate('{{{navStep}}}');
-      expect(view).to.be.a.file('nav-steps.md');
+      expect(view).toContainSameContentAsFile('nav-steps.md');
     });
 
     it('should create navigation buttons with custom specified reference', function () {
-      this.tortilla(['step', 'edit', '2']);
+      context.tortilla(['step', 'edit', '2']);
 
       const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
-      expect(view).to.be.a.file('nav-steps-ref.md');
+      expect(view).toContainSameContentAsFile('nav-steps-ref.md');
     });
 
     it('should create a single button referencing the README.md file', function () {
-      this.tortilla(['step', 'pop']);
-      this.tortilla(['step', 'pop']);
+      context.tortilla(['step', 'pop']);
+      context.tortilla(['step', 'pop']);
 
       const view = Renderer.renderTemplate('{{{navStep}}}');
-      expect(view).to.be.a.file('prev-root.md');
+      expect(view).toContainSameContentAsFile('prev-root.md');
     });
 
     describe('render target set to Medium', function () {
-      before(function () {
+      beforeAll(function () {
         process.env.TORTILLA_RENDER_TARGET = 'medium';
       });
 
-      after(function () {
+      afterAll(function () {
         delete process.env.TORTILLA_RENDER_TARGET;
       });
 
       it('should render a button referencing to the first step when editing the root commit', function () {
-        this.tortilla(['step', 'edit', '--root']);
+        context.tortilla(['step', 'edit', '--root']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('medium/begin-tutorial.md');
+        expect(view).toContainSameContentAsFile('medium/begin-tutorial.md');
       });
 
       it('should render a button referencing to the second step when editing the first step', function () {
-        this.tortilla(['step', 'edit', '1']);
+        context.tortilla(['step', 'edit', '1']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('medium/next-step.md');
+        expect(view).toContainSameContentAsFile('medium/next-step.md');
       });
 
       it('should render a button referencing to the previous step when editing the last step', function () {
-        this.tortilla(['step', 'edit', '3']);
+        context.tortilla(['step', 'edit', '3']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('medium/prev-step.md');
+        expect(view).toContainSameContentAsFile('medium/prev-step.md');
       });
 
       it('should render navigation buttons when editing a step in the middle of the stack', function () {
-        this.tortilla(['step', 'edit', '2']);
+        context.tortilla(['step', 'edit', '2']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('medium/nav-steps.md');
+        expect(view).toContainSameContentAsFile('medium/nav-steps.md');
       });
 
       it('should create navigation buttons with custom specified reference', function () {
-        this.tortilla(['step', 'edit', '2']);
+        context.tortilla(['step', 'edit', '2']);
 
         const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
-        expect(view).to.be.a.file('medium/nav-steps-ref.md');
+        expect(view).toContainSameContentAsFile('medium/nav-steps-ref.md');
       });
 
       it('should create a single button referencing the README.md file', function () {
-        this.tortilla(['step', 'pop']);
-        this.tortilla(['step', 'pop']);
+        context.tortilla(['step', 'pop']);
+        context.tortilla(['step', 'pop']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('medium/prev-root.md');
+        expect(view).toContainSameContentAsFile('medium/prev-root.md');
       });
     });
 
     describe('translations', function () {
-      before(function () {
+      beforeAll(function () {
         Translator.translator.changeLanguage('he');
       });
 
       beforeEach(function () {
-        this.oldHEResource = Translator.getResourceBundle('he', 'translation');
+        context.oldHEResource = Translator.getResourceBundle('he', 'translation');
       });
 
       afterEach(function () {
-        Translator.addResourceBundle('he', 'translation', this.oldHEResource);
+        Translator.addResourceBundle('he', 'translation', context.oldHEResource);
       });
 
-      after(function () {
+      afterAll(function () {
         Translator.translator.changeLanguage('en');
       });
 
       it('should render a button referencing to the first step when editing the root commit', function () {
-        this.tortilla(['step', 'edit', '--root']);
+        context.tortilla(['step', 'edit', '--root']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('he/begin-tutorial.md');
+        expect(view).toContainSameContentAsFile('he/begin-tutorial.md');
       });
 
       it('should render a button referencing to the second step when editing the first step', function () {
-        this.tortilla(['step', 'edit', '1']);
+        context.tortilla(['step', 'edit', '1']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('he/next-step.md');
+        expect(view).toContainSameContentAsFile('he/next-step.md');
       });
 
       it('should render a button referencing to the previous step when editing the last step', function () {
-        this.tortilla(['step', 'edit', '3']);
+        context.tortilla(['step', 'edit', '3']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('he/prev-step.md');
+        expect(view).toContainSameContentAsFile('he/prev-step.md');
       });
 
       it('should render navigation buttons when editing a step in the middle of the stack', function () {
-        this.tortilla(['step', 'edit', '2']);
+        context.tortilla(['step', 'edit', '2']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('he/nav-steps.md');
+        expect(view).toContainSameContentAsFile('he/nav-steps.md');
       });
 
       it('should create navigation buttons with custom specified reference', function () {
-        this.tortilla(['step', 'edit', '2']);
+        context.tortilla(['step', 'edit', '2']);
 
         const view = Renderer.renderTemplate('{{{navStep prevRef="http://test.com/prev/" nextRef="http://test.com/next/"}}}');
-        expect(view).to.be.a.file('he/nav-steps-ref.md');
+        expect(view).toContainSameContentAsFile('he/nav-steps-ref.md');
       });
 
       it('should create a single button referencing the README.md file', function () {
-        this.tortilla(['step', 'pop']);
-        this.tortilla(['step', 'pop']);
+        context.tortilla(['step', 'pop']);
+        context.tortilla(['step', 'pop']);
 
         const view = Renderer.renderTemplate('{{{navStep}}}');
-        expect(view).to.be.a.file('he/prev-root.md');
+        expect(view).toContainSameContentAsFile('he/prev-root.md');
       });
     });
   });

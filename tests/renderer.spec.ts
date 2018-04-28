@@ -1,13 +1,14 @@
-const Chai = require('chai');
-const Fs = require('fs-extra');
-const Paths = require('../src/paths');
-const Renderer = require('../src/renderer');
+import { tortillaBeforeAll, tortillaBeforeEach } from './tests-helper';
+import { Renderer } from '../src/renderer';
+import * as Fs from 'fs-extra';
+import { Paths } from '../src/paths';
 
+let context: any = {};
 
-const expect = Chai.expect;
+describe('Renderer', () => {
+  beforeAll(tortillaBeforeAll.bind(context));
+  beforeEach(tortillaBeforeEach.bind(context));
 
-
-describe('Renderer', function () {
   describe('renderTemplate()', function () {
     it('should wrap template helpers', function () {
       Renderer.registerHelper('testHelper', function (num, str, options) {
@@ -30,7 +31,7 @@ describe('Renderer', function () {
         quxModel: 'qux'
       });
 
-      expect(view).to.equal([
+      expect(view).toEqual([
         '[{]: <helper> (testHelper 123 "str" str="str" num=123)',
         '',
         'foo 123',
@@ -57,7 +58,7 @@ describe('Renderer', function () {
         bazModel: 'baz'
       });
 
-      expect(view).to.equal([
+      expect(view).toEqual([
         '[{]: <partial> (test_partial)',
         '',
         'foo',
@@ -71,11 +72,11 @@ describe('Renderer', function () {
 
   describe('renderTemplateFile()', function () {
     it('should use user defined templates', function () {
-      const templatePath = this.testDir + '/header.tmpl';
-      this.exec('sh', ['-c', `echo "{{test}}" > ${templatePath}`]);
+      const templatePath = context.testDir + '/header.tmpl';
+      context.exec('sh', ['-c', `echo "{{test}}" > ${templatePath}`]);
 
       const view = Renderer.renderTemplateFile(templatePath, { test: 'CUSTOM HEADER' });
-      expect(view).to.equal('CUSTOM HEADER\n');
+      expect(view).toEqual('CUSTOM HEADER\n');
     });
   });
 
@@ -103,7 +104,7 @@ describe('Renderer', function () {
 
       const template = '{{{testHelper 123 "str" num=123 str="str"}}}';
 
-      this.scopeEnv(() => {
+      context.scopeEnv(() => {
         const view = Renderer.renderTemplate(template, {
           fooModel: 'foo',
           barModel: 'bar',
@@ -111,7 +112,7 @@ describe('Renderer', function () {
           quxModel: 'qux'
         });
 
-        expect(view).to.equal([
+        expect(view).toEqual([
           'qux 123',
           'baz str',
           'bar 123',
@@ -133,13 +134,11 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal('../templates/step1.md');
+      expect(view).toEqual('../templates/step1.md');
     });
 
     it('should replace tilde (~) with root', function () {
-      this.slow(12000);
-
-      this.tortilla(['step', 'edit']);
+      context.tortilla(['step', 'edit']);
 
       const pack = Fs.readJsonSync(Paths.npm.package);
 
@@ -150,11 +149,10 @@ describe('Renderer', function () {
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
 
-      this.git(['add', Paths.npm.package]);
-      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      this.git(['rebase', '--continue']);
-
-      this.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
+      context.git(['add', Paths.npm.package]);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
 
       Renderer.registerHelper('testHelper', function () {
         return Renderer.resolve('~/commit/abc0xyz');
@@ -164,7 +162,7 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal('https://github.com/username/reponame/commit/abc0xyz');
+      expect(view).toEqual('https://github.com/username/reponame/commit/abc0xyz');
     });
 
     it('should remain tilde if no repo was specified', function () {
@@ -176,13 +174,11 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal('~/commit/abc0xyz');
+      expect(view).toEqual('~/commit/abc0xyz');
     });
 
     it('should resolve path relative to repository url if specified in package.json', function () {
-      this.slow(12000);
-
-      this.tortilla(['step', 'edit']);
+      context.tortilla(['step', 'edit']);
 
       const pack = Fs.readJsonSync(Paths.npm.package);
 
@@ -193,11 +189,11 @@ describe('Renderer', function () {
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
 
-      this.git(['add', Paths.npm.package]);
-      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      this.git(['rebase', '--continue']);
+      context.git(['add', Paths.npm.package]);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
 
-      this.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
 
       Renderer.registerHelper('testHelper', function () {
         return Renderer.resolve('./step2.md');
@@ -207,13 +203,11 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal('https://github.com/username/reponame/tree/master@0.1.0/.tortilla/manuals/views/step2.md');
+      expect(view).toEqual('https://github.com/username/reponame/tree/master@0.1.0/.tortilla/manuals/views/step2.md');
     });
 
     it('should NOT resolve path relative to repository url if a release is yet to exist', function () {
-      this.slow(3000);
-
-      this.tortilla(['step', 'edit']);
+      context.tortilla(['step', 'edit']);
 
       const pack = Fs.readJsonSync(Paths.npm.package);
 
@@ -224,9 +218,9 @@ describe('Renderer', function () {
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
 
-      this.git(['add', Paths.npm.package]);
-      this.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      this.git(['rebase', '--continue']);
+      context.git(['add', Paths.npm.package]);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
 
       Renderer.registerHelper('testHelper', function () {
         return Renderer.resolve('./step2.md');
@@ -236,7 +230,7 @@ describe('Renderer', function () {
         viewPath: '.tortilla/manuals/views/step1.md'
       });
 
-      expect(view).to.equal('./step2.md');
+      expect(view).toEqual('./step2.md');
     });
   });
 
@@ -250,14 +244,14 @@ describe('Renderer', function () {
       });
 
       Renderer.registerHelper('calleeHelper', function (arg1, arg2, options) {
-        expect(this.model1).to.equal('model1');
-        expect(this.model2).to.equal('model2');
+        expect(this.model1).toEqual('model1');
+        expect(this.model2).toEqual('model2');
 
-        expect(arg1).to.equal('arg1');
-        expect(arg2).to.equal('arg2');
+        expect(arg1).toEqual('arg1');
+        expect(arg2).toEqual('arg2');
 
-        expect(options.hash.option1).to.equal('option1');
-        expect(options.hash.option2).to.equal('option2');
+        expect(options.hash.option1).toEqual('option1');
+        expect(options.hash.option2).toEqual('option2');
 
         return 'helper';
       });
@@ -267,7 +261,7 @@ describe('Renderer', function () {
         model2: 'model2'
       });
 
-      expect(result).to.equal('helper');
+      expect(result).toEqual('helper');
     });
   });
 });
