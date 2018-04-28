@@ -12,26 +12,28 @@ function toContainSameContentAsFile(received: string, fileName: string) {
   const expectedFilePath = Path.resolve(__dirname, 'fs-data/out', fileName);
   const expectedContent = Fs.readFileSync(expectedFilePath, 'utf8');
 
-  const expectedRegExp = new RegExp(EscapeRegExp(expectedContent)
-    .replace(/X{3,}/g, ({ length }) => {
-      return Array.apply(null, { length }).map(() => '.').join('');
-    })
-    .replace(/(?:\\\?){3}(.|\n)/g, (match, char) => {
-      return `[^${char}]+${char}`;
-    })
+  const expectedRegExp = new RegExp(
+    EscapeRegExp(expectedContent)
+      .replace(/X{3,}/g, ({ length }) => {
+        return Array.apply(null, { length })
+          .map(() => '.')
+          .join('');
+      })
+      .replace(/(?:\\\?){3}(.|\n)/g, (match, char) => {
+        return `[^${char}]+${char}`;
+      })
   );
 
   return {
-    message: () => (
+    message: () =>
       `expected 
  ${received}
  not contain the same content as the file (${fileName}):
- ${expectedRegExp}`
-    ),
-    pass: expectedRegExp.test(received),
+ ${expectedRegExp}`,
+    pass: expectedRegExp.test(received)
   };
 }
 
 expect.extend({
-  toContainSameContentAsFile,
+  toContainSameContentAsFile
 });

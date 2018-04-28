@@ -20,11 +20,10 @@ function updateDependencies(updatedDeps?) {
   } else {
     const pack = Fs.readJsonSync(Paths.npm.package);
 
-    const deps = Object.assign({},
-      pack.dependencies,
-      pack.devDependencies,
-      pack.peerDependencies,
-    );
+    const deps = {...pack.dependencies,
+      ...pack.devDependencies,
+      ...pack.peerDependencies,
+    };
 
     const versionColumn = Object.keys(deps).reduce((depLength, dep) => {
       return depLength < dep.length ? dep.length : depLength;

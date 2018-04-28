@@ -15,20 +15,16 @@ describe('Submodule', () => {
     context.bazModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     // Initializing repos
     context.createRepo(context.fooModuleDir);
     context.createRepo(context.barModuleDir);
     context.createRepo(context.bazModuleDir);
   });
 
-  describe('add()', function () {
-    it('should add specified submodules to the root commit', function () {
-      context.tortilla(['submodule', 'add',
-        context.fooModuleDir,
-        context.barModuleDir,
-        context.bazModuleDir
-      ]);
+  describe('add()', function() {
+    it('should add specified submodules to the root commit', function() {
+      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
 
       const isRebasing = Git.rebasing();
       expect(isRebasing).toBeFalsy();
@@ -53,54 +49,38 @@ describe('Submodule', () => {
       expect(remote).toEqual(context.bazModuleDir);
     });
 
-    it('should stage specified submodules if editing the root commit', function () {
+    it('should stage specified submodules if editing the root commit', function() {
       context.tortilla(['step', 'edit', '--root']);
 
-      context.tortilla(['submodule', 'add',
-        context.fooModuleDir,
-        context.barModuleDir,
-        context.bazModuleDir
-      ]);
+      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
 
       const isRebasing = Git.rebasing();
       expect(isRebasing).toBeTruthy();
 
       const stagedFiles = Git.stagedFiles();
 
-      expect(stagedFiles).toEqual(expect.arrayContaining([
-        Path.basename(context.fooModuleDir),
-        Path.basename(context.barModuleDir),
-        Path.basename(context.bazModuleDir),
-        '.gitmodules'
-      ]));
+      expect(stagedFiles).toEqual(expect.arrayContaining([Path.basename(context.fooModuleDir), Path.basename(context.barModuleDir), Path.basename(context.bazModuleDir), '.gitmodules']));
     });
   });
 
-  describe('remove()', function () {
-    beforeEach(function () {
-      context.tortilla(['submodule', 'add',
-        context.fooModuleDir,
-        context.barModuleDir,
-        context.bazModuleDir
-      ]);
+  describe('remove()', function() {
+    beforeEach(function() {
+      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
     });
 
-    it('should remove specified submodules from the root commit', function () {
+    it('should remove specified submodules from the root commit', function() {
       context.tortilla(['submodule', 'remove', Path.basename(context.fooModuleDir)]);
 
-      expect(Submodule.list()).toEqual(expect.arrayContaining([
-        Path.basename(context.barModuleDir),
-        Path.basename(context.bazModuleDir),
-      ]))
+      expect(Submodule.list()).toEqual(expect.arrayContaining([Path.basename(context.barModuleDir), Path.basename(context.bazModuleDir)]));
     });
 
-    it('should remove all submodules from the root commit if non was specified', function () {
+    it('should remove all submodules from the root commit if non was specified', function() {
       context.tortilla(['submodule', 'remove']);
 
       expect(Submodule.list()).toEqual([]);
     });
 
-    it('should stage removed submodules if editing the root commit', function () {
+    it('should stage removed submodules if editing the root commit', function() {
       context.tortilla(['step', 'edit', '--root']);
       context.tortilla(['submodule', 'remove', Path.basename(context.fooModuleDir)]);
 
@@ -109,23 +89,16 @@ describe('Submodule', () => {
 
       const stagedFiles = Git.stagedFiles();
 
-      expect(stagedFiles).toEqual(expect.arrayContaining([
-        Path.basename(context.fooModuleDir),
-        '.gitmodules'
-      ]));
+      expect(stagedFiles).toEqual(expect.arrayContaining([Path.basename(context.fooModuleDir), '.gitmodules']));
     });
   });
 
-  describe('update()', function () {
-    beforeEach(function () {
-      context.tortilla(['submodule', 'add',
-        context.fooModuleDir,
-        context.barModuleDir,
-        context.bazModuleDir
-      ]);
+  describe('update()', function() {
+    beforeEach(function() {
+      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
     });
 
-    it('should update specified submodules', function () {
+    it('should update specified submodules', function() {
       context.tortilla(['step', 'edit', '--root']);
 
       const fooPath = context.exec('realpath', [Path.basename(context.fooModuleDir)]);
@@ -142,16 +115,12 @@ describe('Submodule', () => {
     });
   });
 
-  describe('reset()', function () {
-    beforeEach(function () {
-      context.tortilla(['submodule', 'add',
-        context.fooModuleDir,
-        context.barModuleDir,
-        context.bazModuleDir
-      ]);
+  describe('reset()', function() {
+    beforeEach(function() {
+      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
     });
 
-    it('should result in submodules which are referencing the most recent hash', function () {
+    it('should result in submodules which are referencing the most recent hash', function() {
       context.tortilla(['step', 'edit', '--root']);
 
       const fooPath = context.exec('realpath', [Path.basename(context.fooModuleDir)]);

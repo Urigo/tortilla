@@ -3,11 +3,7 @@
     "experimentalDecorators": true,
     "module": "commonjs",
     "target": "es5",
-    "lib": [
-      "es6",
-      "esnext",
-      "es2015"
-    ],
+    "lib": ["es6", "esnext", "es2015"],
     "noImplicitAny": false,
     "suppressImplicitAnyIndexErrors": true,
     "moduleResolution": "node",
@@ -17,10 +13,7 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": [
-    "src/typings.d.ts",
-    "src/**/*.ts"
-  ],
+  "include": ["src/typings.d.ts", "src/**/*.ts"],
   "files": [
     "src/config.ts",
     "src/editor.ts",
@@ -37,7 +30,5 @@
     "src/submodule.ts",
     "src/utils.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

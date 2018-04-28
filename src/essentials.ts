@@ -223,10 +223,9 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
     out = Utils.cwd();
   }
 
-  options = Object.assign({
+  options = {
     filter: options.filter,
-    reject: options.reject,
-  }, options);
+    reject: options.reject, ...options};
 
   // Output path is relative to cwd
   out = Path.resolve(Utils.cwd(), out);

@@ -49,7 +49,8 @@
     "lint": "tslint --format stylish -c tslint.json 'src/**/*.ts'",
     "pretest": "yarn build",
     "test": "jest",
-    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "@types/fs-extra": "5.0.2",
@@ -75,10 +76,14 @@
     "babel-register": "6.26.0",
     "copyfiles": "2.0.0",
     "escape-string-regexp": "1.0.5",
+    "husky": "0.14.3",
     "jest": "22.4.3",
+    "lint-staged": "7.0.5",
+    "prettier": "1.12.1",
     "rimraf": "2.6.2",
     "ts-jest": "22.4.4",
     "tslint": "5.9.1",
+    "tslint-config-prettier": "1.12.0",
     "typescript": "2.8.3"
   },
   "engines": {
@@ -95,13 +100,14 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ]
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
+  },
+  "lint-staged": {
+    "./**/*.{ts}": ["tslint --fix", "git add"],
+    "./**/*.{json}": ["prettier --write", "git add"]
+  },
+  "prettier": {
+    "printWidth": 200,
+    "singleQuote": true
   }
 }

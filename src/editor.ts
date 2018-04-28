@@ -246,9 +246,8 @@ function sortSteps(operations, options) {
     // step indexes are already sorted
     if (operation.method === 'edit') {
       // Pick BEFORE edit
-      operations.splice(index + offset++, 0, Object.assign({}, operation, {
-        method: 'pick',
-      }));
+      operations.splice(index + offset++, 0, {...operation, 
+        method: 'pick'});
 
       // Update commit's step number
       operations.splice(index + offset++, 0, {

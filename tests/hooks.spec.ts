@@ -7,23 +7,19 @@ describe('Hooks', () => {
   beforeEach(tortillaBeforeEach.bind(context));
 
   it('should disallow new commits to be added', async () => {
-    const commit = context.git.bind(context, [
-      'commit', '--allow-empty', '--allow-empty-message'
-    ], {
+    const commit = context.git.bind(context, ['commit', '--allow-empty', '--allow-empty-message'], {
       env: {
         ...process.env,
         TORTILLA_CHILD_PROCESS: '',
-        GIT_EDITOR: true,
+        GIT_EDITOR: true
       }
     });
 
     expect(commit).toThrowError('New commits are prohibited! Use `$ tortilla step push` instead');
   });
 
-  it('should disallow amending', function () {
-    const commit = context.git.bind(context, [
-      'commit', '--amend', '--allow-empty', '--allow-empty-message'
-    ], {
+  it('should disallow amending', function() {
+    const commit = context.git.bind(context, ['commit', '--amend', '--allow-empty', '--allow-empty-message'], {
       env: {
         ...process.env,
         TORTILLA_CHILD_PROCESS: '',
@@ -34,7 +30,7 @@ describe('Hooks', () => {
     expect(commit).toThrowError('Changes are not allowed outside editing mode!');
   });
 
-  it('should disallow rebasing', function () {
+  it('should disallow rebasing', function() {
     const rebase = context.git.bind(context, ['rebase', '-i', '--root'], {
       env: {
         ...process.env,
@@ -43,10 +39,10 @@ describe('Hooks', () => {
       }
     });
 
-    expect(rebase).toThrowError('Rebase mode is prohibited! Use \'$ tortilla step edit\' instead');
+    expect(rebase).toThrowError("Rebase mode is prohibited! Use '$ tortilla step edit' instead");
   });
 
-  it('should disallow changes made in the steps dir', function () {
+  it('should disallow changes made in the steps dir', function() {
     const commit = context.git.bind(context, ['commit'], {
       env: {
         ...process.env,
@@ -62,7 +58,7 @@ describe('Hooks', () => {
     expect(commit).toThrowError('New commits are prohibited! Use `$ tortilla step push` instead');
   });
 
-  it('should disallow changes made in README.md', function () {
+  it('should disallow changes made in README.md', function() {
     const commit = context.git.bind(context, ['commit'], {
       env: {
         ...process.env,
@@ -77,7 +73,7 @@ describe('Hooks', () => {
     expect(commit).toThrowError('New commits are prohibited! Use `$ tortilla step push` instead');
   });
 
-  it('should disallow changes made in the inappropriate step manual file', function () {
+  it('should disallow changes made in the inappropriate step manual file', function() {
     const commit = context.git.bind(context, ['commit', '--amend'], {
       env: {
         ...process.env,
@@ -94,7 +90,7 @@ describe('Hooks', () => {
     expect(commit).toThrowError('Staged files must be one of');
   });
 
-  it('should disable pre-commit restrictions if strict mode is disabled', function () {
+  it('should disable pre-commit restrictions if strict mode is disabled', function() {
     context.tortilla(['strict', 'set', 'false']);
 
     const commit = context.git.bind(context, ['commit', '--allow-empty', '--allow-empty-message'], {
@@ -108,7 +104,7 @@ describe('Hooks', () => {
     expect(commit).not.toThrow();
   });
 
-  it('should disable pre-rebase restrictions if strict mode is disabled', function () {
+  it('should disable pre-rebase restrictions if strict mode is disabled', function() {
     context.tortilla(['strict', 'set', 'false']);
 
     const rebase = context.git.bind(context, ['rebase', '-i', '--root'], {
@@ -122,12 +118,10 @@ describe('Hooks', () => {
     expect(rebase).not.toThrow();
   });
 
-  it('should allow amending during step editing', function () {
+  it('should allow amending during step editing', function() {
     context.tortilla(['step', 'edit', '--root']);
 
-    const commit = context.git.bind(context, [
-      'commit', '--amend', '--allow-empty', '--allow-empty-message'
-    ], {
+    const commit = context.git.bind(context, ['commit', '--amend', '--allow-empty', '--allow-empty-message'], {
       env: {
         ...process.env,
         TORTILLA_CHILD_PROCESS: '',
@@ -138,7 +132,7 @@ describe('Hooks', () => {
     expect(commit).not.toThrow();
   });
 
-  it('should allow changes made in the appropriate step manual file', function () {
+  it('should allow changes made in the appropriate step manual file', function() {
     const commit = context.git.bind(context, ['commit', '--amend'], {
       env: {
         ...process.env,

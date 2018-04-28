@@ -31,9 +31,7 @@ export function tortillaBeforeAll() {
   const tortillaPath = Path.resolve(__dirname, '../dist/cli/tortilla.js');
 
   // Initializing test tortilla project
-  ChildProcess.execFileSync('node', [
-    tortillaPath, 'create', '-m', 'Test tortilla project', '-o', this.plainDir, '--override',
-  ]);
+  ChildProcess.execFileSync('node', [tortillaPath, 'create', '-m', 'Test tortilla project', '-o', this.plainDir, '--override']);
 
   // Initializing test tortilla project
   ChildProcess.execFileSync('git', ['config', 'user.email', 'test@tortilla.com'], { cwd: this.plainDir });
@@ -52,13 +50,13 @@ export function tortillaBeforeAll() {
   };
 
   // Git-am patch located in 'fs-data/in'
-  this.applyTestPatch = (patchName) => {
+  this.applyTestPatch = patchName => {
     const patchPath = Path.resolve(__dirname, 'fs-data/in', `${patchName}.patch`);
     return this.git(['am', patchPath]);
   };
 
   // Creates a new local repository with a single commit
-  this.createRepo = (dir) => {
+  this.createRepo = dir => {
     dir = dir || Tmp.dirSync({ unsafeCleanup: true }).name;
 
     Fs.removeSync(dir);
@@ -78,11 +76,16 @@ export function tortillaBeforeAll() {
     return dir;
   };
 
-  this.newEditor = (fn) => {
-    const body = fn.toString().replace(/`/g, '\\`').replace(/\\/g, '\\\\');
+  this.newEditor = fn => {
+    const body = fn
+      .toString()
+      .replace(/`/g, '\\`')
+      .replace(/\\/g, '\\\\');
     const scriptFile = Tmp.fileSync({ unsafeCleanup: true });
 
-    Fs.writeFileSync(scriptFile.name, `
+    Fs.writeFileSync(
+      scriptFile.name,
+      `
       const Fs = require('fs');
 
       const file = process.argv[process.argv.length - 1];
@@ -90,7 +93,8 @@ export function tortillaBeforeAll() {
       content = new Function(\`return (${body}).apply(this, arguments)\`)(content);
       Fs.writeFileSync(file, content);
       Fs.unlinkSync('${scriptFile.name}');
-    `);
+    `
+    );
 
     return `node ${scriptFile.name}`;
   };

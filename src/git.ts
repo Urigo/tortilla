@@ -22,15 +22,13 @@ function git(argv, options?) {
 // The body of the git execution function, useful since we use the same logic both for
 // exec and spawn
 function gitBody(handler, argv, options) {
-  options = Object.assign({
-    env: {},
-  }, options);
+  options = {
+    env: {}, ...options};
 
   // Zeroing environment vars which might affect other executions
-  options.env = Object.assign({
+  options.env = {
     GIT_DIR: null,
-    GIT_WORK_TREE: null,
-  }, options.env);
+    GIT_WORK_TREE: null, ...options.env};
 
   return handler(argv, options);
 }

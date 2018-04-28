@@ -1,7 +1,7 @@
 import { tortillaBeforeAll, tortillaBeforeEach } from './tests-helper';
 import './custom-matchers';
 import * as Fs from 'fs-extra';
-import { Paths} from '../src/paths';
+import { Paths } from '../src/paths';
 
 let context: any = {};
 
@@ -9,15 +9,15 @@ describe('Package', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
 
-  describe('updateDependencies()', function () {
-    it('should update the dependencies at each commit without having conflicts', function () {
+  describe('updateDependencies()', function() {
+    it('should update the dependencies at each commit without having conflicts', function() {
       let pack;
 
       pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
-        b: '0.1.0',
+        b: '0.1.0'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -45,7 +45,7 @@ describe('Package', () => {
 
       context.tortilla(['package', 'update-deps'], {
         env: {
-          GIT_EDITOR: context.newEditor(function () {
+          GIT_EDITOR: context.newEditor(function() {
             return `
               c 0.1.1
             `;
@@ -63,14 +63,14 @@ describe('Package', () => {
       });
     });
 
-    it('should update the dependencies at the root commit', function () {
+    it('should update the dependencies at the root commit', function() {
       let pack;
 
       pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
-        b: '0.1.0',
+        b: '0.1.0'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -89,7 +89,7 @@ describe('Package', () => {
 
       context.tortilla(['package', 'update-deps'], {
         env: {
-          GIT_EDITOR: context.newEditor(function () {
+          GIT_EDITOR: context.newEditor(function() {
             return `
               b 0.1.1
             `;
@@ -102,28 +102,28 @@ describe('Package', () => {
       expect(pack.dependencies).toEqual({
         a: '0.1.0',
         b: '0.1.1',
-        c: '0.1.0',
+        c: '0.1.0'
       });
     });
 
-    it('should update dev and peer dependencies', function () {
+    it('should update dev and peer dependencies', function() {
       let pack;
 
       pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
-        b: '0.1.0',
+        b: '0.1.0'
       };
 
       pack.devDependencies = {
         a_dev: '0.1.0',
-        b_dev: '0.1.0',
+        b_dev: '0.1.0'
       };
 
       pack.peerDependencies = {
         a_peer: '0.1.0',
-        b_peer: '0.1.0',
+        b_peer: '0.1.0'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -167,7 +167,7 @@ describe('Package', () => {
 
       context.tortilla(['package', 'update-deps'], {
         env: {
-          GIT_EDITOR: context.newEditor(function () {
+          GIT_EDITOR: context.newEditor(function() {
             return `
               c      0.1.1
               c_dev  0.1.1
@@ -201,14 +201,14 @@ describe('Package', () => {
       });
     });
 
-    it('should re-render the manuals in all super-steps on the way', function () {
+    it('should re-render the manuals in all super-steps on the way', function() {
       let pack;
 
       pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.dependencies = {
         a: '0.1.0',
-        b: '0.1.0',
+        b: '0.1.0'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -248,7 +248,7 @@ describe('Package', () => {
 
       context.tortilla(['package', 'update-deps'], {
         env: {
-          GIT_EDITOR: context.newEditor(function () {
+          GIT_EDITOR: context.newEditor(function() {
             return `
               c 0.1.1
             `;

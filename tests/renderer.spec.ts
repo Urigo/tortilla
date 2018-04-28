@@ -9,18 +9,17 @@ describe('Renderer', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
 
-  describe('renderTemplate()', function () {
-    it('should wrap template helpers', function () {
-      Renderer.registerHelper('testHelper', function (num, str, options) {
-        return [
-          this.fooModel + ' ' + num,
-          this.barModel + ' ' + str,
-          this.bazModel + ' ' + options.hash.num,
-          this.quxModel + ' ' + options.hash.str
-        ].join('\n');
-      }, {
-        mdWrap: true
-      });
+  describe('renderTemplate()', function() {
+    it('should wrap template helpers', function() {
+      Renderer.registerHelper(
+        'testHelper',
+        function(num, str, options) {
+          return [this.fooModel + ' ' + num, this.barModel + ' ' + str, this.bazModel + ' ' + options.hash.num, this.quxModel + ' ' + options.hash.str].join('\n');
+        },
+        {
+          mdWrap: true
+        }
+      );
 
       const template = '{{{testHelper 123 "str" num=123 str="str"}}}';
 
@@ -31,24 +30,11 @@ describe('Renderer', () => {
         quxModel: 'qux'
       });
 
-      expect(view).toEqual([
-        '[{]: <helper> (testHelper 123 "str" str="str" num=123)',
-        '',
-        'foo 123',
-        'bar str',
-        'baz 123',
-        'qux str',
-        '',
-        '[}]: #'
-      ].join('\n'));
+      expect(view).toEqual(['[{]: <helper> (testHelper 123 "str" str="str" num=123)', '', 'foo 123', 'bar str', 'baz 123', 'qux str', '', '[}]: #'].join('\n'));
     });
 
-    it('should render template partials', function () {
-      Renderer.registerPartial('test_partial', [
-        '{{fooModel}}',
-        '{{barModel}}',
-        '{{bazModel}}'
-      ].join('\n'), {
+    it('should render template partials', function() {
+      Renderer.registerPartial('test_partial', ['{{fooModel}}', '{{barModel}}', '{{bazModel}}'].join('\n'), {
         mdWrap: true
       });
 
@@ -58,20 +44,12 @@ describe('Renderer', () => {
         bazModel: 'baz'
       });
 
-      expect(view).toEqual([
-        '[{]: <partial> (test_partial)',
-        '',
-        'foo',
-        'bar',
-        'baz',
-        '',
-        '[}]: #'
-      ].join('\n'));
+      expect(view).toEqual(['[{]: <partial> (test_partial)', '', 'foo', 'bar', 'baz', '', '[}]: #'].join('\n'));
     });
   });
 
-  describe('renderTemplateFile()', function () {
-    it('should use user defined templates', function () {
+  describe('renderTemplateFile()', function() {
+    it('should use user defined templates', function() {
       const templatePath = context.testDir + '/header.tmpl';
       context.exec('sh', ['-c', `echo "{{test}}" > ${templatePath}`]);
 
@@ -80,53 +58,50 @@ describe('Renderer', () => {
     });
   });
 
-  describe('registerTransformation()', function () {
-    it('should set a template helper transformation when set to a specific render target', function () {
-      Renderer.registerHelper('testHelper', function (num, str, options) {
-        return [
-          this.fooModel + ' ' + num,
-          this.barModel + ' ' + str,
-          this.bazModel + ' ' + options.hash.num,
-          this.quxModel + ' ' + options.hash.str
-        ].join('\n');
+  describe('registerTransformation()', function() {
+    it('should set a template helper transformation when set to a specific render target', function() {
+      Renderer.registerHelper('testHelper', function(num, str, options) {
+        return [this.fooModel + ' ' + num, this.barModel + ' ' + str, this.bazModel + ' ' + options.hash.num, this.quxModel + ' ' + options.hash.str].join('\n');
       });
 
-      Renderer.registerTransformation('test', 'testHelper', function (view) {
-        return view.replace(/foo|bar|baz|qux/g, (match) => {
+      Renderer.registerTransformation('test', 'testHelper', function(view) {
+        return view.replace(/foo|bar|baz|qux/g, match => {
           switch (match) {
-            case 'foo': return 'qux';
-            case 'bar': return 'baz';
-            case 'baz': return 'bar';
-            case 'qux': return 'foo';
+            case 'foo':
+              return 'qux';
+            case 'bar':
+              return 'baz';
+            case 'baz':
+              return 'bar';
+            case 'qux':
+              return 'foo';
           }
         });
       });
 
       const template = '{{{testHelper 123 "str" num=123 str="str"}}}';
 
-      context.scopeEnv(() => {
-        const view = Renderer.renderTemplate(template, {
-          fooModel: 'foo',
-          barModel: 'bar',
-          bazModel: 'baz',
-          quxModel: 'qux'
-        });
+      context.scopeEnv(
+        () => {
+          const view = Renderer.renderTemplate(template, {
+            fooModel: 'foo',
+            barModel: 'bar',
+            bazModel: 'baz',
+            quxModel: 'qux'
+          });
 
-        expect(view).toEqual([
-          'qux 123',
-          'baz str',
-          'bar 123',
-          'foo str'
-        ].join('\n'));
-      }, {
-        TORTILLA_RENDER_TARGET: 'test'
-      });
+          expect(view).toEqual(['qux 123', 'baz str', 'bar 123', 'foo str'].join('\n'));
+        },
+        {
+          TORTILLA_RENDER_TARGET: 'test'
+        }
+      );
     });
   });
 
-  describe('resolve()', function () {
-    it('should resolve path relatively to the current rendered view file path', function () {
-      Renderer.registerHelper('testHelper', function () {
+  describe('resolve()', function() {
+    it('should resolve path relatively to the current rendered view file path', function() {
+      Renderer.registerHelper('testHelper', function() {
         return Renderer.resolve('../templates/step1.md');
       });
 
@@ -137,14 +112,14 @@ describe('Renderer', () => {
       expect(view).toEqual('../templates/step1.md');
     });
 
-    it('should replace tilde (~) with root', function () {
+    it('should replace tilde (~) with root', function() {
       context.tortilla(['step', 'edit']);
 
       const pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.repository = {
         type: 'git',
-        url: 'https://github.com/username/reponame.git',
+        url: 'https://github.com/username/reponame.git'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -154,7 +129,7 @@ describe('Renderer', () => {
       context.git(['rebase', '--continue']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
 
-      Renderer.registerHelper('testHelper', function () {
+      Renderer.registerHelper('testHelper', function() {
         return Renderer.resolve('~/commit/abc0xyz');
       });
 
@@ -165,8 +140,8 @@ describe('Renderer', () => {
       expect(view).toEqual('https://github.com/username/reponame/commit/abc0xyz');
     });
 
-    it('should remain tilde if no repo was specified', function () {
-      Renderer.registerHelper('testHelper', function () {
+    it('should remain tilde if no repo was specified', function() {
+      Renderer.registerHelper('testHelper', function() {
         return Renderer.resolve('~/commit/abc0xyz');
       });
 
@@ -177,14 +152,14 @@ describe('Renderer', () => {
       expect(view).toEqual('~/commit/abc0xyz');
     });
 
-    it('should resolve path relative to repository url if specified in package.json', function () {
+    it('should resolve path relative to repository url if specified in package.json', function() {
       context.tortilla(['step', 'edit']);
 
       const pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.repository = {
         type: 'git',
-        url: 'https://github.com/username/reponame.git',
+        url: 'https://github.com/username/reponame.git'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -195,7 +170,7 @@ describe('Renderer', () => {
 
       context.tortilla(['release', 'bump', 'minor', '-m', 'Test version']);
 
-      Renderer.registerHelper('testHelper', function () {
+      Renderer.registerHelper('testHelper', function() {
         return Renderer.resolve('./step2.md');
       });
 
@@ -206,14 +181,14 @@ describe('Renderer', () => {
       expect(view).toEqual('https://github.com/username/reponame/tree/master@0.1.0/.tortilla/manuals/views/step2.md');
     });
 
-    it('should NOT resolve path relative to repository url if a release is yet to exist', function () {
+    it('should NOT resolve path relative to repository url if a release is yet to exist', function() {
       context.tortilla(['step', 'edit']);
 
       const pack = Fs.readJsonSync(Paths.npm.package);
 
       pack.repository = {
         type: 'git',
-        url: 'https://github.com/username/reponame.git',
+        url: 'https://github.com/username/reponame.git'
       };
 
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
@@ -222,7 +197,7 @@ describe('Renderer', () => {
       context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
       context.git(['rebase', '--continue']);
 
-      Renderer.registerHelper('testHelper', function () {
+      Renderer.registerHelper('testHelper', function() {
         return Renderer.resolve('./step2.md');
       });
 
@@ -234,16 +209,16 @@ describe('Renderer', () => {
     });
   });
 
-  describe('call()', function () {
-    it('should call specified template helper inside an existing template helper', function () {
-      Renderer.registerHelper('callerHelper', function () {
+  describe('call()', function() {
+    it('should call specified template helper inside an existing template helper', function() {
+      Renderer.registerHelper('callerHelper', function() {
         return Renderer.call('calleeHelper', 'arg1', 'arg2', {
           option1: 'option1',
           option2: 'option2'
         });
       });
 
-      Renderer.registerHelper('calleeHelper', function (arg1, arg2, options) {
+      Renderer.registerHelper('calleeHelper', function(arg1, arg2, options) {
         expect(this.model1).toEqual('model1');
         expect(this.model2).toEqual('model2');
 
