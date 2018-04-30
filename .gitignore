@@ -1,3 +1,7 @@
 node_modules
 npm-debug.log
 tortilla-project
+dist
+.DS_Store
+.idea
+

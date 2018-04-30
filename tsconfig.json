@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "target": "es5",
+    "lib": ["es6", "esnext", "es2015"],
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/typings.d.ts", "src/**/*.ts"],
+  "files": [
+    "src/config.ts",
+    "src/editor.ts",
+    "src/essentials.ts",
+    "src/git.ts",
+    "src/local-cache.ts",
+    "src/local-storage.ts",
+    "src/manual.ts",
+    "src/package.ts",
+    "src/paths.ts",
+    "src/rebase.ts",
+    "src/release.ts",
+    "src/step.ts",
+    "src/submodule.ts",
+    "src/utils.ts"
+  ],
+  "exclude": ["node_modules"]
+}

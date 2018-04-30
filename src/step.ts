@@ -1,0 +1,572 @@
+import * as Fs from 'fs-extra';
+import * as Minimist from 'minimist';
+import * as Path from 'path';
+import { Git } from './git';
+import { localStorage as LocalStorage } from './local-storage';
+import { Paths } from './paths';
+import { Submodule } from './submodule';
+import { Utils } from './utils';
+
+// Get recent commit by specified arguments
+function getRecentCommit(offset, format, grep) {
+  if (typeof offset === 'string') {
+    if (!grep) { grep = format; }
+    format = offset;
+    offset = 0;
+  }
+
+  const argv = [];
+
+  if (format) {
+    argv.push(`--format=${format}`);
+  }
+
+  if (grep) {
+    argv.push(`--grep=${grep}`);
+  }
+
+  return Git.recentCommit(offset, argv);
+}
+
+// Get the recent step commit
+function getRecentStepCommit(offset, format?) {
+  return getRecentCommit(offset, format, '^Step [0-9]\\+');
+}
+
+// Get the recent super step commit
+function getRecentSuperStepCommit(offset, format?) {
+  return getRecentCommit(offset, format, '^Step [0-9]\\+:');
+}
+
+// Get the recent sub step commit
+function getRecentSubStepCommit(offset, format?) {
+  return getRecentCommit(offset, format, '^Step [0-9]\\+\\.[0-9]\\+:');
+}
+
+// Extract step json from message
+function getStepDescriptor(message): { number: string, message: string, type: string } {
+  if (message == null) {
+    throw TypeError('A message must be provided');
+  }
+
+  const match = message.match(/^Step (\d+(?:\.\d+)?)\: ((?:.|\n)*)$/);
+
+  return match && {
+    number: match[1],
+    message: match[2],
+    type: match[1].split('.')[1] ? 'sub' : 'super',
+  };
+}
+
+// Extract super step json from message
+function getSuperStepDescriptor(message) {
+  if (message == null) {
+    throw TypeError('A message must be provided');
+  }
+
+  const match = message.match(/^Step (\d+)\: ((?:.|\n)*)$/);
+
+  return match && {
+    number: Number(match[1]),
+    message: match[2],
+  };
+}
+
+// Extract sub step json from message
+function getSubStepDescriptor(message) {
+  if (message == null) {
+    throw TypeError('A message must be provided');
+  }
+
+  const match = message.match(/^Step ((\d+)\.(\d+))\: ((?:.|\n)*)$/);
+
+  return match && {
+    number: match[1],
+    superNumber: Number(match[2]),
+    subNumber: Number(match[3]),
+    message: match[4],
+  };
+}
+
+// Push a new step with the provided message
+function pushStep(message, options) {
+  const step = getNextStep();
+  commitStep(step, message, options);
+  // Meta-data for step editing
+  LocalStorage.setItem('REBASE_NEW_STEP', step);
+}
+
+// Pop the last step
+function popStep() {
+  const headHash = Git(['rev-parse', 'HEAD']);
+  const rootHash = Git.rootHash();
+
+  if (headHash === rootHash) {
+    throw Error("Can't remove root");
+  }
+
+  const removedCommitMessage = Git.recentCommit(['--format=%s']);
+  const stepDescriptor = getStepDescriptor(removedCommitMessage);
+
+  Git.print(['reset', '--hard', 'HEAD~1']);
+
+  // Meta-data for step editing
+  if (stepDescriptor) {
+    LocalStorage.setItem('REBASE_NEW_STEP', getCurrentStep());
+
+    // This will be used later on to update the manuals
+    if (ensureStepMap()) {
+      updateStepMap('remove', { step: stepDescriptor.number });
+    }
+
+    // Delete branch referencing the super step unless we're rebasing, in which case the
+    // branches will be reset automatically at the end of the rebase
+    if (stepDescriptor.type === 'super' && !Git.rebasing()) {
+      const branch = Git.activeBranchName();
+
+      Git(['branch', '-D', `${branch}-step${stepDescriptor.number}`]);
+    }
+  } else {
+    console.warn('Removed commit was not a step');
+
+    return;
+  }
+}
+
+// Finish the current with the provided message and tag it
+function tagStep(message) {
+  const step = getNextSuperStep();
+  const tag = `step${step}`;
+  const manualFile = `${tag}.tmpl`;
+  const manualTemplatePath = Path.resolve(Paths.manuals.templates, manualFile);
+
+  Fs.ensureDirSync(Paths.manuals.templates);
+  Fs.ensureDirSync(Paths.manuals.views);
+  Fs.writeFileSync(manualTemplatePath, '');
+
+  Git(['add', manualTemplatePath]);
+
+  commitStep(step, message);
+
+  // Note that first we need to commit the new step and only then read the checkouts file
+  // so we can have an updated hash list
+  Submodule.ensure(step);
+
+  // If we're in edit mode all the branches will be set after the rebase
+  if (!Git.rebasing()) {
+    const branch = Git.activeBranchName();
+    // This branch will be used to run integration testing
+    Git(['branch', `${branch}-step${step}`]);
+  }
+
+  // Meta-data for step editing
+  LocalStorage.setItem('REBASE_NEW_STEP', step);
+}
+
+// Get the hash of the step followed by ~1, mostly useful for a rebase
+function getStepBase(step) {
+  if (!step) {
+    const message = getRecentStepCommit('%s');
+    if (!message) {
+      return '--root';
+    }
+
+    step = getStepDescriptor(message).number;
+  }
+
+  if (step === 'root') {
+    return '--root';
+  }
+
+  const hash = Git.recentCommit([
+    `--grep=^Step ${step}:`,
+    '--format=%h',
+  ]);
+
+  if (!hash) {
+    throw Error('Step not found');
+  }
+
+  return `${hash}~1`;
+}
+
+// Edit the provided step
+function editStep(steps, options: any = {}) {
+  if (steps instanceof Array) {
+    steps = steps.slice().sort((a, b) => {
+      const [superA, subA] = a.split('.').concat('Infinity');
+      const [superB, subB] = b.split('.').concat('Infinity');
+
+      // Always put the root on top
+      if (a === 'root') {
+        return -1;
+      }
+
+      if (b === 'root') {
+        return 1;
+      }
+
+      // Put first steps first
+      return (
+        (superA - superB) ||
+        (subA - subB)
+      );
+    });
+  } else {
+    steps = [steps];
+  }
+
+  // The would always have to start from the first step
+  const base = getStepBase(steps[0]);
+
+  // '--root' might be fetched in case no steps where provided. We need to fill up
+  // this missing information in the steps array
+  if (!steps.length && base === '--root') {
+    steps[0] = 'root';
+  }
+
+  const argv = [Paths.tortilla.editor, 'edit', ...steps];
+
+  // Update diffSteps
+  if (options.udiff != null) {
+    argv.push('--udiff');
+  }
+
+  // Update diffSteps in another repo
+  if (options.udiff) {
+    argv.push(options.udiff.toString());
+  }
+
+  // Storing locally so it can be used in further processes
+  // Indicates that this operation is hooked into a submodule
+  if (process.env.TORTILLA_SUBMODULE_CWD) {
+    LocalStorage.setItem('SUBMODULE_CWD', process.env.TORTILLA_SUBMODULE_CWD);
+  }
+
+  Git.print(['rebase', '-i', base, '--keep-empty'], {
+    env: {
+      GIT_SEQUENCE_EDITOR: `node ${argv.join(' ')}`,
+    },
+  });
+}
+
+// Adjust all the step indexes from the provided step
+function sortStep(step) {
+  // If no step was provided, take the most recent one
+  if (!step) {
+    step = getRecentStepCommit('%s');
+    step = getStepDescriptor(step);
+    step = step ? step.number : 'root';
+  }
+
+  let newStep;
+  let oldStep;
+  let base;
+
+  // If root, make sure to sort all step indexes since the beginning of history
+  if (step === 'root') {
+    newStep = '1';
+    oldStep = 'root';
+    base = '--root';
+  } else { // Else, adjust only the steps in the given super step
+    newStep = step.split('.').map(Number)[0];
+    oldStep = newStep - 1 || 'root';
+    newStep = `${newStep}.${1}`;
+    base = getStepBase(newStep);
+  }
+
+  // Setting local storage variables so re-sortment could be done properly
+  LocalStorage.setItem('REBASE_NEW_STEP', newStep);
+  LocalStorage.setItem('REBASE_OLD_STEP', oldStep);
+
+  Git.print(['rebase', '-i', base, '--keep-empty'], {
+    env: {
+      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} sort`,
+    },
+  });
+}
+
+// Reword the provided step with the provided message
+function rewordStep(step, message) {
+  const base = getStepBase(step);
+  const argv = [Paths.tortilla.editor, 'reword'];
+  if (message) {
+    argv.push('-m', `"${message}"`);
+  }
+
+  Git.print(['rebase', '-i', base, '--keep-empty'], {
+    env: {
+      GIT_SEQUENCE_EDITOR: `node ${argv.join(' ')}`,
+    },
+  });
+}
+
+// Add a new commit of the provided step with the provided message
+function commitStep(step, message, options: any = {}) {
+  const argv = ['commit'];
+  if (message) {
+    argv.push('-m', message);
+  }
+  if (options.allowEmpty) {
+    argv.push('--allow-empty');
+  }
+
+  // Specified step is gonna be used for when forming the commit message
+  LocalStorage.setItem('HOOK_STEP', step);
+
+  try {
+    // commit
+    Git.print(argv);
+  } catch (err) {
+    // Clearing storage to prevent conflicts with upcoming commits
+    LocalStorage.removeItem('HOOK_STEP');
+    throw err;
+  }
+}
+
+// Get the current step
+function getCurrentStep() {
+  // Probably root commit
+  const recentStepCommit = getRecentStepCommit('%s');
+  if (!recentStepCommit) {
+    return 'root';
+  }
+
+  // Cover unexpected behavior
+  const descriptor = getStepDescriptor(recentStepCommit);
+  if (!descriptor) {
+    return 'root';
+  }
+
+  return descriptor.number;
+}
+
+// Get the current super step
+function getCurrentSuperStep() {
+  // Probably root commit
+  const recentStepCommit = getRecentSuperStepCommit('%s');
+  if (!recentStepCommit) {
+    return 'root';
+  }
+
+  // Cover unexpected behavior
+  const descriptor = getSuperStepDescriptor(recentStepCommit);
+  if (!descriptor) {
+    return 'root';
+  }
+
+  return descriptor.number;
+}
+
+// Get the next step
+function getNextStep(offset?) {
+  // Fetch data about recent step commit
+  const stepCommitMessage = getRecentStepCommit(offset, '%s');
+  const followedByStep = !!stepCommitMessage;
+
+  // If no previous steps found return the first one
+  if (!followedByStep) {
+    return '1.1';
+  }
+
+  // Fetch data about current step
+  const stepDescriptor = getStepDescriptor(stepCommitMessage);
+  const stepNumbers = stepDescriptor.number.split('.');
+  const superStepNumber = Number(stepNumbers[0]);
+  const subStepNumber = Number(stepNumbers[1]);
+  const isSuperStep = !subStepNumber;
+
+  if (!offset) {
+    // If this is a super step return the first sub step of a new step
+    if (isSuperStep) {
+      return `${superStepNumber + 1}.${1}`;
+    }
+
+    // Else, return the next step as expected
+    return `${superStepNumber}.${subStepNumber + 1}`;
+  }
+
+  // Fetch data about next step
+  const nextStepCommitMessage = getRecentStepCommit(offset - 1, '%s');
+  const nextStepDescriptor = getStepDescriptor(nextStepCommitMessage);
+  const nextStepNumbers = nextStepDescriptor.number.split('.');
+  const nextSubStepNumber = Number(nextStepNumbers[1]);
+  const isNextSuperStep = !nextSubStepNumber;
+
+  if (isNextSuperStep) {
+    // If this is a super step return the next super step right away
+    if (isSuperStep) {
+      return (superStepNumber + 1).toString();
+    }
+
+    // Else, return the current super step
+    return superStepNumber.toString();
+  }
+
+  // If this is a super step return the first sub step of the next step
+  if (isSuperStep) {
+    return `${superStepNumber + 1}.${1}`;
+  }
+
+  // Else, return the next step as expected
+  return `${superStepNumber}.${subStepNumber + 1}`;
+}
+
+// Get the next super step
+function getNextSuperStep(offset?) {
+  return getNextStep(offset).split('.')[0];
+}
+
+// Pending flag indicates that this step map will be used in another tortilla repo
+function initializeStepMap(pending) {
+  const map = Git([
+    'log', '--format=%s', '--grep=^Step [0-9]\\+',
+  ])
+    .split('\n')
+    .filter(Boolean)
+    .reduce((m, subject) => {
+      const num = getStepDescriptor(subject).number;
+      m[num] = num;
+
+      return m;
+    }, {});
+
+  LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+
+  if (pending) {
+    LocalStorage.setItem('STEP_MAP_PENDING', true);
+  } else {
+    LocalStorage.removeItem('STEP_MAP_PENDING');
+  }
+}
+
+// First argument represents the module we would like to read the steps map from
+function getStepMap(submoduleCwd?, checkPending?) {
+  let localStorage;
+
+  // In case this process was launched from a submodule
+  if (submoduleCwd) {
+    localStorage = LocalStorage.create(submoduleCwd);
+  } else {
+    localStorage = LocalStorage;
+  }
+
+  if (ensureStepMap(submoduleCwd, checkPending)) {
+    return JSON.parse(localStorage.getItem('STEP_MAP'));
+  }
+}
+
+// Provided argument will run an extra condition to check whether the pending flag
+// exists or not
+function ensureStepMap(submoduleCwd?, checkPending?) {
+  // Step map shouldn't be used in this process
+  if (checkPending && LocalStorage.getItem('STEP_MAP_PENDING')) {
+    return false;
+  }
+
+  let paths;
+
+  // In case this process was launched from a submodule
+  if (submoduleCwd) {
+    paths = Paths.resolveProject(submoduleCwd);
+  } else {
+    paths = Paths;
+  }
+
+  return Utils.exists(Path.resolve(paths.storage, 'STEP_MAP'), 'file');
+}
+
+function disposeStepMap() {
+  LocalStorage.deleteItem('STEP_MAP');
+  LocalStorage.deleteItem('STEP_MAP_PENDING');
+}
+
+function updateStepMap(type, payload) {
+  const map = getStepMap();
+
+  switch (type) {
+    case 'remove':
+      delete map[payload.step];
+
+      break;
+
+    case 'reset':
+      map[payload.oldStep] = payload.newStep;
+
+      break;
+  }
+
+  LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
+}
+
+/**
+ Contains step related utilities.
+ */
+
+(() => {
+  if (require.main !== module) {
+    return;
+  }
+
+  const argv = Minimist(process.argv.slice(2), {
+    string: ['_', 'message', 'm'],
+    boolean: ['root', 'udiff', 'allow-empty'],
+  });
+
+  const method = argv._[0];
+  let step = argv._[1];
+  const message = argv.message || argv.m;
+  const root = argv.root;
+  const allowEmpty = argv['allow-empty'];
+  const udiff = argv.udiff;
+
+  if (!step && root) {
+    step = 'root';
+  }
+
+  const options = {
+    allowEmpty,
+    udiff,
+  };
+
+  switch (method) {
+    case 'push':
+      return pushStep(message, options);
+    case 'pop':
+      return popStep();
+    case 'tag':
+      return tagStep(message);
+    case 'edit':
+      return editStep(step, options);
+    case 'sort':
+      return sortStep(step);
+    case 'reword':
+      return rewordStep(step, message);
+  }
+})();
+
+export const Step = {
+  push: pushStep,
+  pop: popStep,
+  tag: tagStep,
+  edit: editStep,
+  sort: sortStep,
+  reword: rewordStep,
+  commit: commitStep,
+  current: getCurrentStep,
+  currentSuper: getCurrentSuperStep,
+  next: getNextStep,
+  nextSuper: getNextSuperStep,
+  base: getStepBase,
+  recentCommit: getRecentStepCommit,
+  recentSuperCommit: getRecentSuperStepCommit,
+  recentSubCommit: getRecentSubStepCommit,
+  descriptor: getStepDescriptor,
+  superDescriptor: getSuperStepDescriptor,
+  subDescriptor: getSubStepDescriptor,
+  initializeStepMap,
+  getStepMap,
+  ensureStepMap,
+  disposeStepMap,
+  updateStepMap,
+};
