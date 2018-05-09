@@ -1,10 +1,13 @@
 import * as Fs from 'fs-extra';
+import * as Path from 'path';
 import * as Tmp from 'tmp';
 import { Git } from './git';
 import { localStorage as LocalStorage } from './local-storage';
 import { Manual } from './manual';
-import { Paths } from './paths';
+import { Paths, resolveProject } from './paths';
+import { prompt } from './prompt';
 import { Step } from './step';
+import { Submodule } from './submodule';
 import { Utils } from './utils';
 
 /**
@@ -16,10 +19,95 @@ import { Utils } from './utils';
 const tmp1Dir = Tmp.dirSync({ unsafeCleanup: true });
 const tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
 
+async function promptForGitRevision(submoduleName, submodulePath) {
+  const mostRecentCommit = Git.recentCommit(null, '--format="oneline"', null, submodulePath);
+  const answer = await prompt([
+    {
+      type: 'list',
+      name: 'update-module',
+      message: `Submodule '${submoduleName}' is pointing to the following commit: ${mostRecentCommit}, is that correct?`,
+      choices: [
+        { name: `Yes, it's the correct commit!`, value: 'yes' },
+        { name: `No - I need to make sure some things before releasing`, value: 'exit' },
+        { name: `No - I need to update this submodule to the latest commit`, value: 'update' },
+      ],
+      default: 'yes',
+    },
+  ]);
+
+  if (answer === 'yes') {
+    const commitId = Git.recentCommit(null, '--format="%H"', null, submodulePath);
+
+    return {
+      [submodulePath]: { gitRevision: commitId },
+    };
+  } else if (answer === 'exit') {
+    return null;
+  } else if (answer === 'update') {
+    console.log(`🔃 Updating submodule ${submoduleName}...`);
+    Submodule.update([submodulePath]);
+
+    return promptForGitRevision(submoduleName, submodulePath);
+  }
+}
+
+async function promptAndHandleSubmodules(listSubmodules) {
+  console.log(`ℹ️ Found total of ${listSubmodules.length} submodules.`);
+  console.log(`❗ Note that you need to make sure your submodules are pointing the correct versions:`);
+  console.log(`\t- If your submodule is a Tortilla project, make sure to release a new version there.`);
+  console.log(`\t- If your submodule is NOT a Tortilla project, make sure it's updated and pointing to the correct Git revision.\n`);
+
+  let modulesToVersionsMap: any = {};
+
+  for (const submodulePath of listSubmodules) {
+    const fullPath = Path.resolve(Utils.cwd(), submodulePath);
+    const isTortillaProject = Utils.exists(resolveProject(fullPath).tortillaDir);
+    const submoduleName = Path.basename(submodulePath);
+
+    if (isTortillaProject) {
+      const allReleases = getAllReleasesOfAllBranches(fullPath);
+
+      if (allReleases.length === 0) {
+        console.log(`🛑 Found a Tortilla project submodule: '${submoduleName}', but there are no Tortilla releases!`);
+        console.log(`Please make sure to release a version with Tortilla, and then try again`);
+
+        return null;
+      } else {
+        const answer = await prompt([
+          {
+            type: 'list',
+            name: submodulePath,
+            message: `Submodule '${submoduleName}' is a valid Tortilla project. Please pick a release from the list:`,
+            choices: allReleases.map(releaseInfo => releaseInfo.tagName),
+          },
+        ]);
+
+        modulesToVersionsMap = {
+          ...(modulesToVersionsMap || {}),
+          [fullPath]: { tortillaVersion: answer },
+        };
+      }
+    } else {
+      const result = await promptForGitRevision(submoduleName, fullPath);
+
+      if (result === null) {
+        return null;
+      }
+
+      modulesToVersionsMap = {
+        ...modulesToVersionsMap,
+        ...result,
+      };
+    }
+  }
+
+  return modulesToVersionsMap;
+}
+
 // Creates a bumped release tag of the provided type
 // e.g. if the current release is @1.0.0 and we provide this function with a release type
 // of 'patch', the new release would be @1.0.1
-function bumpRelease(releaseType, options) {
+async function bumpRelease(releaseType, options) {
   options = options || {};
 
   const currentRelease = getCurrentRelease();
@@ -40,6 +128,29 @@ function bumpRelease(releaseType, options) {
       break;
     default:
       throw Error('Provided release type must be one of "major", "minor" or "patch"');
+  }
+
+  const listSubmodules = Submodule.list();
+
+  let submodulesRevisions: { [submoduleName: string]: string } = {};
+  const hasSubmodules = listSubmodules.length > 0;
+
+  if (hasSubmodules) {
+    submodulesRevisions = await promptAndHandleSubmodules(listSubmodules);
+
+    if (!submodulesRevisions || Object.keys(submodulesRevisions).length !== listSubmodules.length) {
+      throw new Error(`Unexpected submodules versions results!`);
+    } else {
+      for (const [submodulePath, revisionChoice] of Object.entries<any>(submodulesRevisions)) {
+        if (revisionChoice && revisionChoice.tortillaVersion) {
+          console.log(`▶️ Checking out "${revisionChoice.tortillaVersion}" in Tortilla submodule "${Path.basename(submodulePath)}"...`);
+          Git(['checkout', revisionChoice.tortillaVersion], { cwd: submodulePath });
+        } else if (revisionChoice && revisionChoice.gitRevision) {
+          console.log(`▶️ Checking out "${revisionChoice.gitRevision}" in submodule "${Path.basename(submodulePath)}"...`);
+          Git(['checkout', revisionChoice.gitRevision], { cwd: submodulePath });
+        }
+      }
+    }
   }
 
   try {
@@ -252,12 +363,41 @@ function getCurrentRelease() {
   };
 }
 
+function getAllReleasesOfAllBranches(path = null) {
+  return Git(['tag'], path ? { cwd: path } : null)
+  // Put tags into an array
+    .split('\n')
+    // If no tags found, filter the empty string
+    .filter(Boolean)
+    // Filter all the release tags which are proceeded by their release
+    .filter((tagName) => {
+      const pattern = /^[^@]+@\d+\.\d+\.\d+$/;
+
+      return tagName.match(pattern);
+    })
+    // Map all the release strings
+    .map((tagName) => {
+      const splitted = tagName.split('@');
+
+      return {
+        tagName,
+        deformatted: deformatRelease(splitted[1]),
+      };
+    })
+    // Put the latest release first
+    .sort((a, b) => (
+      (b.deformatted.major - a.deformatted.major) ||
+      (b.deformatted.minor - a.deformatted.minor) ||
+      (b.deformatted.patch - a.deformatted.patch)
+    ));
+}
+
 // Gets a list of all the releases represented as JSONs e.g.
 // [{ major: 0, minor: 1, patch: 0 }]
-function getAllReleases() {
-  const branch = Git.activeBranchName();
+function getAllReleases(path = null) {
+  const branch = Git.activeBranchName(path);
 
-  return Git(['tag'])
+  return Git(['tag'], path ? { cwd: path } : null)
   // Put tags into an array
     .split('\n')
     // If no tags found, filter the empty string
@@ -304,7 +444,9 @@ function deformatRelease(releaseString) {
 
 function createReleaseTag(tag, dstHash, message?) {
   let srcHash = Git.activeBranchName();
-  if (srcHash === 'HEAD') { srcHash = Git(['rev-parse', 'HEAD']); }
+  if (srcHash === 'HEAD') {
+    srcHash = Git(['rev-parse', 'HEAD']);
+  }
 
   Git(['checkout', dstHash]);
 

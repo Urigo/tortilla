@@ -1,10 +1,10 @@
 import * as Fs from 'fs-extra';
 import * as Tmp from 'tmp';
-import { Paths } from './paths';
+import { Paths, resolveProject } from './paths';
 import { Utils } from './utils';
 
 /**
-  Contains general git utilities.
+ Contains general git utilities.
  */
 
 const exec = Utils.exec;
@@ -23,19 +23,23 @@ function git(argv, options?) {
 // exec and spawn
 function gitBody(handler, argv, options) {
   options = {
-    env: {}, ...options};
+    env: {}, ...options
+  };
 
   // Zeroing environment vars which might affect other executions
   options.env = {
     GIT_DIR: null,
-    GIT_WORK_TREE: null, ...options.env};
+    GIT_WORK_TREE: null, ...options.env
+  };
 
   return handler(argv, options);
 }
 
 // Tells if rebasing or not
-function isRebasing() {
-  return Utils.exists(Paths.git.rebaseMerge) || Utils.exists(Paths.git.rebaseApply);
+function isRebasing(path = null) {
+  const paths = path ? resolveProject(path).git : Paths.git;
+
+  return Utils.exists(paths.rebaseMerge) || Utils.exists(paths.rebaseApply);
 }
 
 // Tells if cherry-picking or not
@@ -61,7 +65,7 @@ function tagExists(tag) {
 
 // Get the recent commit by the provided arguments. An offset can be specified which
 // means that the recent commit from several times back can be fetched as well
-function getRecentCommit(offset, argv, options) {
+function getRecentCommit(offset, argv, options, path = null) {
   if (offset instanceof Array) {
     options = argv;
     argv = offset;
@@ -74,7 +78,7 @@ function getRecentCommit(offset, argv, options) {
   const hash = typeof offset === 'string' ? offset : (`HEAD~${offset}`);
   argv = ['log', hash, '-1'].concat(argv);
 
-  return git(argv, options);
+  return git(argv, path ? { ...options, cwd: path } : options);
 }
 
 // Gets a list of the modified files reported by git matching the provided pattern.
@@ -88,13 +92,13 @@ function getStagedFiles(pattern?) {
 }
 
 // Gets active branch name
-function getActiveBranchName() {
-  if (!isRebasing()) {
-    return git(['rev-parse', '--abbrev-ref', 'HEAD']);
+function getActiveBranchName(path = null) {
+  if (!isRebasing(path)) {
+    return git(['rev-parse', '--abbrev-ref', 'HEAD'], path ? { cwd: path } : null);
   }
 
   // Getting a reference for the hash of which the rebase have started
-  const branchHash = git(['reflog', '--format=%gd %gs'])
+  const branchHash = git(['reflog', '--format=%gd %gs'], path ? { cwd: path } : null)
     .split('\n')
     .filter(Boolean)
     .map((line) => line.split(' '))
@@ -109,7 +113,7 @@ function getActiveBranchName() {
 
   // Comparing the found hash to each of the branches' hashes
   return Fs.readdirSync(Paths.git.refs.heads).find((branchName) => {
-    return git(['rev-parse', branchName]) === branchHash;
+    return git(['rev-parse', branchName], path ? { cwd: path } : null) === branchHash;
   });
 }
 
@@ -121,7 +125,7 @@ function getRootHash(head = 'HEAD') {
 function getRoot() {
   try {
     return git(['rev-parse', '--show-toplevel']);
-  // Not a git project
+    // Not a git project
   } catch (e) {
     return '';
   }
@@ -144,18 +148,20 @@ function edit(initialContent) {
 function getEditor() {
   let editor = process.env.GIT_EDITOR;
 
-  if (!editor) { try {
-    editor = git(['config', 'core.editor']);
-  } catch (e) {
-    // Ignore
-  }
+  if (!editor) {
+    try {
+      editor = git(['config', 'core.editor']);
+    } catch (e) {
+      // Ignore
+    }
   }
 
-  if (!editor) { try {
-    editor = git(['var', 'GIT_EDITOR']);
-  } catch (e) {
-    // Ignore
-  }
+  if (!editor) {
+    try {
+      editor = git(['var', 'GIT_EDITOR']);
+    } catch (e) {
+      // Ignore
+    }
   }
 
   if (!editor) {
@@ -164,6 +170,11 @@ function getEditor() {
 
   return editor;
 }
+
+function getRevisionIdFromObject(object: string): string {
+  return git(['rev-list', '-n', '1', object]);
+}
+
 
 export const Git = Utils.extend(git.bind(null), git, {
   conflict,
@@ -178,4 +189,5 @@ export const Git = Utils.extend(git.bind(null), git, {
   root: getRoot,
   edit,
   editor: getEditor,
+  getRevisionIdFromObject,
 });

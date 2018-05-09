@@ -51,6 +51,7 @@ export interface TortillaPaths {
       tags: string;
     },
   };
+  tortillaDir: string;
   tortilla: {
     resolve: () => string;
     editor: string;
@@ -161,7 +162,7 @@ function resolveTree(root, branches): any {
 }
 
 // Resolves a bunch of paths to a given tortilla project path
-function resolveProject(cwd: string): TortillaPaths {
+export function resolveProject(cwd: string): TortillaPaths {
   if (!cwd) { throw TypeError('A project path must be provided'); }
 
   if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) {
@@ -208,6 +209,7 @@ function resolveProject(cwd: string): TortillaPaths {
   });
 
   return cache[cwd] = resolveTree(cwd, {
+    tortillaDir: resolve(cwd, '.tortilla'),
     config: resolve(cwd, '.tortilla/config.js'),
     checkouts: resolve(cwd, '.tortilla/checkouts.json'),
     locales: resolve(cwd, '.tortilla/locales'),

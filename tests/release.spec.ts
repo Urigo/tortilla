@@ -1,15 +1,84 @@
+jest.mock('inquirer');
+
 import { tortillaBeforeAll, tortillaBeforeEach } from './tests-helper';
 import './custom-matchers';
 import { Paths } from '../src/paths';
+import * as Tmp from 'tmp';
+import * as Path from 'path';
+import { Release } from '../src/release';
 
 let context: any = {};
+
+// process.env.DEBUG = '1';
+process.env.TORTILLA_CACHE_DISABLED = '1';
 
 describe('Release', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
 
-  describe('bump()', function() {
-    it('should bump a major version', function() {
+  describe('with submodules', () => {
+    beforeEach(() => {
+      context.fooModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+      context.createTortillaProject(context.fooModuleDir);
+    });
+
+    it('one tortilla project as submodule with one version: should point to the correct commit', async () => {
+      context.setPromptAnswers([
+        'master@0.1.0'
+      ]);
+      // Create a sub-project of Tortilla, add an empty commit and release a new version
+      context.scopeEnv(() => {
+        context.tortilla(['step', 'push', '-m', 'Create submodule', '--allow-empty']);
+        context.tortilla(['release', 'bump', 'minor', '-m', 'submodule version test']);
+      }, { TORTILLA_CWD: context.fooModuleDir });
+
+      // Add the sub project as submodule
+      context.tortilla(['submodule', 'add', context.fooModuleDir]);
+
+      // Release a new version of the root
+      const out = context.tortilla(['release', 'bump', 'minor', '-m', 'submodule root']);
+
+      expect(out).toContain('Checking out "master@0.1.0" in Tortilla submodule ');
+      expect(out).toContain('Release: 0.1.0');
+    });
+
+    it('two tortilla project as submodule with one version: should point to the correct commit', async () => {
+      const barModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+      context.createTortillaProject(barModuleDir);
+
+      context.setPromptAnswers([
+        'master@0.1.0',
+        'master@1.0.0',
+      ]);
+
+      // Create a sub-project of Tortilla, add an empty commit and release a new version
+      context.scopeEnv(() => {
+        context.tortilla(['step', 'push', '-m', 'Create submodule', '--allow-empty']);
+        context.tortilla(['release', 'bump', 'minor', '-m', 'submodule version test']);
+      }, { TORTILLA_CWD: context.fooModuleDir });
+
+      // Create a sub-project of Tortilla, add an empty commit and release a new version
+      context.scopeEnv(() => {
+        context.tortilla(['step', 'push', '-m', 'Create submodule', '--allow-empty']);
+        context.tortilla(['release', 'bump', 'major', '-m', 'submodule version test']);
+      }, { TORTILLA_CWD: barModuleDir });
+
+      // Add the sub project as submodule
+      context.tortilla(['submodule', 'add', context.fooModuleDir]);
+      context.tortilla(['submodule', 'add', barModuleDir]);
+
+      // Release a new version of the root
+      const out = context.tortilla(['release', 'bump', 'minor', '-m', 'submodule root']);
+
+      expect(out).toContain('Checking out "master@0.1.0" in Tortilla submodule ');
+      expect(out).toContain('Checking out "master@1.0.0" in Tortilla submodule ');
+      expect(out).toContain('Release: 0.1.0');
+    });
+
+  });
+
+  describe('bump()', function () {
+    it('should bump a major version', function () {
       context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
 
       let tagExists;
@@ -21,7 +90,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should bump a minor version', function() {
+    it('should bump a minor version', function () {
       context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
 
       let tagExists;
@@ -33,7 +102,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should bump a patch version', function() {
+    it('should bump a patch version', function () {
       context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
 
       let tagExists;
@@ -45,7 +114,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should bump a major, minor and patch versions', function() {
+    it('should bump a major, minor and patch versions', function () {
       context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
       context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
@@ -71,7 +140,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should bump a version for all step tags', function() {
+    it('should bump a version for all step tags', function () {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -98,7 +167,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should change the prefix of the release based on the active branch', function() {
+    it('should change the prefix of the release based on the active branch', function () {
       context.git(['checkout', '-b', 'test']);
 
       context.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -127,7 +196,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should be able to handle multiple bumps for the same version type', function() {
+    it('should be able to handle multiple bumps for the same version type', function () {
       context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
       context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
@@ -167,7 +236,7 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
-    it('should create a diff branch whose commits represent the releases', function() {
+    it('should create a diff branch whose commits represent the releases', function () {
       context.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
       context.git(['add', 'VERSION']);
       context.tortilla(['step', 'push', '-m', 'Create version file']);
@@ -211,7 +280,7 @@ describe('Release', () => {
       expect(releaseDiff).toContainSameContentAsFile('release-update.diff');
     });
 
-    it.skip('should remove files which should not be included in the release', function() {
+    it.skip('should remove files which should not be included in the release', function () {
       context.exec('touch', ['.travis.yml']);
       context.exec('touch', ['renovate.json']);
       context.git(['add', '.travis.yml']);
@@ -237,7 +306,7 @@ describe('Release', () => {
       expect(context.exists(renovatePath)).toBeFalsy();
     });
 
-    it('should re-render all manuals using an updated release tag', function() {
+    it('should re-render all manuals using an updated release tag', function () {
       context.tortilla(['step', 'edit', '--root']);
 
       const pack = JSON.parse(context.exec('cat', ['package.json']));
@@ -266,8 +335,8 @@ describe('Release', () => {
     });
   });
 
-  describe('current()', function() {
-    it('should get the current version', function() {
+  describe('current()', function () {
+    it('should get the current version', function () {
       context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
       context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
@@ -278,8 +347,8 @@ describe('Release', () => {
     });
   });
 
-  describe('diff()', function() {
-    it('should run "git diff" between provided releases', function() {
+  describe('diff()', function () {
+    it('should run "git diff" between provided releases', function () {
       context.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
       context.git(['add', 'VERSION']);
       context.tortilla(['step', 'push', '-m', 'Create version file']);
@@ -310,7 +379,7 @@ describe('Release', () => {
       expect(releaseDiff).toContainSameContentAsFile('release-update.diff');
     });
 
-    it('should concat the provided arguments vector', function() {
+    it('should concat the provided arguments vector', function () {
       context.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
       context.git(['add', 'VERSION']);
       context.tortilla(['step', 'push', '-m', 'Create version file']);
@@ -341,7 +410,7 @@ describe('Release', () => {
       expect(releaseDiff).toContainSameContentAsFile('release-update-names.diff');
     });
 
-    it('should be able to run "git diff" for two releases with different roots', function() {
+    it('should be able to run "git diff" for two releases with different roots', function () {
       context.tortilla(['step', 'edit', '--root']);
       context.exec('sh', ['-c', 'echo 1.0.0 > VERSION']);
       context.git(['add', 'VERSION']);
