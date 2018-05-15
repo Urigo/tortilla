@@ -184,7 +184,7 @@ function scopeEnv(fn, env) {
   extend(process.env, env);
 
   try {
-    fn();
+    return fn();
   } finally {
     extend(process.env, originalEnv);
     contract(process.env, nullKeys);

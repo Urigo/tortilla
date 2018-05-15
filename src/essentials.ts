@@ -8,6 +8,7 @@ import { Ascii } from './ascii';
 import { Git } from './git';
 import { localStorage as LocalStorage } from './local-storage';
 import { Paths } from './paths';
+import { Release } from './release';
 import { Submodule } from './submodule';
 import { Utils } from './utils';
 
@@ -307,6 +308,13 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         .filter(Boolean)
         .pop();
 
+      // Instead of printing diff to stdout we will receive it as a buffer
+      const changesDiff = Utils.scopeEnv(() => {
+        return Release.diff(releaseVersion).output.toString()
+      }, {
+        TORTILLA_STDIO: 'pipe'
+      });
+
       const manuals = Fs.readdirSync(Paths.manuals.views).sort(naturalSort).map((manualName, stepIndex) => {
         const format = '%H %s';
         let stepLog;
@@ -362,6 +370,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         tagName,
         tagRevision,
         historyRevision,
+        changesDiff,
         manuals,
       };
     });

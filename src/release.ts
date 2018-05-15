@@ -246,22 +246,40 @@ function createDiffReleasesBranch() {
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
 // be invoked as is may be provided
-function diffRelease(sourceRelease, destinationRelease, argv) {
+function diffRelease(sourceRelease, destinationRelease?, argv?) {
   argv = argv || [];
+
+  // Will assume that we would like to run diff with the most recent release
+  if (!destinationRelease) {
+    const releases = getAllReleases().map(formatRelease);
+    const destinationIndex = releases.indexOf(sourceRelease) + 1;
+
+    destinationRelease = releases[destinationIndex];
+  }
 
   const branch = Git.activeBranchName();
   // Compose tags
   const sourceReleaseTag = `${branch}@${sourceRelease}`;
-  const destinationReleaseTag = `${branch}@${destinationRelease}`;
+  // If release ain't exist we will print the entire changes
+  const destinationReleaseTag = destinationRelease && `${branch}@${destinationRelease}`;
   // Create repo
   const destinationDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
 
-  // Run 'diff' between the newly created commits
-  Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
+  let out
+  if (destinationReleaseTag) {
+    // Run 'diff' between the newly created commits
+    out = Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
+  } else {
+    // Run so called 'diff' between HEAD and --root. A normal diff won't work here
+    out = Git.print(['show', '--format='].concat(argv), { cwd: destinationDir });
+  }
 
   // Clear registers
   tmp1Dir.removeCallback();
   tmp2Dir.removeCallback();
+
+  // If the right arguments were specified we could receive the diff as a string
+  return out;
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
@@ -276,6 +294,9 @@ function createDiffReleasesRepo(...tags) {
       .map(formatRelease)
       .reverse()
       .map((releaseString) => `${branch}@${releaseString}`);
+  } else {
+    // Sometimes an empty argument might be provided e.g. diffRelease() method
+    tags = tags.filter(Boolean);
   }
 
   // The 'registers' are directories which will be used for temporary FS calculations
