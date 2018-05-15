@@ -334,6 +334,7 @@ Dumps tutorial data as a JSON file. The default dump file name would be `tutoria
         "tagName": "The name of the tag",
         "tagRevision": "The revision of the tag",
         "historyRevision": "Commit hash based on history branch",
+        "changesDiff": "Diff with most recent release",
         "manuals": [
           {
             "manualTitle": "Step commit message",
