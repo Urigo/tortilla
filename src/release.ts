@@ -293,7 +293,7 @@ function diffRelease(
   tmp2Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
-  return result.output && result.output.toString();
+  return result.output && result.output.join('');
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the

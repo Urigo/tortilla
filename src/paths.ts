@@ -132,7 +132,7 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
   submodule: resolve(__dirname, 'submodule.js'),
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
-  skeleton: 'https://github.com/Urigo/tortilla-skeleton.git',
+  skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
   ascii,
   renderer,
   translator,
