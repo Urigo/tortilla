@@ -246,7 +246,16 @@ function createDiffReleasesBranch() {
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
 // be invoked as is may be provided
-function diffRelease(sourceRelease, destinationRelease?, argv?) {
+function diffRelease(
+  sourceRelease: string,
+  destinationRelease?: string,
+  argv?: string[],
+  options: {
+    branch?: string,
+    pipe?: boolean
+  } = {}
+ ) {
+  // Will work even if null
   argv = argv || [];
 
   // Will assume that we would like to run diff with the most recent release
@@ -257,7 +266,7 @@ function diffRelease(sourceRelease, destinationRelease?, argv?) {
     destinationRelease = releases[destinationIndex];
   }
 
-  const branch = Git.activeBranchName();
+  const branch = options.branch || Git.activeBranchName();
   // Compose tags
   const sourceReleaseTag = `${branch}@${sourceRelease}`;
   // If release ain't exist we will print the entire changes
@@ -265,13 +274,18 @@ function diffRelease(sourceRelease, destinationRelease?, argv?) {
   // Create repo
   const destinationDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
 
-  let out
+  const gitOptions = {
+    cwd: destinationDir,
+    stdio: options.pipe ? 'pipe' : 'inherit'
+  };
+
+  let result
   if (destinationReleaseTag) {
     // Run 'diff' between the newly created commits
-    out = Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
+    result = Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), gitOptions);
   } else {
     // Run so called 'diff' between HEAD and --root. A normal diff won't work here
-    out = Git.print(['show', '--format='].concat(argv), { cwd: destinationDir });
+    result = Git.print(['show', '--format='].concat(argv), gitOptions);
   }
 
   // Clear registers
@@ -279,7 +293,7 @@ function diffRelease(sourceRelease, destinationRelease?, argv?) {
   tmp2Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
-  return out;
+  return result.output && result.output.toString();
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the

@@ -309,10 +309,9 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         .pop();
 
       // Instead of printing diff to stdout we will receive it as a buffer
-      const changesDiff = Utils.scopeEnv(() => {
-        return Release.diff(releaseVersion).output.toString()
-      }, {
-        TORTILLA_STDIO: 'pipe'
+      const changesDiff = Release.diff(releaseVersion, null, null, {
+        branch: branchName,
+        pipe: true
       });
 
       const manuals = Fs.readdirSync(Paths.manuals.views).sort(naturalSort).map((manualName, stepIndex) => {
