@@ -54,6 +54,7 @@ export interface TortillaPaths {
   tortillaDir: string;
   tortilla: {
     resolve: () => string;
+    dump: string;
     editor: string;
     essentials: string;
     git: string;
@@ -117,6 +118,7 @@ const translator = resolveTree(resolve(__dirname, 'translator'), {
 });
 
 const tortilla = resolveTree(resolve(__dirname, '..'), {
+  dump: resolve(__dirname, 'dump.js'),
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),

@@ -34,7 +34,7 @@ describe('Dump', () => {
       context.git(['checkout', 'master']);
     });
 
-    context.tortilla(['dump', context.dumpFile]);
+    context.tortilla(['dump', '-o', context.dumpFile]);
 
     expect(context.readDumpFile()).toContainSameContentAsFile('dumps/branches-dump.json');
   });
@@ -43,7 +43,7 @@ describe('Dump', () => {
     context.tortilla(['release', 'bump', 'minor', '-m', 'master release 1']);
     context.tortilla(['release', 'bump', 'minor', '-m', 'master release 2']);
     context.tortilla(['release', 'bump', 'minor', '-m', 'master release 3']);
-    context.tortilla(['dump', context.dumpFile]);
+    context.tortilla(['dump', '-o', context.dumpFile]);
 
     expect(context.readDumpFile()).toContainSameContentAsFile('dumps/releases-dump.json');
   });
@@ -64,7 +64,7 @@ describe('Dump', () => {
     });
 
     context.tortilla(['release', 'bump', 'minor', '-m', 'master release']);
-    context.tortilla(['dump', context.dumpFile]);
+    context.tortilla(['dump', '-o', context.dumpFile]);
 
     expect(context.readDumpFile()).toContainSameContentAsFile('dumps/manuals-dump.json');
   });
@@ -95,7 +95,7 @@ describe('Dump', () => {
       context.git(['checkout', 'master']);
     });
 
-    context.tortilla(['dump', context.dumpFile]);
+    context.tortilla(['dump', '-o', context.dumpFile]);
 
     expect(context.readDumpFile()).toContainSameContentAsFile('dumps/mixed-dump.json');
   });
@@ -109,7 +109,7 @@ describe('Dump', () => {
       context.git(['checkout', 'master']);
     });
 
-    context.tortilla(['dump', context.dumpFile, '--filter', 'foo bar baz']);
+    context.tortilla(['dump', '-o', context.dumpFile, '--filter', 'foo bar baz']);
 
     expect(context.readDumpFile()).toContainSameContentAsFile('dumps/branches-dump.json');
   });
@@ -123,21 +123,21 @@ describe('Dump', () => {
       context.git(['checkout', 'master']);
     });
 
-    context.tortilla(['dump', context.dumpFile, '--reject', 'qux']);
+    context.tortilla(['dump', '-o', context.dumpFile, '--reject', 'qux']);
 
     expect(context.readDumpFile()).toContainSameContentAsFile('dumps/branches-dump.json');
   });
 
   it('should create dirs recursively if output not dir not exist', function() {
     const out = `${context.dumpFile}/foo/bar/baz.json`;
-    context.tortilla(['dump', out]);
+    context.tortilla(['dump', '-o', out]);
 
     expect(context.exists(out, 'file')).toBeTruthy();
   });
 
   it('should create a tutorial.json file inside dir if already exists', function() {
     Fs.mkdirSync(context.dumpFile);
-    context.tortilla(['dump', context.dumpFile]);
+    context.tortilla(['dump', '-o', context.dumpFile]);
 
     expect(context.exists(`${context.dumpFile}/tutorial.json`, 'file'));
   });
