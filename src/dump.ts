@@ -184,6 +184,11 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
 // TODO: Make client calculate the diff on a service worker
 // or serve the created HTML file (using SSR)
 function diffReleases(dump: string, srcTag: string, dstTag: string, cacheDir?: string) {
+  // Resolving path relative to cwd
+  dump = Path.resolve(Utils.cwd(), dump);
+  // Parsing JSON
+  dump = Fs.readJSONSync(dump)
+
   const diffPath = `${cacheDir}/${srcTag}..${dstTag}.diff`;
 
   if (cacheDir && Fs.existsSync(diffPath)) {
@@ -193,10 +198,11 @@ function diffReleases(dump: string, srcTag: string, dstTag: string, cacheDir?: s
   const srcDir = buildRelease(dump, srcTag);
   const dstDir = buildRelease(dump, dstTag);
 
-  Fs.removeSync(`${srcDir}/.git`);
-  Fs.copySync(`${dstDir}/.git`, `${srcDir}/.git`);
+  Fs.removeSync(`${srcDir.name}/.git`);
+  Fs.copySync(`${dstDir.name}/.git`, `${srcDir.name}/.git`);
 
   const diff = Utils.scopeEnv(() => {
+    Git(['add', '.']);
     Git(['commit', '-m', dstTag]);
 
     return Git(['diff', 'HEAD^', 'HEAD']);
@@ -218,7 +224,8 @@ function buildRelease(dump, tag) {
   const [branchName, releaseVersion] = tag.split('@');
   const chunk = dump.find(c => c.branchName === branchName);
   const releaseIndex = chunk.releases.findIndex(r => r.releaseVersion === releaseVersion);
-  const releases = chunk.releases.slice(0, releaseIndex + 1);
+  // Most recent release would come LAST
+  const releases = chunk.releases.slice(releaseIndex - chunk.releases.length);
   const diffs = releases.map(r => r.changesDiff);
   const dir = Tmp.dirSync({ unsafeCleanup: true });
 
@@ -231,6 +238,7 @@ function buildRelease(dump, tag) {
       });
     });
 
+    Git(['add', '.']);
     Git(['commit', '-m', tag]);
   }, {
     TORTILLA_CWD: dir.name

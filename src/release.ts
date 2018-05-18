@@ -282,7 +282,7 @@ function diffRelease(
   let result
   if (destinationReleaseTag) {
     // Run 'diff' between the newly created commits
-    result = Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), gitOptions);
+    result = Git.print(['diff', 'HEAD', 'HEAD^'].concat(argv), gitOptions);
   } else {
     // Run so called 'diff' between HEAD and --root. A normal diff won't work here
     result = Git.print(['show', '--format='].concat(argv), gitOptions);

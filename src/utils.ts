@@ -95,7 +95,7 @@ function getProcessData(pid, format) {
 }
 
 // Spawn new process and print result to the terminal
-function spawn(file, argv, options) {
+function spawn(file: string, argv?: string[], options?) {
   argv = argv || [];
 
   options = extend({
@@ -120,7 +120,7 @@ function spawn(file, argv, options) {
 }
 
 // Execute file
-function exec(file, argv?, options?) {
+function exec(file: string, argv?: string[], options?) {
   argv = argv || [];
 
   options = extend({
@@ -153,6 +153,13 @@ function exec(file, argv?, options?) {
   }
 
   return out.toString().trim();
+}
+
+function inspect(str: string, argv: string[] = []) {
+  return spawn('less', argv, {
+    input: str,
+    stdio: ['pipe', 'inherit', 'inherit']
+  });
 }
 
 // Tells if entity exists or not by an optional document type
@@ -450,6 +457,7 @@ function debug(...args) {
 export const Utils = {
   cwd,
   exec,
+  inspect,
   git,
   npm,
   childProcessOf: isChildProcessOf,
