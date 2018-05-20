@@ -32,7 +32,7 @@ function toContainSameContentAsFile(received: string, fileName: string) {
     const end = recentChunkLength + line.length;
     const actualChunk = received.substr(start, end);
 
-    const expectedChunk = new RegExp(
+    const expectedChunk = new RegExp('^' +
       EscapeRegExp(expectedContent.substr(start, end))
         .replace(/X{3,}/g, ({ length }) => {
           return Array.apply(null, { length })
@@ -42,7 +42,7 @@ function toContainSameContentAsFile(received: string, fileName: string) {
         .replace(/(?:\\\?){3}(.|\n)/g, (match, char) => {
           return `[^${char}]+${char}`;
         })
-    );
+    + '$');
 
     actualChunks.push(actualChunk);
     expectedChunks.push(expectedChunk);
