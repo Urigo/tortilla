@@ -94,7 +94,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
       .reverse();
 
     const releases = releaseVersions.map((releaseVersion, releaseIndex) => {
-      const nextReleaseVersion = releaseVersions[releaseIndex + 1];
+      const prevReleaseVersion = releaseVersions[releaseIndex + 1];
       const tagName = `${branchName}@${releaseVersion}`;
       const tagRevision = Git(['rev-parse', tagName]);
 
@@ -105,7 +105,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         .pop();
 
       // Instead of printing diff to stdout we will receive it as a buffer
-      const changesDiff = Release.diff(releaseVersion, nextReleaseVersion, null, {
+      const changesDiff = Release.diff(prevReleaseVersion, releaseVersion, null, {
         branch: branchName,
         pipe: true
       });

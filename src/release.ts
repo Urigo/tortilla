@@ -247,8 +247,8 @@ function createDiffReleasesBranch() {
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
 // be invoked as is may be provided
 function diffRelease(
-  sourceRelease: string,
-  destinationRelease?: string,
+  sourceRelease?: string,
+  destinationRelease: string,
   argv?: string[],
   options: {
     branch?: string,
@@ -268,21 +268,21 @@ function diffRelease(
 
   const branch = options.branch || Git.activeBranchName();
   // Compose tags
-  const sourceReleaseTag = `${branch}@${sourceRelease}`;
   // If release ain't exist we will print the entire changes
-  const destinationReleaseTag = destinationRelease && `${branch}@${destinationRelease}`;
+  const sourceReleaseTag = sourceRelease && `${branch}@${sourceRelease}`;
+  const destinationReleaseTag = `${branch}@${destinationRelease}`;
   // Create repo
-  const destinationDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
+  const sourceDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
 
   const gitOptions = {
-    cwd: destinationDir,
+    cwd: sourceDir,
     stdio: options.pipe ? 'pipe' : 'inherit'
   };
 
   let result
-  if (destinationReleaseTag) {
+  if (sourceReleaseTag) {
     // Run 'diff' between the newly created commits
-    result = Git.print(['diff', 'HEAD', 'HEAD^'].concat(argv), gitOptions);
+    result = Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), gitOptions);
   } else {
     // Run so called 'diff' between HEAD and --root. A normal diff won't work here
     result = Git.print(['show', '--format='].concat(argv), gitOptions);
