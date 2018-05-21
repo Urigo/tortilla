@@ -27,6 +27,7 @@ export function tortillaBeforeAll() {
   // Setup
   // Set environment from which Tortilla calculations are gonna be made from
   process.env.TORTILLA_CWD = this.testDir;
+  process.env.TORTILLA_DURING_TESTS = '1';
 
   const tortillaPath = Path.resolve(__dirname, '../dist/cli/tortilla.js');
 
@@ -53,6 +54,28 @@ export function tortillaBeforeAll() {
   this.applyTestPatch = patchName => {
     const patchPath = Path.resolve(__dirname, 'fs-data/in', `${patchName}.patch`);
     return this.git(['am', patchPath]);
+  };
+
+  this.createTortillaProject = dir => {
+    // Initializing test tortilla project
+    ChildProcess.execFileSync('node', [tortillaPath, 'create', '-m', 'Test tortilla project', '-o', dir, '--override']);
+
+    // Initializing test tortilla project
+    ChildProcess.execFileSync('git', ['config', 'user.email', 'test@tortilla.com'], { cwd: dir });
+    ChildProcess.execFileSync('git', ['config', 'user.name', 'Tortilla'], { cwd: dir });
+  };
+
+  this.createGitProject = dir => {
+    // Initializing test tortilla project
+    ChildProcess.execFileSync('git', ['init'], { cwd: dir });
+
+    // Initializing test tortilla project
+    ChildProcess.execFileSync('git', ['config', 'user.email', 'test@tortilla.com'], { cwd: dir });
+    ChildProcess.execFileSync('git', ['config', 'user.name', 'Tortilla'], { cwd: dir });
+  };
+
+  this.setPromptAnswers = (answersArray) => {
+    process.env.TORTILLA_PROMPT_ANSWERS = answersArray.join(',');
   };
 
   // Creates a new local repository with a single commit

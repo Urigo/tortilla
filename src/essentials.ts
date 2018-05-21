@@ -166,7 +166,7 @@ function ensureTortilla(projectDir) {
 
   // Ensure submodules are initialized
   Git.print(['submodule', 'init'], { cwd });
-  Git.print(['submodule', 'update'], { cwd });
+  Git.print(['submodule', 'update', '--recursive', '--remote'], { cwd });
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);
@@ -294,9 +294,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         return tagName.match(new RegExp(`${branchName}@(\\d+\\.\\d+\\.\\d+)`));
       })
       .filter(Boolean)
-      .map((match) => {
-        return match[1];
-      })
+      .map(match => match[1])
       .reverse();
 
     const releases = releaseVersions.map((releaseVersion) => {

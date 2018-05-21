@@ -38,7 +38,7 @@ function createLocalStorage(cwd) {
   const paths = cwd.resolve ? cwd : Paths.resolveProject(cwd);
 
   // If git dir exists use it as a local-storage dir
-  if (Utils.exists(paths.git.resolve())) {
+  if (Utils.exists(paths.git.resolve(), 'dir')) {
     localStorage = new LocalStorage(paths.storage);
   } else {
     localStorage = new LocalCache();
