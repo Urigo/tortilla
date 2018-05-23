@@ -1,6 +1,7 @@
 import * as Fs from 'fs-extra';
 import * as Path from 'path';
 import * as ReadlineSync from 'readline-sync';
+import * as semver from 'semver';
 import * as Tmp from 'tmp';
 import { Git } from './git';
 import { Paths } from './paths';
@@ -180,32 +181,60 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   Fs.writeJsonSync(out, dump, { spaces: 2 });
 }
 
-
 // TODO: Make client calculate the diff on a service worker
+// TODO: Get rid of trailing whitespaces: \s+\n -> \n
 // or serve the created HTML file (using SSR)
-function diffReleases(dump: string, srcTag: string, dstTag: string, cacheDir?: string) {
-  // Resolving path relative to cwd
-  dump = Path.resolve(Utils.cwd(), dump);
-  // Parsing JSON
-  dump = Fs.readJSONSync(dump)
+function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
+  let [srcBranchName, srcReleaseVersion] = srcTag.split('@');
+  let [dstBranchName, dstReleaseVersion] = dstTag.split('@');
 
-  const diffPath = `${cacheDir}/${srcTag}..${dstTag}.diff`;
-
-  if (cacheDir && Fs.existsSync(diffPath)) {
-    return Fs.readFileSync(diffPath).toString();
+  if (!srcReleaseVersion && !dstReleaseVersion) {
+    srcReleaseVersion = srcBranchName;
+    dstReleaseVersion = dstBranchName;
+    srcBranchName = null;
+    dstBranchName = null;
   }
 
-  const srcDir = buildRelease(dump, srcTag);
-  const dstDir = buildRelease(dump, dstTag);
+  if (semver.eq(srcReleaseVersion, dstReleaseVersion)) {
+    return '';
+  }
+
+  // Test result will be used later on
+  const reversed = semver.gt(srcReleaseVersion, dstReleaseVersion)
+
+  if (reversed) {
+    let temp;
+
+    temp = srcReleaseVersion;
+    srcReleaseVersion = dstReleaseVersion;
+    dstReleaseVersion = temp;
+
+    temp = srcBranchName;
+    srcBranchName = dstBranchName;
+    dstBranchName = temp;
+  }
+
+  // If an FS path was provided
+  if (typeof dump === 'string' || dump instanceof String) {
+    // Resolving path relative to cwd
+    dump = Path.resolve(Utils.cwd(), dump as string);
+    // Parsing JSON
+    dump = Fs.readJSONSync(dump);
+  }
+
+  const srcDir = buildRelease(dump, srcReleaseVersion, srcBranchName);
+  const dstDir = buildRelease(dump, dstReleaseVersion, dstBranchName);
 
   Fs.removeSync(`${srcDir.name}/.git`);
   Fs.copySync(`${dstDir.name}/.git`, `${srcDir.name}/.git`);
 
   const diff = Utils.scopeEnv(() => {
     Git(['add', '.']);
-    Git(['commit', '-m', dstTag]);
+    Git(['commit', '-m', dstReleaseVersion]);
 
-    return Git(['diff', 'HEAD^', 'HEAD']);
+    return reversed
+      ? Git(['diff', 'HEAD', 'HEAD^'])
+      : Git(['diff', 'HEAD^', 'HEAD']);
   }, {
     TORTILLA_CWD: srcDir.name
   });
@@ -213,16 +242,12 @@ function diffReleases(dump: string, srcTag: string, dstTag: string, cacheDir?: s
   srcDir.removeCallback();
   dstDir.removeCallback();
 
-  if (cacheDir) {
-    Fs.writeFileSync(diffPath, diff);
-  }
-
   return diff;
 }
 
-function buildRelease(dump, tag) {
-  const [branchName, releaseVersion] = tag.split('@');
-  const chunk = dump.find(c => c.branchName === branchName);
+function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
+  // If no branch was provided, assuming this is a chunk
+  const chunk = branchName ? dump.find(c => c.branchName === branchName) : dump;
   const releaseIndex = chunk.releases.findIndex(r => r.releaseVersion === releaseVersion);
   // Most recent release would come LAST
   const releases = chunk.releases.slice(releaseIndex - chunk.releases.length);
@@ -239,7 +264,7 @@ function buildRelease(dump, tag) {
     });
 
     Git(['add', '.']);
-    Git(['commit', '-m', tag]);
+    Git(['commit', '-m', releaseVersion]);
   }, {
     TORTILLA_CWD: dir.name
   });
