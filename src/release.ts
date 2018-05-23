@@ -247,7 +247,7 @@ function createDiffReleasesBranch() {
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
 // be invoked as is may be provided
 function diffRelease(
-  sourceRelease?: string,
+  sourceRelease: string,
   destinationRelease: string,
   argv?: string[],
   options: {
@@ -293,7 +293,10 @@ function diffRelease(
   tmp2Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
-  return result.output && result.output.join('');
+  return result.output && result.output
+    .join('')
+    // Getting rid of trailing whitespaces since `git apply` doesn't like these
+    .replace(/\s+\n/g, '\n');
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
