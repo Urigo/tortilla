@@ -321,7 +321,9 @@ function createDiffReleasesRepo(...tags) {
 
   // Resolve relative git module paths into absolute ones so they can be initialized
   // later on
-  const submodules = Submodule.list().reduce((result, submodule) => {
+  // TODO: git ls-tree currentBranch
+  // Fetche url commitHash
+  const submodulesUrls = Submodule.list().reduce((result, submodule) => {
     const urlField = `submodule.${submodule}.url`;
 
     let url = Git(['config', '--file', '.gitmodules', urlField]);
@@ -368,14 +370,14 @@ function createDiffReleasesRepo(...tags) {
     Git(['checkout', tag], { cwd: destinationDir });
     Git(['checkout', '.'], { cwd: destinationDir });
 
-    filterDiffFiles(destinationDir, submodules);
+    filterDiffFiles(destinationDir, submodulesUrls);
 
     // Copy destination to source, but without the git dir so there won't be any
     // conflicts with the commits
     Fs.removeSync(destinationPaths.git.resolve());
     Fs.copySync(sourcePaths.git.resolve(), destinationPaths.git.resolve());
 
-    filterDiffFiles(destinationDir, submodules);
+    filterDiffFiles(destinationDir, submodulesUrls);
 
     // Add commit for release
     Git(['add', '.'], { cwd: destinationDir });
@@ -398,20 +400,33 @@ function createDiffReleasesRepo(...tags) {
 
 // Will get rid of files that we don't wanna show on the diff, like tortilla essentials
 // and submodules .git dir
-function filterDiffFiles(dir, submodules) {
+function filterDiffFiles(dir, submodulesUrls) {
   const dirPaths = Paths.resolveProject(dir);
+  const submodulesNames = Object.keys(submodulesUrls);
 
   // Ensuring relative submodule urls are resolved
-  Object.keys(submodules).forEach((submodule) => {
-    const url = submodules[submodule];
+  submodulesNames.forEach((submodule) => {
+    const url = submodulesUrls[submodule];
 
     Git(['config', '--file', '.gitmodules', `submodule.${submodule}.url`, url], {
       cwd: dir
     });
   });
 
+  // Dir will be initialized with git at master by default
+  Submodule.getFSNodes({
+    whitelist: submodulesNames,
+    branch: 'master',
+    cwd: dir,
+  }).forEach(({ hash, file }) => {
+    const url = submodulesUrls[file];
+
+    // Fetch all missing hashes from URL
+    Git(['fetch', url, hash], { cwd: dir });
+  });
+
   // This will checkout the right files in the submodules
-  Git(['submodule', 'update', '--init'], { cwd:dir });
+  Git(['submodule', 'update', '--init'], { cwd: dir });
 
   // Removing tortilla related files which are irrelevant for diff
   Fs.removeSync(dirPaths.readme);
@@ -419,7 +434,7 @@ function filterDiffFiles(dir, submodules) {
   Fs.removeSync(dirPaths.gitModules);
 
   // Doing the same for submodules
-  Object.keys(submodules).forEach((submodule) => {
+  submodulesNames.forEach((submodule) => {
     const submodulePaths = Paths.resolveProject(`${dir}/${submodule}`);
 
     Fs.removeSync(submodulePaths.readme);
