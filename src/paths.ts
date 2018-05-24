@@ -11,6 +11,7 @@ export interface TortillaPaths {
   readme: string;
   renovate: string;
   storage: string;
+  gitModules: string;
   travis: string;
   manuals: {
     resolve: () => string;
@@ -218,6 +219,7 @@ export function resolveProject(cwd: string): TortillaPaths {
     readme: resolve(cwd, 'README.md'),
     renovate: resolve(cwd, 'renovate.json'),
     storage: resolve(cwd, '.git/.tortilla'),
+    gitModules: resolve(cwd, '.gitmodules'),
     travis: resolve(cwd, '.travis.yml'),
     manuals,
     tortilla,
