@@ -321,8 +321,6 @@ function createDiffReleasesRepo(...tags) {
 
   // Resolve relative git module paths into absolute ones so they can be initialized
   // later on
-  // TODO: git ls-tree currentBranch
-  // Fetche url commitHash
   const submodulesUrls = Submodule.list().reduce((result, submodule) => {
     const urlField = `submodule.${submodule}.url`;
 
@@ -421,8 +419,14 @@ function filterDiffFiles(dir, submodulesUrls) {
   }).forEach(({ hash, file }) => {
     const url = submodulesUrls[file];
 
+    // Fetch from remote first if local path
+    if (url.substr(0, 1) === '/') {
+      // Assuming origin
+      Git.print(['fetch', 'origin', hash], { cwd: url });
+    }
+
     // Fetch all missing hashes from URL
-    Git(['fetch', url, hash], { cwd: dir });
+    Git.print(['fetch', url, hash], { cwd: dir });
   });
 
   // This will checkout the right files in the submodules
