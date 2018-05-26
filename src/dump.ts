@@ -182,7 +182,6 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
 }
 
 // TODO: Make client calculate the diff on a service worker
-// TODO: Get rid of trailing whitespaces: \s+\n -> \n
 // or serve the created HTML file (using SSR)
 function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
   let [srcBranchName, srcReleaseVersion] = srcTag.split('@');
@@ -230,7 +229,14 @@ function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
 
   const diff = Utils.scopeEnv(() => {
     Git(['add', '.']);
-    Git(['commit', '-m', dstReleaseVersion]);
+
+    try {
+      Git(['commit', '-m', dstReleaseVersion]);
+    // No changes were made between releases
+    // Probably due to missing versions of submodules
+    } catch (e) {
+      return '';
+    }
 
     return reversed
       ? Git(['diff', 'HEAD', 'HEAD^'])
@@ -250,8 +256,8 @@ function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
   const chunk = branchName ? dump.find(c => c.branchName === branchName) : dump;
   const releaseIndex = chunk.releases.findIndex(r => r.releaseVersion === releaseVersion);
   // Most recent release would come LAST
-  const releases = chunk.releases.slice(releaseIndex - chunk.releases.length);
-  const diffs = releases.map(r => r.changesDiff);
+  const releases = chunk.releases.slice(releaseIndex - chunk.releases.length).reverse();
+  const diffs = releases.map(r => r.changesDiff).filter(Boolean);
   const dir = Tmp.dirSync({ unsafeCleanup: true });
 
   Utils.scopeEnv(() => {

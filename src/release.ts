@@ -298,8 +298,6 @@ function diffRelease(
   // If the right arguments were specified we could receive the diff as a string
   return result.output && result.output
     .join('');
-    // // Getting rid of trailing whitespaces since `git apply` doesn't like these
-    // .replace(/\s+\n/g, '\n');
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
@@ -368,14 +366,40 @@ function createDiffReleasesRepo(...tags) {
     Git(['checkout', tag], { cwd: destinationDir });
     Git(['checkout', '.'], { cwd: destinationDir });
 
-    filterDiffFiles(destinationDir, submodulesUrls);
+    // Dir will be initialized with git at master by default
+    Submodule.getFSNodes({
+      whitelist: Object.keys(submodulesUrls),
+      revision: tag,
+    }).forEach(({ hash, file }, ...args) => {
+      const url = submodulesUrls[file];
+      const subDir = `${destinationDir}/${file}`;
+      const subPaths = Paths.resolveProject(subDir);
+
+      Git(['clone', url, file], { cwd: destinationDir });
+
+      try {
+        Git(['checkout', hash], { cwd: subDir });
+      } catch (e) {
+        console.warn();
+        console.warn(`Object ${hash} is missing for submodule ${file} at release ${tag}.`);
+        console.warn(`I don't think release for submodule exists anymore...`);
+        console.warn();
+      }
+
+      Fs.removeSync(subPaths.readme);
+      Fs.removeSync(subPaths.tortillaDir);
+      Fs.removeSync(subPaths.git.resolve());
+    });
+
+    // Removing tortilla related files which are irrelevant for diff
+    Fs.removeSync(destinationPaths.readme);
+    Fs.removeSync(destinationPaths.tortillaDir);
+    Fs.removeSync(destinationPaths.gitModules);
+    Fs.removeSync(destinationPaths.git.resolve());
 
     // Copy destination to source, but without the git dir so there won't be any
     // conflicts with the commits
-    Fs.removeSync(destinationPaths.git.resolve());
     Fs.copySync(sourcePaths.git.resolve(), destinationPaths.git.resolve());
-
-    filterDiffFiles(destinationDir, submodulesUrls);
 
     // Add commit for release
     Git(['add', '.'], { cwd: destinationDir });
@@ -398,54 +422,32 @@ function createDiffReleasesRepo(...tags) {
 
 // Will get rid of files that we don't wanna show on the diff, like tortilla essentials
 // and submodules .git dir
-function filterDiffFiles(dir, submodulesUrls) {
+function filterDiffFiles(dir, tag, submodulesUrls) {
   const dirPaths = Paths.resolveProject(dir);
   const submodulesNames = Object.keys(submodulesUrls);
-
-  // Ensuring relative submodule urls are resolved
-  submodulesNames.forEach((submodule) => {
-    const url = submodulesUrls[submodule];
-
-    Git(['config', '--file', '.gitmodules', `submodule.${submodule}.url`, url], {
-      cwd: dir
-    });
-  });
 
   // Dir will be initialized with git at master by default
   Submodule.getFSNodes({
     whitelist: submodulesNames,
-    branch: 'master',
+    revision: 'master',
     cwd: dir,
-  }).forEach(({ hash, file }) => {
+  }).forEach(({ hash, file }, ...args) => {
     const url = submodulesUrls[file];
+    const subDir = `${dir}/${file}`;
+    const subPaths = Paths.resolveProject(subDir);
 
-    // Fetch from remote first if local path
-    if (url.substr(0, 1) === '/') {
-      // Assuming origin
-      Git.print(['fetch', 'origin', hash], { cwd: url });
-    }
+    Git(['clone', url, file], { cwd: dir });
+    Git(['checkout', hash], { cwd: subDir });
 
-    // Fetch all missing hashes from URL
-    Git.print(['fetch', url, hash], { cwd: dir });
+    Fs.removeSync(subPaths.readme);
+    Fs.removeSync(subPaths.tortillaDir);
+    Fs.removeSync(subPaths.git.resolve());
   });
-
-  // This will checkout the right files in the submodules
-  Git(['submodule', 'update', '--init'], { cwd: dir });
 
   // Removing tortilla related files which are irrelevant for diff
   Fs.removeSync(dirPaths.readme);
   Fs.removeSync(dirPaths.tortillaDir);
   Fs.removeSync(dirPaths.gitModules);
-
-  // Doing the same for submodules
-  submodulesNames.forEach((submodule) => {
-    const submodulePaths = Paths.resolveProject(`${dir}/${submodule}`);
-
-    Fs.removeSync(submodulePaths.readme);
-    Fs.removeSync(submodulePaths.tortillaDir);
-    // Note that we also remove the git dir so it would be part of the diff
-    Fs.removeSync(submodulePaths.git.resolve());
-  });
 }
 
 function printCurrentRelease() {

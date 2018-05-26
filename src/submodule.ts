@@ -410,13 +410,13 @@ function getSubmoduleCwd(name) {
 }
 
 // Gets data regards specified submodules from git's objects tree
-function getSubmodulesFSNodes({ whitelist, blacklist, branch, cwd }: {
+function getSubmodulesFSNodes({ whitelist, blacklist, revision, cwd }: {
   whitelist?: string[],
   blacklist?: string[],
-  branch?: string,
+  revision?: string,
   cwd?: string,
 } = {
-  branch: Git.activeBranchName(),
+  revision: Git.activeBranchName(),
   cwd: Utils.cwd(),
 }) {
   let submodules = whitelist || listSubmodules();
@@ -425,7 +425,7 @@ function getSubmodulesFSNodes({ whitelist, blacklist, branch, cwd }: {
     submodules = submodules.filter((submodule) => !blacklist.includes(submodule));
   }
 
-  const result = Git(['ls-tree', branch], { cwd })
+  const result = Git(['ls-tree', revision], { cwd })
     // Each line represents a node
     .split('\n')
     // Map splits into informative jsons
