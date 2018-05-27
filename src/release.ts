@@ -16,8 +16,15 @@ import { Utils } from './utils';
  tags from the git-host, since most calculations are based on them.
  */
 
+ process.on('unhandledRejection', (reason, p) => {
+   console.log('Unhandled Rejection at:', p, 'reason:', reason);
+   // application specific logging, throwing an error, or other logic here
+ });
+
+// TODO: Create a dedicated registers/temp dirs module with no memory leaks
 const tmp1Dir = Tmp.dirSync({ unsafeCleanup: true });
 const tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
+const tmp3Dir = Tmp.dirSync({ unsafeCleanup: true });
 
 async function promptForGitRevision(submoduleName, submodulePath) {
   const mostRecentCommit = Git.recentCommit(null, '--format="oneline"', null, submodulePath);
@@ -242,6 +249,7 @@ function createDiffReleasesBranch() {
   // Clear registers
   tmp1Dir.removeCallback();
   tmp2Dir.removeCallback();
+  tmp3Dir.removeCallback();
 }
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
@@ -294,6 +302,7 @@ function diffRelease(
   // Clear registers
   tmp1Dir.removeCallback();
   tmp2Dir.removeCallback();
+  tmp3Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
   return result.output && result.output
@@ -317,9 +326,11 @@ function createDiffReleasesRepo(...tags) {
     tags = tags.filter(Boolean);
   }
 
+  const submodules = Submodule.list();
+
   // Resolve relative git module paths into absolute ones so they can be initialized
   // later on
-  const submodulesUrls = Submodule.list().reduce((result, submodule) => {
+  const submodulesUrls = submodules.reduce((result, submodule) => {
     const urlField = `submodule.${submodule}.url`;
 
     let url = Git(['config', '--file', '.gitmodules', urlField]);
@@ -330,6 +341,20 @@ function createDiffReleasesRepo(...tags) {
     }
 
     result[submodule] = url;
+
+    return result;
+  }, {});
+
+  // We're gonna clone the projects once, and copy paste them whenever a re-clone is needed
+  const submodulesProjectsDir = tmp3Dir.name;
+
+  Fs.emptyDirSync(submodulesProjectsDir);
+
+  const submodulesProjects = submodules.reduce((result, submodule) => {
+    const url = submodulesUrls[submodule];
+    result[submodule] = submodulesProjectsDir + '/' + submodule;
+
+    Git.print(['clone', url, submodule], { cwd: submodulesProjectsDir });
 
     return result;
   }, {});
@@ -368,14 +393,14 @@ function createDiffReleasesRepo(...tags) {
 
     // Dir will be initialized with git at master by default
     Submodule.getFSNodes({
-      whitelist: Object.keys(submodulesUrls),
+      whitelist: submodules,
       revision: tag,
     }).forEach(({ hash, file }, ...args) => {
       const url = submodulesUrls[file];
       const subDir = `${destinationDir}/${file}`;
       const subPaths = Paths.resolveProject(subDir);
 
-      Git(['clone', url, file], { cwd: destinationDir });
+      Fs.copySync(submodulesProjects[file], subDir);
 
       try {
         Git(['checkout', hash], { cwd: subDir });

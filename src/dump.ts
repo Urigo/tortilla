@@ -179,6 +179,10 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   });
 
   Fs.writeJsonSync(out, dump, { spaces: 2 });
+
+  console.log();
+  console.log('Dump finished.');
+  console.log();
 }
 
 // TODO: Make client calculate the diff on a service worker
