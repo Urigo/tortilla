@@ -287,8 +287,8 @@ function diffRelease(
     stdio: options.pipe ? 'pipe' : 'inherit'
   };
 
-  // Exclude tortilla-related files from diff
-  argv.push('--', '.', "':!.tortilla'", "':!.gitmodules'", "'README.md'")
+  // Exclude manual view files because we already have templates
+  argv.push('--', '.', "':!.tortilla/manuals/views'", "'README.md'")
 
   let result
   if (sourceReleaseTag) {
@@ -305,8 +305,7 @@ function diffRelease(
   tmp3Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
-  return result.output && result.output
-    .join('');
+  return result.output && result.output.join('');
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
