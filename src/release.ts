@@ -282,7 +282,12 @@ function diffRelease(
   };
 
   // Exclude manual view files because we already have templates
-  argv.push('--', '.', "':!.tortilla/manuals/views'", "'README.md'")
+  argv.push('--', '.', "':!.tortilla/manuals/views'", "'README.md'");
+
+  // Exclude submodules Tortilla files completely
+  Submodule.getFSNodes({ cwd: sourceDir }).forEach(({ file }) => {
+    argv.push(`':!${file}/.tortilla'`, `':!${file}/README.md'`);
+  });
 
   let result
   if (sourceReleaseTag) {

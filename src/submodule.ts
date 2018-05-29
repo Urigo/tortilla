@@ -416,16 +416,13 @@ function getSubmodulesFSNodes({ whitelist, blacklist, revision, cwd }: {
   revision?: string,
   cwd?: string,
 } = {
-  revision: Git.activeBranchName(),
   cwd: Utils.cwd(),
 }) {
-  let submodules = whitelist || listSubmodules();
-
-  if (blacklist) {
-    submodules = submodules.filter((submodule) => !blacklist.includes(submodule));
+  if (typeof revision === 'undefined') {
+    revision = Git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd });
   }
 
-  const result = Git(['ls-tree', revision], { cwd })
+  return Git(['ls-tree', revision], { cwd })
     // Each line represents a node
     .split('\n')
     // Map splits into informative jsons
@@ -438,10 +435,9 @@ function getSubmodulesFSNodes({ whitelist, blacklist, revision, cwd }: {
     // Filter submodules which are included in the list
     .filter(({ type, file }) =>
       type === 'commit' &&
-      submodules.includes(file)
+      (!whitelist || whitelist.includes(file)) &&
+      (!blacklist || !blacklist.includes(file))
     );
-
-  return result;
 }
 
 export const Submodule = {
