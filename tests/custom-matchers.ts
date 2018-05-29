@@ -29,7 +29,8 @@ function toContainSameContentAsFile(received: string, fileName: string) {
     if (recentChunkLength < 3000 && index != length - 1) return;
 
     const start = actualChunks.reduce((sum, { length }) => sum + length, 0);
-    const end = recentChunkLength + line.length;
+    // `length - 1` represents the number of vanished '\n's during line splitting
+    const end = recentChunkLength + line.length + length - 1;
     const actualChunk = received.substr(start, end);
 
     const expectedChunk = new RegExp('^' +
