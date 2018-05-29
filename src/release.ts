@@ -16,18 +16,13 @@ import { Utils } from './utils';
  tags from the git-host, since most calculations are based on them.
  */
 
- process.on('unhandledRejection', (reason, p) => {
-   console.log('Unhandled Rejection at:', p, 'reason:', reason);
-   // application specific logging, throwing an error, or other logic here
- });
-
 // TODO: Create a dedicated registers/temp dirs module with no memory leaks
 const tmp1Dir = Tmp.dirSync({ unsafeCleanup: true });
 const tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
 const tmp3Dir = Tmp.dirSync({ unsafeCleanup: true });
 
 async function promptForGitRevision(submoduleName, submodulePath) {
-  const mostRecentCommit = Git.recentCommit(null, '--format="oneline"', null, submodulePath);
+  const mostRecentCommit = Git.recentCommit(null, '--format=oneline', null, submodulePath);
   const answer = await prompt([
     {
       type: 'list',
@@ -249,7 +244,6 @@ function createDiffReleasesBranch() {
   // Clear registers
   tmp1Dir.removeCallback();
   tmp2Dir.removeCallback();
-  tmp3Dir.removeCallback();
 }
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
@@ -302,7 +296,6 @@ function diffRelease(
   // Clear registers
   tmp1Dir.removeCallback();
   tmp2Dir.removeCallback();
-  tmp3Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
   return result.output && result.output.join('');
@@ -347,13 +340,19 @@ function createDiffReleasesRepo(...tags) {
   // We're gonna clone the projects once, and copy paste them whenever a re-clone is needed
   const submodulesProjectsDir = tmp3Dir.name;
 
-  Fs.emptyDirSync(submodulesProjectsDir);
+  Fs.ensureDirSync(submodulesProjectsDir);
+
+  const existingSubmodules = Fs.readdirSync(submodulesProjectsDir);
 
   const submodulesProjects = submodules.reduce((result, submodule) => {
     const url = submodulesUrls[submodule];
+
     result[submodule] = submodulesProjectsDir + '/' + submodule;
 
-    Git.print(['clone', url, submodule], { cwd: submodulesProjectsDir });
+    // Clone only if haven't cloned before
+    if (!existingSubmodules.includes(submodule)) {
+      Git.print(['clone', url, submodule], { cwd: submodulesProjectsDir });
+    }
 
     return result;
   }, {});
