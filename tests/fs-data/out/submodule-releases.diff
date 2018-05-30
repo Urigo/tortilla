@@ -1,0 +1,7 @@
+diff --git a/module/file b/module/file
+index 257cc56..5716ca5 100644
+--- a/module/file
++++ b/module/file
+@@ -1 +1 @@
+-foo
++bar
