@@ -409,6 +409,37 @@ function getSubmoduleCwd(name) {
   return Path.resolve(Utils.cwd(), relativePath);
 }
 
+// Gets data regards specified submodules from git's objects tree
+function getSubmodulesFSNodes({ whitelist, blacklist, revision, cwd }: {
+  whitelist?: string[],
+  blacklist?: string[],
+  revision?: string,
+  cwd?: string,
+} = {
+  cwd: Utils.cwd(),
+}) {
+  if (typeof revision === 'undefined') {
+    revision = Git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd });
+  }
+
+  return Git(['ls-tree', revision], { cwd })
+    // Each line represents a node
+    .split('\n')
+    // Map splits into informative jsons
+    .map(line => {
+      // Each split in the output represents different data
+      const [mode, type, hash, file] = line.split(/\s+/);
+
+      return { mode, type, hash, file };
+    })
+    // Filter submodules which are included in the list
+    .filter(({ type, file }) =>
+      type === 'commit' &&
+      (!whitelist || whitelist.includes(file)) &&
+      (!blacklist || !blacklist.includes(file))
+    );
+}
+
 export const Submodule = {
   add: addSubmodules,
   remove: removeSubmodules,
@@ -421,4 +452,5 @@ export const Submodule = {
   getRemoteName: getRemoteSubmoduleName,
   getLocalName: getLocalSubmoduleName,
   getCwd: getSubmoduleCwd,
+  getFSNodes: getSubmodulesFSNodes,
 };

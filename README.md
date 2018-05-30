@@ -299,6 +299,7 @@ For further information, I'd recommend you going through the [CLI](#CLI) section
 See:
 
 - [tortilla](#tortilla-cli)
+  - [tortilla-dump](#tortilla-dump-cli)
   - [tortilla-manual](#tortilla-manual-cli)
   - [tortilla-release](#tortilla-release-cli)
   - [tortilla-step](#tortilla-step-cli)
@@ -319,7 +320,9 @@ Creates a new Tortilla project with the provided name.
 
 Initializes Tortilla essentials in the provided project.
 
-**command:** `tortilla dump [out]`
+### tortilla-dump CLI
+
+**command:** `tortilla dump create [out]`
 
 Dumps tutorial data as a JSON file. The default dump file name would be `tutorial.json`, although an optional output path might be provided. Here's a brief description of the schema of the generated dump file:
 
@@ -334,6 +337,7 @@ Dumps tutorial data as a JSON file. The default dump file name would be `tutoria
         "tagName": "The name of the tag",
         "tagRevision": "The revision of the tag",
         "historyRevision": "Commit hash based on history branch",
+        "changesDiff": "Diff with most recent release",
         "manuals": [
           {
             "manualTitle": "Step commit message",
@@ -350,6 +354,10 @@ Dumps tutorial data as a JSON file. The default dump file name would be `tutoria
 - *option:* `--filter [filter]` - A list of branches we would like to filter separated with spaces.
 - *option:* `--reject [reject]` - A list of branches we would like to reject separated with spaces.
 - *option:* `--override` - Override file if already exists.
+
+**command:** `tortilla dump diff-releases <dumpFile> <srcRelease> <dstRelease>`
+
+Creates a diff between two specified releases in a given dump file. Useful when we would like to create the diff independently from the git-project.
 
 ### tortilla-manual CLI
 

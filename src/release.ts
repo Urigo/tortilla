@@ -16,11 +16,13 @@ import { Utils } from './utils';
  tags from the git-host, since most calculations are based on them.
  */
 
+// TODO: Create a dedicated registers/temp dirs module with no memory leaks
 const tmp1Dir = Tmp.dirSync({ unsafeCleanup: true });
 const tmp2Dir = Tmp.dirSync({ unsafeCleanup: true });
+const tmp3Dir = Tmp.dirSync({ unsafeCleanup: true });
 
 async function promptForGitRevision(submoduleName, submodulePath) {
-  const mostRecentCommit = Git.recentCommit(null, '--format="oneline"', null, submodulePath);
+  const mostRecentCommit = Git.recentCommit(null, '--format=oneline', null, submodulePath);
   const answer = await prompt([
     {
       type: 'list',
@@ -246,22 +248,62 @@ function createDiffReleasesBranch() {
 
 // Invokes 'git diff' with the given releases. An additional arguments vector which will
 // be invoked as is may be provided
-function diffRelease(sourceRelease, destinationRelease, argv) {
+function diffRelease(
+  sourceRelease: string,
+  destinationRelease: string,
+  argv?: string[],
+  options: {
+    branch?: string,
+    pipe?: boolean
+  } = {}
+ ) {
+  // Will work even if null
   argv = argv || [];
 
-  const branch = Git.activeBranchName();
+  // Will assume that we would like to run diff with the most recent release
+  if (!destinationRelease) {
+    const releases = getAllReleases().map(formatRelease);
+    const destinationIndex = releases.indexOf(sourceRelease) + 1;
+
+    destinationRelease = releases[destinationIndex];
+  }
+
+  const branch = options.branch || Git.activeBranchName();
   // Compose tags
-  const sourceReleaseTag = `${branch}@${sourceRelease}`;
+  // If release ain't exist we will print the entire changes
+  const sourceReleaseTag = sourceRelease && `${branch}@${sourceRelease}`;
   const destinationReleaseTag = `${branch}@${destinationRelease}`;
   // Create repo
-  const destinationDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
+  const sourceDir = createDiffReleasesRepo(sourceReleaseTag, destinationReleaseTag);
 
-  // Run 'diff' between the newly created commits
-  Git.print(['diff', 'HEAD^', 'HEAD'].concat(argv), { cwd: destinationDir });
+  const gitOptions = {
+    cwd: sourceDir,
+    stdio: options.pipe ? 'pipe' : 'inherit'
+  };
+
+  // Exclude manual view files because we already have templates
+  argv.push('--', '.', "':!.tortilla/manuals/views'", "'README.md'");
+
+  // Exclude submodules Tortilla files completely
+  Submodule.getFSNodes({ cwd: sourceDir }).forEach(({ file }) => {
+    argv.push(`':!${file}/.tortilla'`, `':!${file}/README.md'`);
+  });
+
+  let result
+  if (sourceReleaseTag) {
+    // Run 'diff' between the newly created commits
+    result = Git.print(['diff', '--binary', 'HEAD^', 'HEAD'].concat(argv), gitOptions);
+  } else {
+    // Run so called 'diff' between HEAD and --root. A normal diff won't work here
+    result = Git.print(['show', '--binary', '--format='].concat(argv), gitOptions);
+  }
 
   // Clear registers
   tmp1Dir.removeCallback();
   tmp2Dir.removeCallback();
+
+  // If the right arguments were specified we could receive the diff as a string
+  return result.output && result.output.join('');
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the
@@ -276,7 +318,49 @@ function createDiffReleasesRepo(...tags) {
       .map(formatRelease)
       .reverse()
       .map((releaseString) => `${branch}@${releaseString}`);
+  } else {
+    // Sometimes an empty argument might be provided e.g. diffRelease() method
+    tags = tags.filter(Boolean);
   }
+
+  const submodules = Submodule.list();
+
+  // Resolve relative git module paths into absolute ones so they can be initialized
+  // later on
+  const submodulesUrls = submodules.reduce((result, submodule) => {
+    const urlField = `submodule.${submodule}.url`;
+
+    let url = Git(['config', '--file', '.gitmodules', urlField]);
+
+    // Resolve relative paths
+    if (url.substr(0, 1) === '.') {
+      url = Path.resolve(Utils.cwd(), url);
+    }
+
+    result[submodule] = url;
+
+    return result;
+  }, {});
+
+  // We're gonna clone the projects once, and copy paste them whenever a re-clone is needed
+  const submodulesProjectsDir = tmp3Dir.name;
+
+  Fs.ensureDirSync(submodulesProjectsDir);
+
+  const existingSubmodules = Fs.readdirSync(submodulesProjectsDir);
+
+  const submodulesProjects = submodules.reduce((result, submodule) => {
+    const url = submodulesUrls[submodule];
+
+    result[submodule] = submodulesProjectsDir + '/' + submodule;
+
+    // Clone only if haven't cloned before
+    if (!existingSubmodules.includes(submodule)) {
+      Git.print(['clone', url, submodule], { cwd: submodulesProjectsDir });
+    }
+
+    return result;
+  }, {});
 
   // The 'registers' are directories which will be used for temporary FS calculations
   let destinationDir = tmp1Dir.name;
@@ -301,6 +385,7 @@ function createDiffReleasesRepo(...tags) {
     // Copy current git dir to destination
     Fs.copySync(Paths.git.resolve(), destinationPaths.git.resolve(), {
       filter(filePath) {
+        // Exclude .git/.tortilla
         return filePath.split('/').indexOf('.tortilla') === -1;
       },
     });
@@ -309,9 +394,39 @@ function createDiffReleasesRepo(...tags) {
     Git(['checkout', tag], { cwd: destinationDir });
     Git(['checkout', '.'], { cwd: destinationDir });
 
+    // Dir will be initialized with git at master by default
+    Submodule.getFSNodes({
+      whitelist: submodules,
+      revision: tag,
+    }).forEach(({ hash, file }, ...args) => {
+      const url = submodulesUrls[file];
+      const subDir = `${destinationDir}/${file}`;
+      const subPaths = Paths.resolveProject(subDir);
+
+      Fs.copySync(submodulesProjects[file], subDir);
+
+      try {
+        Git(['checkout', hash], { cwd: subDir });
+      } catch (e) {
+        console.warn();
+        console.warn(`Object ${hash} is missing for submodule ${file} at release ${tag}.`);
+        console.warn(`I don't think release for submodule exists anymore...`);
+        console.warn();
+      }
+
+      Fs.removeSync(subPaths.readme);
+      Fs.removeSync(subPaths.tortillaDir);
+      Fs.removeSync(subPaths.git.resolve());
+    });
+
+    // Removing tortilla related files which are irrelevant for diff
+    Fs.removeSync(destinationPaths.readme);
+    Fs.removeSync(destinationPaths.tortillaDir);
+    Fs.removeSync(destinationPaths.gitModules);
+    Fs.removeSync(destinationPaths.git.resolve());
+
     // Copy destination to source, but without the git dir so there won't be any
     // conflicts with the commits
-    Fs.removeSync(destinationPaths.git.resolve());
     Fs.copySync(sourcePaths.git.resolve(), destinationPaths.git.resolve());
 
     // Add commit for release
@@ -331,6 +446,36 @@ function createDiffReleasesRepo(...tags) {
   }, [
     sourceDir, destinationDir,
   ]).shift();
+}
+
+// Will get rid of files that we don't wanna show on the diff, like tortilla essentials
+// and submodules .git dir
+function filterDiffFiles(dir, tag, submodulesUrls) {
+  const dirPaths = Paths.resolveProject(dir);
+  const submodulesNames = Object.keys(submodulesUrls);
+
+  // Dir will be initialized with git at master by default
+  Submodule.getFSNodes({
+    whitelist: submodulesNames,
+    revision: 'master',
+    cwd: dir,
+  }).forEach(({ hash, file }, ...args) => {
+    const url = submodulesUrls[file];
+    const subDir = `${dir}/${file}`;
+    const subPaths = Paths.resolveProject(subDir);
+
+    Git(['clone', url, file], { cwd: dir });
+    Git(['checkout', hash], { cwd: subDir });
+
+    Fs.removeSync(subPaths.readme);
+    Fs.removeSync(subPaths.tortillaDir);
+    Fs.removeSync(subPaths.git.resolve());
+  });
+
+  // Removing tortilla related files which are irrelevant for diff
+  Fs.removeSync(dirPaths.readme);
+  Fs.removeSync(dirPaths.tortillaDir);
+  Fs.removeSync(dirPaths.gitModules);
 }
 
 function printCurrentRelease() {

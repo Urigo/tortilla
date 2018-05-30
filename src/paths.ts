@@ -11,6 +11,7 @@ export interface TortillaPaths {
   readme: string;
   renovate: string;
   storage: string;
+  gitModules: string;
   travis: string;
   manuals: {
     resolve: () => string;
@@ -54,6 +55,7 @@ export interface TortillaPaths {
   tortillaDir: string;
   tortilla: {
     resolve: () => string;
+    dump: string;
     editor: string;
     essentials: string;
     git: string;
@@ -117,6 +119,7 @@ const translator = resolveTree(resolve(__dirname, 'translator'), {
 });
 
 const tortilla = resolveTree(resolve(__dirname, '..'), {
+  dump: resolve(__dirname, 'dump.js'),
   editor: resolve(__dirname, 'editor.js'),
   essentials: resolve(__dirname, 'essentials.js'),
   git: resolve(__dirname, 'git.js'),
@@ -132,7 +135,7 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
   submodule: resolve(__dirname, 'submodule.js'),
   utils: resolve(__dirname, 'utils.js'),
   hooks: resolve(__dirname, 'hooks'),
-  skeleton: 'https://github.com/Urigo/tortilla-skeleton.git',
+  skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
   ascii,
   renderer,
   translator,
@@ -216,6 +219,7 @@ export function resolveProject(cwd: string): TortillaPaths {
     readme: resolve(cwd, 'README.md'),
     renovate: resolve(cwd, 'renovate.json'),
     storage: resolve(cwd, '.git/.tortilla'),
+    gitModules: resolve(cwd, '.gitmodules'),
     travis: resolve(cwd, '.travis.yml'),
     manuals,
     tortilla,

@@ -8,6 +8,7 @@
         "tagName": "master@0.3.0",
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "changesDiff": "",
         "manuals": [
           {
             "manualTitle": "Test tortilla project",
@@ -21,6 +22,7 @@
         "tagName": "master@0.2.0",
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "changesDiff": "",
         "manuals": [
           {
             "manualTitle": "Test tortilla project",
@@ -34,6 +36,7 @@
         "tagName": "master@0.1.0",
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..975808a\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
         "manuals": [
           {
             "manualTitle": "Test tortilla project",
