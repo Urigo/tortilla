@@ -499,5 +499,63 @@ describe('Release', () => {
 
       expect(releaseDiff).toContainSameContentAsFile('submodule-releases.diff');
     });
+
+    it('should handle missing versions of submodules when forming diff', function () {
+      const submodule = `${context.tempDir}/module`;
+
+      context.tortilla(['step', 'edit', '--root']);
+      context.tortilla(['create', submodule], { env: { GIT_EDITOR: true } });
+
+      // Create submodule and release initial version
+      context.scopeEnv(() => {
+        context.exec('sh', ['-c', 'echo foo > file'], { cwd: submodule });
+        context.git(['add', 'file'], { cwd: submodule });
+        context.tortilla(['step', 'push', '-m', 'add file'], { cwd: submodule });
+        context.tortilla(['step', 'tag', '-m', 'how to add file'], { cwd: submodule });
+        context.tortilla(['release', 'bump', 'minor', '-m', 'release foo'], { cwd: submodule });
+      }, {
+        TORTILLA_CWD: submodule
+      });
+
+      // Amend submodule and release initial version
+      context.git(['submodule', 'add', submodule, 'module']);
+      context.git(['add', '.']);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.setPromptAnswers(['master@0.1.0']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'release foo']);
+
+      context.tortilla(['step', 'edit', '--root']);
+      context.exec('rm', ['-rf', submodule]);
+      context.tortilla(['create', submodule], { env: { GIT_EDITOR: true } });
+
+      // Release a second version of the submodule
+      context.scopeEnv(() => {
+        context.exec('sh', ['-c', 'echo foo > file'], { cwd: submodule });
+        context.git(['add', 'file'], { cwd: submodule });
+        context.tortilla(['step', 'push', '-m', 'add file'], { cwd: submodule });
+        context.tortilla(['step', 'tag', '-m', 'how to add file'], { cwd: submodule });
+        context.tortilla(['release', 'bump', 'major', '-m', 'release foo'], { cwd: submodule });
+      }, {
+        TORTILLA_CWD: submodule
+      });
+
+      context.exec('rm', ['-rf', 'module']);
+      context.git(['clone', submodule, 'module']);
+      context.git(['add', '.']);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.setPromptAnswers(['master@1.0.0']);
+      context.tortilla(['release', 'bump', 'major', '-m', 'release bar']);
+
+      const releaseDiff = context.tortilla(['release', 'diff', '0.1.0', '1.0.0'], {
+        env: {
+          TORTILLA_STDIO: 'inherit',
+          GIT_PAGER: 'cat'
+        }
+      });
+
+      expect(releaseDiff).toEqual('');
+    });
   });
 });
