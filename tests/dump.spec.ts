@@ -142,6 +142,58 @@ describe('Dump', () => {
 
       expect(context.exists(`${context.dumpFile}/tutorial.json`, 'file'));
     });
+
+    it('should create a dump file for a tutorial which includes submodules', function() {
+      const submodule = `${context.testDir}/module`;
+
+      context.tortilla(['step', 'edit', '--root']);
+      context.tortilla(['create', 'submodule', '-o', submodule], { env: { GIT_EDITOR: true } });
+
+      // Create submodule and release initial version
+      context.scopeEnv(() => {
+        context.exec('sh', ['-c', 'echo foo > file'], { cwd: submodule });
+        context.git(['add', 'file'], { cwd: submodule });
+        context.tortilla(['step', 'push', '-m', 'add file'], { cwd: submodule });
+        context.tortilla(['step', 'tag', '-m', 'how to add file'], { cwd: submodule });
+        context.tortilla(['release', 'bump', 'minor', '-m', 'release foo'], { cwd: submodule });
+      }, {
+        TORTILLA_CWD: submodule
+      });
+
+      // Amend submodule and release initial version
+      context.git(['submodule', 'add', './module']);
+      context.git(['add', '.']);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.setPromptAnswers(['master@0.1.0']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'release foo']);
+
+      context.tortilla(['step', 'edit', '--root']);
+
+      // Release a second version of the submodule
+      context.scopeEnv(() => {
+        context.git(['checkout', 'master']);
+        context.tortilla(['step', 'edit', '1.1'], { cwd: submodule });
+        context.exec('sh', ['-c', 'echo bar > file'], { cwd: submodule });
+        context.git(['add', 'file'], { cwd: submodule });
+        context.git(['commit', '--amend'], { cwd: submodule, env: { GIT_EDITOR: true } });
+        context.git(['rebase', '--continue'], { cwd: submodule });
+        context.tortilla(['release', 'bump', 'major', '-m', 'release bar'], { cwd: submodule });
+      }, {
+        TORTILLA_CWD: submodule
+      });
+
+      // Release a second version of the main module
+      context.git(['add', '.']);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.setPromptAnswers(['master@1.0.0']);
+      context.tortilla(['release', 'bump', 'major', '-m', 'release bar']);
+
+      context.tortilla(['dump', 'create', context.dumpFile]);
+
+      expect(context.readDumpFile()).toContainSameContentAsFile('dumps/submodules-dump.json');
+    })
   });
 
   describe('diffReleases()', () => {
