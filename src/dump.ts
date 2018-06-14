@@ -220,7 +220,8 @@ function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
   // If an FS path was provided
   if (typeof dump === 'string' || dump instanceof String) {
     // Resolving path relative to cwd
-    dump = Path.resolve(Utils.cwd(), dump as string);
+    // Note that this is the process cwd and not the project cwd
+    dump = Path.resolve(process.cwd(), dump as string);
     // Parsing JSON
     dump = Fs.readJSONSync(dump);
   }
@@ -252,7 +253,7 @@ function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
   srcDir.removeCallback();
   dstDir.removeCallback();
 
-  return diff;
+  return postTransformDiff(diff);
 }
 
 function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
@@ -261,7 +262,7 @@ function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
   const releaseIndex = chunk.releases.findIndex(r => r.releaseVersion === releaseVersion);
   // Most recent release would come LAST
   const releases = chunk.releases.slice(releaseIndex - chunk.releases.length).reverse();
-  const diffs = releases.map(r => r.changesDiff).filter(Boolean);
+  const diffs = releases.map(r => r.changesDiff).filter(Boolean).map(preTransformDiff);
   const dir = Tmp.dirSync({ unsafeCleanup: true });
 
   Utils.scopeEnv(() => {
@@ -280,6 +281,36 @@ function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
   });
 
   return dir;
+}
+
+// Turns binary files into placeholders so diff can be applied
+function preTransformDiff(diff) {
+  return diff
+    .replace(/Binary files \/dev\/null and b\/([^ ]+) differ/g, [
+      '--- /dev/null',
+      '+++ b/$1',
+      '@@ -0,0 +1 @@',
+      '+__tortilla_bin__',
+    ].join('\n'))
+    .replace(/Binary files a\/([^ ]+) and \/dev\/null differ/g, [
+      '+++ a/$1',
+      '--- /dev/null',
+      '@@ -1 +0,0 @@',
+      '-__tortilla_bin__',
+    ].join('\n'))
+}
+
+// Turns placeholders into binary files so diff can be loyal
+function postTransformDiff(diff) {
+  return diff
+    .replace(
+      /--- \/dev\/null\n\+\+\+ b\/(.+)\n@@ -0,0 \+1 @@\n\+__tortilla_bin__/,
+      'Binary files /dev/null and b/$1 differ'
+    )
+    .replace(
+      /--- a\/(.+)\n\+\+\+ \/dev\/null\n@@ -1 \+0,0 @@\n-__tortilla_bin__/,
+      'Binary files a/$1 and /dev/null differ'
+    )
 }
 
 export const Dump = {
