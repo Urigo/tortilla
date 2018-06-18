@@ -82,6 +82,16 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
     });
   }
 
+  const pack = Fs.readJsonSync(Paths.npm.package)
+
+  // TODO: Update test data
+  // Will be defined per branch for compatibility reasons
+  const repoUrl = (
+    typeof pack.repository === 'string' ? pack.repository :
+    typeof pack.repository === 'object' ? pack.repository.url :
+    ''
+  ).replace(/\.git$/, '')
+
   const dump = branchNames.map((branchName) => {
     const historyBranchName = `${branchName}-history`;
 
@@ -179,6 +189,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
     });
 
     return {
+      repoUrl,
       branchName,
       historyBranchName,
       releases,
