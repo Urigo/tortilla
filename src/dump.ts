@@ -111,7 +111,14 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         pipe: true
       });
 
-      const manuals = Fs.readdirSync(Paths.manuals.views).sort(Utils.naturalSort).map((manualName, stepIndex) => {
+      const manuals = Fs
+        .readdirSync(Paths.manuals.views)
+        // There might also be transformed manuals inside nested dirs. If we will take
+        // these dirs into an account there will be additional unexpected manuals in the
+        // formed dump file
+        .filter(fileName => /\.md$/.test(fileName))
+        .sort(Utils.naturalSort)
+      .map((manualName, stepIndex) => {
         const format = '%H %s';
         let stepLog;
         let manualPath;
