@@ -283,6 +283,7 @@ function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
   return dir;
 }
 
+// TODO: Add tests
 // Turns binary files into placeholders so diff can be applied
 function preTransformDiff(diff) {
   return diff
@@ -293,10 +294,17 @@ function preTransformDiff(diff) {
       '+__tortilla_bin__',
     ].join('\n'))
     .replace(/Binary files a\/([^ ]+) and \/dev\/null differ/g, [
-      '+++ a/$1',
-      '--- /dev/null',
+      '--- a/$1',
+      '+++ /dev/null',
       '@@ -1 +0,0 @@',
       '-__tortilla_bin__',
+    ].join('\n'))
+    .replace(/Binary files a\/([^ ]+) and b\/([^ ]+) differ/g, [
+      '--- a/$1',
+      '+++ b/$2',
+      '@@ -1 +1 @@',
+      '-__tortilla_bin__',
+      '+__tortilla_bin__',
     ].join('\n'))
 }
 
@@ -310,6 +318,10 @@ function postTransformDiff(diff) {
     .replace(
       /--- a\/(.+)\n\+\+\+ \/dev\/null\n@@ -1 \+0,0 @@\n-__tortilla_bin__/,
       'Binary files a/$1 and /dev/null differ'
+    )
+    .replace(
+      /--- a\/(.+)\n\+\+\+ b\/(.+)\n@@ -1 \+1 @@\n-__tortilla_bin__\n\+__tortilla_bin__/,
+      'Binary files a/$1 and b/$2 differ'
     )
 }
 
