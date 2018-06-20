@@ -330,15 +330,15 @@ function preTransformDiff(diff) {
 function postTransformDiff(diff) {
   return diff
     .replace(
-      /--- \/dev\/null\n\+\+\+ b\/(.+)\n@@ -0,0 \+1 @@\n\+__tortilla_bin__/,
+      /--- \/dev\/null\n\+\+\+ b\/(.+)\n@@ -0,0 \+1 @@\n\+__tortilla_bin__/g,
       'Binary files /dev/null and b/$1 differ'
     )
     .replace(
-      /--- a\/(.+)\n\+\+\+ \/dev\/null\n@@ -1 \+0,0 @@\n-__tortilla_bin__/,
+      /--- a\/(.+)\n\+\+\+ \/dev\/null\n@@ -1 \+0,0 @@\n-__tortilla_bin__/g,
       'Binary files a/$1 and /dev/null differ'
     )
     .replace(
-      /--- a\/(.+)\n\+\+\+ b\/(.+)\n@@ -1 \+1 @@\n-__tortilla_bin__\n\+__tortilla_bin__/,
+      /--- a\/(.+)\n\+\+\+ b\/(.+)\n@@ -1 \+1 @@\n-__tortilla_bin__\n\+__tortilla_bin__/g,
       'Binary files a/$1 and b/$2 differ'
     )
 }
