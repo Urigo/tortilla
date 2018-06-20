@@ -1,5 +1,6 @@
 [
   {
+    "repoUrl": "",
     "branchName": "bar",
     "historyBranchName": "bar-history",
     "releases": [
@@ -93,6 +94,7 @@
     ]
   },
   {
+    "repoUrl": "",
     "branchName": "baz",
     "historyBranchName": "baz-history",
     "releases": [
@@ -186,6 +188,7 @@
     ]
   },
   {
+    "repoUrl": "",
     "branchName": "foo",
     "historyBranchName": "foo-history",
     "releases": [

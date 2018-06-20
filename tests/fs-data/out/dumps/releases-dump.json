@@ -1,5 +1,6 @@
 [
   {
+    "repoUrl": "",
     "branchName": "master",
     "historyBranchName": "master-history",
     "releases": [
