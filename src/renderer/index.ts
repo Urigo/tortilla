@@ -220,7 +220,7 @@ function callHelper(methodName) {
 
 // Takes a bunch of paths and resolved them relatively to the current rendered view
 function resolvePath(/* reserved path, user defined path */) {
-  let paths = [].slice.call(arguments);
+  const paths = [].slice.call(arguments);
 
   // A default path that the host's markdown renderer will know how to resolve by its own
   let defaultPath = paths.slice(1).join('/');
@@ -238,15 +238,20 @@ function resolvePath(/* reserved path, user defined path */) {
   }
 
   const repository = Fs.readJsonSync(Paths.npm.package).repository;
+  let repositoryUrl = typeof repository === 'object' ? repository.url : repository
 
   // If no repository was defined, or
   // repository type is not git, or
   // no repository url is defined, return default path
-  if (!repository ||
-      repository.type !== 'git' ||
-      repository.url === null) {
+  if (!repositoryUrl) {
     return defaultPath;
   }
+
+  repositoryUrl = repositoryUrl
+    // Remove .git postfix
+    .replace(/.git$/, '')
+    // Remove USERNAME@githost.com prefix
+    .replace(/[\w]+@/g, '');
 
   const currentRelease = Release.format(Release.current());
 
@@ -258,24 +263,23 @@ function resolvePath(/* reserved path, user defined path */) {
   // Compose branch path for current release tree
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
   const releaseTag = `${Git.activeBranchName()}@${currentRelease}`;
-  const repositoryUrl = repository.url.replace('.git', '');
   const branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
   const protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
+  // Using a / so we can use it with the 'path' module
   const branchPath = `/${branchUrl.substr(protocol.length)}`;
 
   // If we use tilde (~) at the beginning of the path, we will be referenced to the
   // repo's root URL. This is useful when we want to compose links which are
   // completely disconnected from the current state, like commits, issues and PRs
-  paths = paths
-    .map((path) => path.replace(/~/g, Path.resolve(branchPath, '../..')))
-    .map((path) => Path.isAbsolute(path) ? Path.relative(cwd, path) : Path.resolve(branchPath, Path.join(cwd, path)));
+  let resolved = paths.map((path) => path.replace(/\~/g, Path.resolve(branchPath, '../..')));
+  // The view dir URL
+  // e.g. github.com/DAB0mB/radial-snake/tree/master@0.1.5/.tortilla/manuals/views
+  resolved.unshift(Path.join(branchPath, Path.relative(Utils.cwd(), Path.resolve(Utils.cwd(), cwd))));
+  resolved = Path.resolve(...resolved);
+  // Concatenating the protocol back after final path has been formed
+  resolved = protocol + resolved.substr(1);
 
-  // Resolve full path
-  // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
-  // /manuals/views/step1.md
-  paths.unshift(branchPath);
-
-  return protocol + Path.resolve(...paths).substr(1);
+  return resolved;
 }
 
 export const Renderer = Utils.extend(handlebars, {
