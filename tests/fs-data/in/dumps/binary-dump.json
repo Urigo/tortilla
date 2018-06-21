@@ -1,0 +1,65 @@
+[
+  {
+    "repoUrl": "",
+    "branchName": "master",
+    "historyBranchName": "master-history",
+    "releases": [
+      {
+        "releaseVersion": "0.4.0",
+        "tagName": "master@0.4.0",
+        "tagRevision": "76b7df144f1c09223bb769f622cda0667348cd1d",
+        "historyRevision": "779dbf10514675df1d43b5ffba8332fc9d870102",
+        "changesDiff": "diff --git a/re_img.png b/re_img.png\ndeleted file mode 100644\nindex 4eef295..0000000\nBinary files a/re_img.png and /dev/null differ\n",
+        "manuals": [
+          {
+            "manualTitle": "Test",
+            "stepRevision": "6a566c782f9b48ea7f15be946dc7120590d01288",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.3.0",
+        "tagName": "master@0.3.0",
+        "tagRevision": "d477591d05e1379624b159fbc19e93c61c3b27d6",
+        "historyRevision": "525fa6c2c037b6c691a0850e43eeb0633cf409e6",
+        "changesDiff": "diff --git a/img.png b/re_img.png\nsimilarity index 100%\nrename from img.png\nrename to re_img.png\n",
+        "manuals": [
+          {
+            "manualTitle": "Test",
+            "stepRevision": "6a566c782f9b48ea7f15be946dc7120590d01288",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.2.0",
+        "tagName": "master@0.2.0",
+        "tagRevision": "2913a17f016a0705e9f459331830c96fbd5df6a7",
+        "historyRevision": "8fe653b8c0b71bb028bde727f61df364d7afe5c7",
+        "changesDiff": "diff --git a/img.png b/img.png\nnew file mode 100644\nindex 0000000..4eef295\nBinary files /dev/null and b/img.png differ\n",
+        "manuals": [
+          {
+            "manualTitle": "Test",
+            "stepRevision": "6a566c782f9b48ea7f15be946dc7120590d01288",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          }
+        ]
+      },
+      {
+        "releaseVersion": "0.1.0",
+        "tagName": "master@0.1.0",
+        "tagRevision": "8a60ab067db34743101ab4887ae1b0794a015b7f",
+        "historyRevision": "ff7df28826256037e63e5fd4a8b79d0bd7af407e",
+        "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.keep b/.keep\nnew file mode 100644\nindex 0000000..e69de29\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..fbadd20\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-test\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
+        "manuals": [
+          {
+            "manualTitle": "Test",
+            "stepRevision": "6a566c782f9b48ea7f15be946dc7120590d01288",
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -262,8 +262,8 @@ function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
     }
 
     return reversed
-      ? Git(['diff', 'HEAD', 'HEAD^'])
-      : Git(['diff', 'HEAD^', 'HEAD']);
+      ? Git(['diff', 'HEAD^', 'HEAD'])
+      : Git(['diff', 'HEAD', 'HEAD^']);
   }, {
     TORTILLA_CWD: srcDir.name
   });

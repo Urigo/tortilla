@@ -193,7 +193,7 @@ describe('Dump', () => {
       context.tortilla(['dump', 'create', context.dumpFile]);
 
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/submodules-dump.json');
-    })
+    });
   });
 
   describe('diffReleases()', () => {
@@ -218,5 +218,37 @@ describe('Dump', () => {
 
       expect(diff).toContainSameContentAsFile('releases.diff');
     });
+
+    it('should handle changes in binary files', function() {
+      const dumpPath = context.resolveInputPath('dumps/binary-dump.json');
+      let diff;
+
+      // Binary added
+      diff = context.tortilla(['dump', 'diff-releases', dumpPath, 'master@0.1.0', 'master@0.2.0']);
+      expect(diff).toEqual(context.trimIndents(`
+        diff --git a/img.png b/img.png
+        new file mode 100644
+        index 0000000..4f8375a
+        Binary files /dev/null and b/img.png differ
+      `));
+
+      // Binary renamed
+      diff = context.tortilla(['dump', 'diff-releases', dumpPath, 'master@0.2.0', 'master@0.3.0']);
+      expect(diff).toEqual(context.trimIndents(`
+        diff --git a/img.png b/re_img.png
+        similarity index 100%
+        rename from img.png
+        rename to re_img.png
+      `));
+
+      // Binary removed
+      diff = context.tortilla(['dump', 'diff-releases', dumpPath, 'master@0.3.0', 'master@0.4.0']);
+      expect(diff).toEqual(context.trimIndents(`
+        diff --git a/re_img.png b/re_img.png
+        deleted file mode 100644
+        index 4f8375a..0000000
+        Binary files a/re_img.png and /dev/null differ
+      `));
+    })
   });
 });

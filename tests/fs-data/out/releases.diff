@@ -1,16 +1,16 @@
 diff --git a/bar b/bar
-deleted file mode 100644
-index ba0e162..0000000
---- a/bar
-+++ /dev/null
-@@ -1 +0,0 @@
--bar
+new file mode 100644
+index 0000000..ba0e162
+--- /dev/null
++++ b/bar
+@@ -0,0 +1 @@
++bar
 \ No newline at end of file
 diff --git a/foo b/foo
-deleted file mode 100644
-index 1910281..0000000
---- a/foo
-+++ /dev/null
-@@ -1 +0,0 @@
--foo
+new file mode 100644
+index 0000000..1910281
+--- /dev/null
++++ b/foo
+@@ -0,0 +1 @@
++foo
 \ No newline at end of file

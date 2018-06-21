@@ -44,6 +44,27 @@ export function tortillaBeforeAll() {
   // Executes tortilla
   this.tortilla = (args, options?) => this.exec('node', [tortillaPath, ...args], options);
 
+  // Gets a full path of the given test-data input
+  this.resolveInputPath = (file) => {
+    return Path.resolve(__dirname, 'fs-data', 'in', file);
+  };
+
+  this.trimIndents = (content) => {
+    const lines = content
+      .split('\n')
+      .filter(line => line.trim());
+
+    const minIndent = lines.reduce((minIndent, line) => {
+      const currIndent = line.match(/^ */)[0].length;
+
+      return currIndent < minIndent ? currIndent : minIndent;
+    }, Infinity);
+
+    return lines
+      .map(line => line.slice(minIndent))
+      .join('\n');
+  };
+
   // Read the provided test data located in 'fs-data'
   this.readTestData = (put, file) => {
     const filePath = Path.resolve(__dirname, 'fs-data', put, file);
