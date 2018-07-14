@@ -74,7 +74,7 @@
     "tmp": "0.0.33"
   },
   "devDependencies": {
-    "@types/jest": "22.2.3",
+    "@types/jest": "23.1.6",
     "babel-register": "6.26.0",
     "copyfiles": "2.0.0",
     "escape-string-regexp": "1.0.5",
