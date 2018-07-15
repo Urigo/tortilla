@@ -36,9 +36,9 @@
   version "8.4.4"
   resolved "https://registry.yarnpkg.com/@types/i18next/-/i18next-8.4.4.tgz#76591ab5974b65910e44b8860202d4f544f39b9d"
 
-"@types/inquirer@0.0.41":
-  version "0.0.41"
-  resolved "https://registry.yarnpkg.com/@types/inquirer/-/inquirer-0.0.41.tgz#0c33027dcd0b0dde234e22afa454f2c75d8b30d2"
+"@types/inquirer@0.0.42":
+  version "0.0.42"
+  resolved "https://registry.yarnpkg.com/@types/inquirer/-/inquirer-0.0.42.tgz#2310fd8623053bead72247adae416aa32bacdf0c"
   dependencies:
     "@types/rx" "*"
     "@types/through" "*"
