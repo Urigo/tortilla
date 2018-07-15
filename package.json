@@ -61,7 +61,7 @@
     "@types/node": "9.6.23",
     "@types/semver": "5.5.0",
     "@types/tmp": "0.0.33",
-    "commander": "2.15.1",
+    "commander": "2.16.0",
     "fs-extra": "6.0.1",
     "handlebars": "4.0.11",
     "i18next": "11.3.6",
