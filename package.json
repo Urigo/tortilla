@@ -53,7 +53,7 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
-    "@types/fs-extra": "5.0.2",
+    "@types/fs-extra": "5.0.4",
     "@types/handlebars": "4.0.37",
     "@types/i18next": "8.4.3",
     "@types/inquirer": "0.0.41",
