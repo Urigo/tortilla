@@ -65,7 +65,7 @@
     "fs-extra": "6.0.1",
     "handlebars": "4.0.11",
     "i18next": "11.3.6",
-    "inquirer": "5.2.0",
+    "inquirer": "6.0.0",
     "minimist": "1.2.0",
     "node-localstorage": "1.3.1",
     "parse-diff": "0.4.2",
