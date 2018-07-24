@@ -38,6 +38,7 @@ Program
   .command('edit-notes <release>')
   .description('Attaches a message to a release')
   .option('-b, --branch [branch]', 'Release branch')
+  .option('-e, --editor [editor]', 'Editor file name')
   .option('-m, --message [message]', 'A message describing the release')
   .action((release, options) => {
     LocalStorage.assertTortilla(true);
@@ -48,6 +49,7 @@ Program
   .command('view-notes <release>')
   .description('View message of a release')
   .option('-b, --branch [branch]', 'Release branch')
+  .option('-p, --pager [pager]', 'Pager file name')
   .action((release, options) => {
     LocalStorage.assertTortilla(true);
     Release.viewNotes(release, options)

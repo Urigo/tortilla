@@ -620,6 +620,72 @@ function createReleaseTag(tag, dstHash, message?) {
   Git(['checkout', '.']);
 }
 
+// View the tag notes of the specified release
+function viewNotes(release: string, options: { branch?: string, pager?: string } = {}) {
+  if (typeof release !== 'string') {
+    throw TypeError('Release must be a string')
+  }
+
+  if (!(options instanceof Object)) {
+    throw TypeError('Options must be an object')
+  }
+
+  if (options.branch !== undefined && typeof options.branch !== 'string') {
+    throw TypeError('options.branch must be a string')
+  }
+
+  if (options.pager !== undefined && typeof options.pager !== 'string') {
+    throw TypeError('options.pager must be a string')
+  }
+
+  const { branch, pager } = {
+    ...options,
+    branch: Git.activeBranchName(),
+    pager: Git.pager(),
+  }
+
+  const tag = `${branch}@${release}`
+
+  Git.print(['show', tag, '--quiet', '--format=%b'], {
+    env: { GIT_PAGER: pager },
+  })
+}
+
+function editNotes(
+  release: string,
+  options: {
+    branch?: string,
+    editor?: string,
+    message?: string,
+  } = {}
+) {
+  if (typeof release !== 'string') {
+    throw TypeError('Release must be a string')
+  }
+
+  if (!(options instanceof Object)) {
+    throw TypeError('Options must be an object')
+  }
+
+  if (options.branch !== undefined && typeof options.branch !== 'string') {
+    throw TypeError('options.branch must be a string')
+  }
+
+  if (options.editor !== undefined && typeof options.editor !== 'string') {
+    throw TypeError('options.editor must be a string')
+  }
+
+  if (options.message !== undefined && typeof options.message !== 'string') {
+    throw TypeError('options.message must be a string')
+  }
+
+  const { branch, editor, message } = {
+    ...options,
+    branch: Git.activeBranchName(),
+    editor: Git.editor(),
+  }
+}
+
 export const Release = {
   bump: bumpRelease,
   createDiffBranch: createDiffReleasesBranch,
@@ -629,4 +695,6 @@ export const Release = {
   diff: diffRelease,
   format: formatRelease,
   deformat: deformatRelease,
+  viewNotes,
+  editNotes,
 };

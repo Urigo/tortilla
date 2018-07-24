@@ -171,6 +171,32 @@ function getEditor() {
   return editor;
 }
 
+function getPager() {
+  let editor = process.env.GIT_EDITOR;
+
+  if (!editor) {
+    try {
+      editor = git(['config', 'core.editor']);
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  if (!editor) {
+    try {
+      editor = git(['var', 'GIT_EDITOR']);
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  if (!editor) {
+    throw Error('Git editor could not be found');
+  }
+
+  return editor;
+}
+
 function getRevisionIdFromObject(object: string): string {
   return git(['rev-list', '-n', '1', object]);
 }
@@ -189,5 +215,6 @@ export const Git = Utils.extend(git.bind(null), git, {
   root: getRoot,
   edit,
   editor: getEditor,
+  pager: getPager,
   getRevisionIdFromObject,
 });

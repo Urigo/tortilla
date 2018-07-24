@@ -393,12 +393,14 @@ Runs `git diff` between 2 specified releases. This will also be able to run the 
 Inspects the tag notes of the specified release.
 
 - *option:* `-b, --branch [branch]` - The branch name of the release. Defaults to the current branch.
+- *option:* `-p, --pager [pager]` - The pager file that will be used to view notes. Defaults to git's pager.
 
 **command:** `tortilla release edit-notes <release>`
 
 Edits the tag notes of the specified release. This will create a new tag with a similar name to the existing one, and will override it once the editor process has been closed.
 
 - *option:* `-b, --branch [branch]` - The branch name of the release. Defaults to the current branch.
+- *option:* `-e, --editor [editor]` - The editor file that will be used to edit notes. Defaults to git's editor.
 - *option:* `-m, --message [message]` - A quick message to post in the release notes. This will skip the editing process.
 
 ### tortilla-step CLI
