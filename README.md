@@ -388,6 +388,19 @@ Prints the current release.
 
 Runs `git diff` between 2 specified releases. This will also be able to run the operation between 2 different releases which are completely different from their root! You can also provide this command with some additional native [git-diff options](https://git-scm.com/docs/git-diff#_options).
 
+**command:** `tortilla release view-notes <release>`
+
+Inspects the tag notes of the specified release.
+
+- *option:* `-b, --branch [branch]` - The branch name of the release. Defaults to the current branch.
+
+**command:** `tortilla release edit-notes <release>`
+
+Edits the tag notes of the specified release. This will create a new tag with a similar name to the existing one, and will override it once the editor process has been closed.
+
+- *option:* `-b, --branch [branch]` - The branch name of the release. Defaults to the current branch.
+- *option:* `-m, --message [message]` - A quick message to post in the release notes. This will skip the editing process.
+
 ### tortilla-step CLI
 
 For more information see the [steps](#steps) section.

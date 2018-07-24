@@ -34,4 +34,23 @@ Program
     Release.diff(sourceRelease, destinationRelease, process.argv.slice(5));
   });
 
+Program
+  .command('edit-notes <release>')
+  .description('Attaches a message to a release')
+  .option('-b, --branch [branch]', 'Release branch')
+  .option('-m, --message [message]', 'A message describing the release')
+  .action((release, options) => {
+    LocalStorage.assertTortilla(true);
+    Release.editNotes(release, options)
+  });
+
+Program
+  .command('view-notes <release>')
+  .description('View message of a release')
+  .option('-b, --branch [branch]', 'Release branch')
+  .action((release, options) => {
+    LocalStorage.assertTortilla(true);
+    Release.viewNotes(release, options)
+  });
+
 Program.parse(process.argv);
