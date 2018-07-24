@@ -296,6 +296,7 @@ export const Renderer = Utils.extend(handlebars, {
 });
 
 // Built-in helpers and partials
+import './helpers/diff-file';
 import './helpers/diff-step';
 import './helpers/nav-step';
 import './helpers/resolve-path';
