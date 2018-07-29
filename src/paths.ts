@@ -134,20 +134,20 @@ const tortilla = resolveTree(resolve(__dirname, '..'), {
   step: resolve(__dirname, 'step.js'),
   submodule: resolve(__dirname, 'submodule.js'),
   utils: resolve(__dirname, 'utils.js'),
+  skeleton: resolve(__dirname, 'skeleton.tar'),
   hooks: resolve(__dirname, 'hooks'),
-  skeleton: 'git@github.com:Urigo/tortilla-skeleton.git',
   ascii,
   renderer,
   translator,
 });
 
 const cli = resolveTree(resolve(__dirname, '../cli'), {
-  tortilla: resolve(__dirname, '../dist/cli/tortilla.js'),
-  tortillaManual: resolve(__dirname, '../dist/cli/tortilla-manual.js'),
-  tortillaRelease: resolve(__dirname, '../dist/cli/tortilla-release.js'),
-  tortillaStep: resolve(__dirname, '../dist/cli/tortilla-step.js'),
-  tortillaStrict: resolve(__dirname, '../dist/cli/tortilla-strict.js'),
-  tortillaSubmodule: resolve(__dirname, '../dist/cli/tortilla-submodule.js'),
+  tortilla: resolve(__dirname, 'cli/tortilla.js'),
+  tortillaManual: resolve(__dirname, 'cli/tortilla-manual.js'),
+  tortillaRelease: resolve(__dirname, 'cli/tortilla-release.js'),
+  tortillaStep: resolve(__dirname, 'cli/tortilla-step.js'),
+  tortillaStrict: resolve(__dirname, 'cli/tortilla-strict.js'),
+  tortillaSubmodule: resolve(__dirname, 'cli/tortilla-submodule.js'),
 });
 
 // Makes the root path available in the branches object using a 'resolve()' method

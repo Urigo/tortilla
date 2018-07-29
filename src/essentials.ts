@@ -16,6 +16,7 @@ import { Utils } from './utils';
  initialize a project.
  */
 
+const exec = Utils.exec as any
 const tmpDir = Tmp.dirSync({ unsafeCleanup: true });
 const tmpPaths = Paths.resolveProject(tmpDir.name);
 
@@ -70,14 +71,11 @@ function createProject(projectName, options) {
     }
   }
 
-  Fs.removeSync(tmpDir.name);
-  // Clone skeleton
-  Git.print(['clone', Paths.tortilla.skeleton, tmpDir.name], { cwd: '/tmp' });
-  // Checkout desired release
-  Git(['checkout', '0.0.1-alpha.4'], { cwd: tmpDir.name });
-  // Remove .git to remove unnecessary meta-data, git essentials should be
-  // initialized later on
-  Fs.removeSync(tmpPaths.git.resolve());
+  Fs.emptyDirSync(tmpDir.name);
+  // Unpack skeleton
+  exec.print('tar', [
+    '--strip-components', 1, '-xf', Paths.tortilla.skeleton, '-C', tmpDir.name
+  ])
 
   const packageName = Utils.kebabCase(projectName);
   const title = Utils.startCase(projectName);
