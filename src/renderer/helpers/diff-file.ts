@@ -60,8 +60,6 @@ Renderer.registerHelper('diffFile', (file, options) => {
   const fileDiff = Git(['diff', `${srcRelease}:${hash}`, dstRelease], { cwd })
 
   return getMdDiff(file)
-}, {
-  mdWrap: true,
 });
 
 // Gets all diff chunks in a markdown format for a single file
