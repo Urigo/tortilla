@@ -1,6 +1,6 @@
 {
   "name": "tortilla",
-  "version": "0.0.1-alpha.35",
+  "version": "0.0.1-alpha.36",
   "description": "A tutorials framework based on git and NodeJS",
   "contributors": [
     {
@@ -102,11 +102,24 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   },
   "lint-staged": {
-    "src/**/*.ts": ["tslint --fix", "git add"],
-    "*.json": ["prettier --write", "git add"]
+    "src/**/*.ts": [
+      "tslint --fix",
+      "git add"
+    ],
+    "*.json": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "prettier": {
     "printWidth": 200,
