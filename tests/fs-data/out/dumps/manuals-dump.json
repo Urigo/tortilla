@@ -6,6 +6,7 @@
     "releases": [
       {
         "releaseVersion": "0.1.0",
+        "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.1.0",
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",

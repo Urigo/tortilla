@@ -51,16 +51,25 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   Fs.ensureFileSync(out);
 
   // Run command once
-  const tagNames = Git(['tag', '-l'])
-    .split('\n')
-    .filter(Boolean);
+  const tags = Git([
+    'log', '--tags', '--simplify-by-decoration', '--pretty=format:%ci %d'
+  ]).split('\n')
+    .filter(Boolean)
+    .map((line) =>
+      line.match(/^([^(]+)  \(.*tag: ([^@]+@\d+\.\d+\.\d+).*\)$/)
+    )
+    .filter(Boolean)
+    .map(([str, date, name]) => ({
+      date,
+      name,
+    }))
+    .sort((a, b) =>
+      new Date(a.date) > new Date(b.date) ? -1 : 1
+    )
 
-  let branchNames = tagNames
-    .filter((tagName) => {
-      return /^[^@]+?@\d+\.\d+\.\d+$/.test(tagName);
-    })
-    .map((tagName) => {
-      return tagName.split('@')[0];
+  let branchNames = tags
+    .map((tag) => {
+      return tag.name.split('@')[0];
     })
     .reduce((prev, branchName) => {
       if (!prev.includes(branchName)) {
@@ -96,17 +105,18 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
     const historyBranchName = `${branchName}-history`;
 
     // Run command once
-    const releaseVersions = tagNames
-      .map((tagName) => {
-        return tagName.match(new RegExp(`${branchName}@(\\d+\\.\\d+\\.\\d+)`));
-      })
-      .filter(Boolean)
-      .map(match => match[1])
-      .reverse();
+    const releaseTags = tags
+      .filter((tag) =>
+        tag.name.match(branchName)
+      )
+      .map((tag) => ({
+        date: tag.date,
+        version: tag.name.split('@').pop(),
+      }))
 
-    const releases = releaseVersions.map((releaseVersion, releaseIndex) => {
-      const prevReleaseVersion = releaseVersions[releaseIndex + 1];
-      const tagName = `${branchName}@${releaseVersion}`;
+    const releases = releaseTags.map((releaseTag, releaseIndex) => {
+      const prevReleaseTag = releaseTags[releaseIndex + 1] || {};
+      const tagName = `${branchName}@${releaseTag.version}`;
       const tagRevision = Git(['rev-parse', tagName]);
 
       const historyRevision = Git([
@@ -116,7 +126,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         .pop();
 
       // Instead of printing diff to stdout we will receive it as a buffer
-      const changesDiff = Release.diff(prevReleaseVersion, releaseVersion, null, {
+      const changesDiff = Release.diff(prevReleaseTag.version, releaseTag.version, null, {
         branch: branchName,
         pipe: true
       });
@@ -179,7 +189,8 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
       });
 
       return {
-        releaseVersion,
+        releaseVersion: releaseTag.version,
+        releaseDate: releaseTag.date,
         tagName,
         tagRevision,
         historyRevision,
