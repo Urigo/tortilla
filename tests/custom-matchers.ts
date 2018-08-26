@@ -12,8 +12,10 @@ declare namespace jest {
 // replaced with a series of X's for general length comparison;
 // e.g. fooXXXbar will match foo123bar or fooabcbar
 function toContainSameContentAsFile(received: string, fileName: string) {
+  received = received.trim()
+
   const expectedFilePath = Path.resolve(__dirname, 'fs-data/out', fileName);
-  const expectedContent = Fs.readFileSync(expectedFilePath, 'utf8');
+  const expectedContent = Fs.readFileSync(expectedFilePath, 'utf8').trim();
 
   const actualChunks = [];
   const expectedChunks = [];
