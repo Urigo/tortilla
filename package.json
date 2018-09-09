@@ -63,7 +63,7 @@
     "@types/tmp": "0.0.33",
     "commander": "2.18.0",
     "fs-extra": "7.0.0",
-    "handlebars": "4.0.11",
+    "handlebars": "4.0.12",
     "i18next": "11.7.0",
     "inquirer": "6.1.0",
     "minimist": "1.2.0",
