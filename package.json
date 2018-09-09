@@ -55,7 +55,7 @@
   "dependencies": {
     "@types/fs-extra": "5.0.4",
     "@types/handlebars": "4.0.39",
-    "@types/i18next": "8.4.4",
+    "@types/i18next": "8.4.5",
     "@types/inquirer": "0.0.42",
     "@types/minimist": "1.2.0",
     "@types/node": "9.6.27",
