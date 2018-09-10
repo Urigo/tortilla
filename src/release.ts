@@ -282,7 +282,7 @@ function diffRelease(
   };
 
   // Exclude manual view files because we already have templates
-  argv.push('--', '.', "':!.tortilla/manuals/views'", "'README.md'");
+  argv.push('--', '.', "':!.tortilla/manuals/views'", "':!README.md'");
 
   // Exclude submodules Tortilla files completely
   Submodule.getFSNodes({ cwd: sourceDir }).forEach(({ file }) => {
@@ -386,7 +386,7 @@ function createDiffReleasesRepo(...tags) {
     Fs.copySync(Paths.git.resolve(), destinationPaths.git.resolve(), {
       filter(filePath) {
         // Exclude .git/.tortilla
-        return filePath.split('/').indexOf('.tortilla') === -1;
+        return !/\.git\/\.tortilla/.test(filePath);
       },
     });
 
@@ -419,9 +419,10 @@ function createDiffReleasesRepo(...tags) {
       Fs.removeSync(subPaths.git.resolve());
     });
 
-    // Removing tortilla related files which are irrelevant for diff
+    // Removing views which are irrelevant to diff. It's much more comfortable to view
+    // the templates instead
     Fs.removeSync(destinationPaths.readme);
-    Fs.removeSync(destinationPaths.tortillaDir);
+    Fs.removeSync(destinationPaths.manuals.views);
     Fs.removeSync(destinationPaths.gitModules);
     Fs.removeSync(destinationPaths.git.resolve());
 
