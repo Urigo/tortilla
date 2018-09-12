@@ -43,7 +43,61 @@ Program
   .description('Clone a Tortilla project')
   .action((url, out) => {
     Essentials.clone(url, out)
-  });
+  })
+
+// Program
+//   .command('push <remote>')
+//   .description('Push changes to repo')
+//   .action((remote) => {
+
+//   })
+
+Program
+  .command('log')
+  .description('git log')
+  .allowUnknownOption(true)
+  .action(() => {
+    Git.print(['log', ...process.argv.slice(3)])
+  })
+
+Program
+  .command('continue')
+  .description('git rebase --continue')
+  .action(() => {
+    Git.print(['rebase', '--continue'])
+  })
+
+Program
+  .command('abort')
+  .description('git rebase --abort')
+  .action(() => {
+    Git.print(['rebase', '--abort'])
+  })
+
+Program
+  .command('add <...files>')
+  .description('git add')
+  .action((files) => {
+    Git.print(['add', files])
+  })
+
+program
+  .command('reset <...files>')
+  .description('git reset')
+  .action((files) => {
+    Git.print(['reset', files])
+  })
+
+Program
+  .command('amend')
+  .description('git commit --amend')
+  .action(() => {
+    Git.print(['commit', '--amend'], {
+      env: {
+        GIT_EDITOR: true
+      }
+    })
+  })
 
 Program
   .command('dump <command...>', 'Manage dump file')
