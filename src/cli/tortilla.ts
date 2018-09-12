@@ -4,6 +4,7 @@ import * as Program from 'commander';
 import * as semver from 'semver';
 import * as Pack from '../../package.json';
 import { Essentials } from '../essentials';
+import { Git } from '../git';
 import { localStorage as LocalStorage } from '../local-storage';
 
 if (!semver.gt(process.version, '6.0.0')) {
@@ -39,18 +40,26 @@ Program
   });
 
 Program
+  .command('remote')
+  .description('git remote')
+  .allowUnknownOption(true)
+  .action(() => {
+    Git.print(['remote', ...process.argv.slice(3)])
+  })
+
+Program
   .command('clone <url> [out]')
   .description('Clone a Tortilla project')
   .action((url, out) => {
     Essentials.clone(url, out)
   })
 
-// Program
-//   .command('push <remote>')
-//   .description('Push changes to repo')
-//   .action((remote) => {
-
-//   })
+Program
+  .command('push [remote]')
+  .description('Push changes to repo')
+  .action((remote) => {
+    Essentials.push(remote)
+  })
 
 Program
   .command('log')
@@ -81,7 +90,7 @@ Program
     Git.print(['add', files])
   })
 
-program
+Program
   .command('reset <...files>')
   .description('git reset')
   .action((files) => {

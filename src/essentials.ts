@@ -215,6 +215,11 @@ function cloneProject(url, out) {
   Git(['checkout', 'master'], { cwd: out })
 }
 
+// Will force push our changes to the provided remote, including branches and tags
+function pushChanges(remote = 'origin') {
+  Git.print(['push', remote, '--mirror'])
+}
+
 function overwriteTemplateFile(path, scope) {
   const templateContent = Fs.readFileSync(path, 'utf8');
   const viewContent = Handlebars.compile(templateContent)(scope);
@@ -226,4 +231,5 @@ export const Essentials = {
   clone: cloneProject,
   create: createProject,
   ensure: ensureTortilla,
+  push: pushChanges,
 };
