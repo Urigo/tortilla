@@ -119,9 +119,14 @@ function ensureTortilla(projectDir) {
   const cwd = projectPaths.resolve();
 
   // If tortilla is already initialized don't do anything
-  const isInitialized = localStorage.getItem('INIT');
-  if (isInitialized) {
-    return;
+  try {
+    const isInitialized = localStorage.getItem('INIT');
+    if (isInitialized) {
+      return;
+    }
+  }
+  catch (e) {
+    // TODO: Figure out why an error is thrown after reclone
   }
 
   const hookFiles = Fs.readdirSync(projectPaths.tortilla.hooks);
@@ -182,7 +187,8 @@ function cloneProject(url, out) {
 
   out = Path.resolve(Utils.cwd(), out)
 
-  Git.print(['clone', url, out])
+  // CWD might not exist and out is absolute anyways
+  Git.print(['clone', url, out], { cwd: '/' })
 
   ensureTortilla(out)
 
@@ -215,6 +221,21 @@ function cloneProject(url, out) {
   Git(['checkout', 'master'], { cwd: out })
 }
 
+// Will reclone the current project. By doing so, we will sync the most recent changes
+function recloneProject(remote = 'origin') {
+  const proceed = ReadlineSync.keyInYN([
+    '⚠ Warning ⚠',
+    'Recloning will sync your project with the most recent changes but will discard',
+    'the current git-state completely. Are you sure you would like to proceed?',
+  ].join('\n'))
+
+  if (!proceed) { return }
+
+  const url = Git(['remote', 'get-url', remote])
+  Fs.removeSync(Utils.cwd())
+  cloneProject(url, Utils.cwd())
+}
+
 // Will force push our changes to the provided remote, including branches and tags
 function pushChanges(remote = 'origin') {
   Git.print(['push', remote, '--mirror'])
@@ -229,6 +250,7 @@ function overwriteTemplateFile(path, scope) {
 
 export const Essentials = {
   clone: cloneProject,
+  reclone: recloneProject,
   create: createProject,
   ensure: ensureTortilla,
   push: pushChanges,

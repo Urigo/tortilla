@@ -1,3 +1,4 @@
+import * as Fs from 'fs-extra';
 import * as Minimist from 'minimist';
 import { LocalStorage } from 'node-localstorage';
 import { LocalCache } from './local-cache';
@@ -39,6 +40,9 @@ function createLocalStorage(cwd) {
 
   // If git dir exists use it as a local-storage dir
   if (Utils.exists(paths.git.resolve(), 'dir')) {
+    // If initialized a second time after the dir has been removed, LocalStorage would
+    // assume the dir exists based on cache, which is not necessarily true in some cases
+    Fs.ensureDirSync(paths.storage);
     localStorage = new LocalStorage(paths.storage);
   } else {
     localStorage = new LocalCache();

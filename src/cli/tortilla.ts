@@ -37,7 +37,7 @@ Program
     const localStorage = dir ? LocalStorage.create(dir) : LocalStorage;
     localStorage.assertTortilla();
     Essentials.ensure(dir);
-  });
+  })
 
 Program
   .command('remote')
@@ -52,6 +52,13 @@ Program
   .description('Clone a Tortilla project')
   .action((url, out) => {
     Essentials.clone(url, out)
+  })
+
+Program
+  .command('reclone [remote]')
+  .description('Reclone project')
+  .action((remote) => {
+    Essentials.reclone(remote)
   })
 
 Program
