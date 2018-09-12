@@ -39,6 +39,13 @@ Program
   });
 
 Program
+  .command('clone <url> [out]')
+  .description('Clone a Tortilla project')
+  .action((url, out) => {
+    Essentials.clone(url, out)
+  });
+
+Program
   .command('dump <command...>', 'Manage dump file')
   .command('manual <command...>', 'Manage manual files')
   .command('package <command...>', 'Manage package.json')

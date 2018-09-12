@@ -173,6 +173,48 @@ function ensureTortilla(projectDir) {
   }
 }
 
+// TODO: **Add tests**
+function cloneProject(url, out) {
+  if (!out) {
+    // git@github.com:srtucker22/chatty.git -> chatty
+    out = url.split('/').pop().split('.').shift()
+  }
+
+  out = Path.resolve(Utils.cwd(), out)
+
+  Git.print(['clone', url, out])
+
+  ensureTortilla(out)
+
+  // List all branches in origin
+  Git(['branch', '-a'], { cwd: out })
+    .split('\n')
+    .filter(Boolean)
+    .filter((remoteBranch) =>
+      /remotes\/origin\/[^\s]+$/.test(remoteBranch)
+    )
+    .map((remoteBranch) =>
+      remoteBranch.trim()
+    )
+    .map((remoteBranch) =>
+      remoteBranch.split('remotes/origin/').pop()
+    )
+    .forEach((remoteBranch) => {
+      const branchName = remoteBranch.split('/').pop()
+
+      // Create all branches
+      try {
+        Git(['checkout', '-b', branchName], { cwd: out })
+      }
+      catch (e) {
+        // Branch already exists. I don't care
+      }
+    })
+
+  // Switch back to the original branch
+  Git(['checkout', 'master'], { cwd: out })
+}
+
 function overwriteTemplateFile(path, scope) {
   const templateContent = Fs.readFileSync(path, 'utf8');
   const viewContent = Handlebars.compile(templateContent)(scope);
@@ -181,6 +223,7 @@ function overwriteTemplateFile(path, scope) {
 }
 
 export const Essentials = {
+  clone: cloneProject,
   create: createProject,
   ensure: ensureTortilla,
 };
