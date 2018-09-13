@@ -361,6 +361,10 @@ Delegates [git-remote](https://git-scm.com/docs/git-remote).
 
 Delegates [git-reset](https://git-scm.com/docs/git-reset).
 
+**command:** `tortilla status [...args]`
+
+Delegates [git-status](https://git-scm.com/docs/git-status).
+
 ### tortilla-dump CLI
 
 **command:** `tortilla dump create [out]`

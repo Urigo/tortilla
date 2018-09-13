@@ -105,6 +105,13 @@ Program
   })
 
 Program
+  .command('status [...args]')
+  .description('git status')
+  .action((args) => {
+    Git.print(['status', args])
+  })
+
+Program
   .command('amend')
   .description('git commit --amend')
   .action(() => {

@@ -119,14 +119,9 @@ function ensureTortilla(projectDir) {
   const cwd = projectPaths.resolve();
 
   // If tortilla is already initialized don't do anything
-  try {
-    const isInitialized = localStorage.getItem('INIT');
-    if (isInitialized) {
-      return;
-    }
-  }
-  catch (e) {
-    // TODO: Figure out why an error is thrown after reclone
+  const isInitialized = localStorage.getItem('INIT');
+  if (isInitialized) {
+    return;
   }
 
   const hookFiles = Fs.readdirSync(projectPaths.tortilla.hooks);
@@ -187,8 +182,7 @@ function cloneProject(url, out) {
 
   out = Path.resolve(Utils.cwd(), out)
 
-  // CWD might not exist and out is absolute anyways
-  Git.print(['clone', url, out], { cwd: '/' })
+  Git.print(['clone', url, out])
 
   ensureTortilla(out)
 
@@ -238,6 +232,14 @@ function recloneProject(remote = 'origin') {
 
 // Will force push our changes to the provided remote, including branches and tags
 function pushChanges(remote = 'origin') {
+  const proceed = ReadlineSync.keyInYN([
+    '⚠ Warning ⚠',
+    'Pushing your changes will override the entire hosted project.',
+    'Are you sure you would like to proceed?',
+  ].join('\n'))
+
+  if (!proceed) { return }
+
   Git.print(['push', remote, '--mirror'])
 }
 
