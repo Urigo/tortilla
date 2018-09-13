@@ -283,10 +283,11 @@ Once you have it installed you can go ahead and create a new Tortilla project:
 
 This command will initialize a new Tortilla project called `my-tutorial` with an initial commit message of `How to create my app`.
 
-After uploading this project and cloning it, be sure to initialize Tortilla so it can work properly:
+To clone the project, use the following command:
 
-    $ git clone git@github.com:John/my-tutorial.git
-    $ tortilla init my-tutorial
+    $ tortilla clone git@github.com:John/my-tutorial.git
+
+You shouldn't be using git as Tortilla exposes all the necessary commands for it to work and contains additional logic and restrictions that will ensure that it operates as expected.
 
 A manual page for the usage of Tortilla's CLI tool can be brought any time by typing the following:
 
@@ -308,6 +309,26 @@ See:
 
 ### tortilla CLI
 
+**command:** `tortilla abort`
+
+Calls [git rebase --abort](https://git-scm.com/docs/git-rebase).
+
+**command:** `tortilla add <...files>`
+
+Delegates [git-add](https://git-scm.com/docs/git-add).
+
+**command:** `tortilla amend <...args>`
+
+Calls [git commit --amend](https://git-scm.com/docs/git-commit).
+
+**command:** `tortilla clone <url> [path]`
+
+Clones the given repo URL into specified path, just like git-clone. In addition to that, Tortilla will also initialize its essentials. It's recommended to use this command rather that raw `git clone` as it will prevent a lot of unexpected behaviors.
+
+**command:** `tortilla continue`
+
+Calls [git rebase --continue](https://git-scm.com/docs/git-rebase).
+
 **command:** `tortilla create [name]`
 
 Creates a new Tortilla project with the provided name.
@@ -319,6 +340,26 @@ Creates a new Tortilla project with the provided name.
 **command:** `tortilla init [name]`
 
 Initializes Tortilla essentials in the provided project.
+
+**command:** `tortilla log <...args>`
+
+Delegates [git-log](https://git-scm.com/docs/git-log).
+
+**command:** `tortilla push [remote]`
+
+Calls `git push --mirror` which will clone the local repo into the host's repo. Note that previous references still exist on the host even if not accessible through UI, but still, use with caution!
+
+**command:** `tortilla reclone`
+
+Will reclone the current project which we're at and will sync the most recent changes be doing so. Be cautious! As this will override your git state completely. A warning prompt will be shown before proceeding.
+
+**command:** `tortilla remote <...args>`
+
+Delegates [git-remote](https://git-scm.com/docs/git-remote).
+
+**command:** `tortilla reset <...files>`
+
+Delegates [git-reset](https://git-scm.com/docs/git-reset).
 
 ### tortilla-dump CLI
 
