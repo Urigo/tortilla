@@ -303,7 +303,8 @@ function diffRelease(
   tmp2Dir.removeCallback();
 
   // If the right arguments were specified we could receive the diff as a string
-  return result.output && result.output.join('');
+  // Remove trailing white space so patch can be applied
+  return result.output && result.output.join('').replace(/ +\n/g, '\n')
 }
 
 // Creates the releases diff repo in a temporary dir. The result will be a path for the

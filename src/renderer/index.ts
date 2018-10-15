@@ -45,6 +45,9 @@ function renderTemplateFile(templatePath, scope) {
 
 // Render provided template
 function renderTemplate(template, scope) {
+  // Remove trailing white-space
+  template = template.replace(/ *\n/g, '\n')
+
   // Template can either be a string or a compiled template object
   if (typeof template === 'string') {
     template = handlebars.compile(template);
