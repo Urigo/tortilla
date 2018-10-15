@@ -298,9 +298,15 @@ function buildRelease(dump: any, releaseVersion: string, branchName?: string) {
     Git(['init']);
 
     diffs.forEach((diff) => {
-      Git(['apply'], {
-        input: diff
-      });
+      try {
+        Git(['apply'], {
+          input: diff
+        });
+      } catch (e) {
+        e.message += ` (version ${releaseVersion})`
+
+        throw e
+      }
     });
 
     Git(['add', '.']);
