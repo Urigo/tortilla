@@ -45,13 +45,11 @@ function renderTemplateFile(templatePath, scope) {
 
 // Render provided template
 function renderTemplate(template, scope) {
-  // Remove trailing white-space
-  template = template.replace(/ *\n/g, '\n')
-
   // Template can either be a string or a compiled template object
   if (typeof template === 'string') {
     template = handlebars.compile(template);
   }
+
   scope = scope || {};
 
   let viewDir;
@@ -69,7 +67,8 @@ function renderTemplate(template, scope) {
     // resolve function below still won't work
     (handlebars as any).resolve = resolvePath.bind(null, viewDir);
 
-    return template(scope);
+    // Remove trailing white-space
+    return template(scope).replace(/ *\n/g, '\n');
   } finally {
     // Either if an error was thrown or not, unbind it
     (handlebars as any).resolve = oldResolve;
