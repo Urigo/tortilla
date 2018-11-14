@@ -56,7 +56,8 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   ]).split('\n')
     .filter(Boolean)
     .map((line) =>
-      line.match(/^([^(]+)  \(.*tag: ([^@]+@\d+\.\d+\.\d+).*\)$/)
+      line.match(/^([^(]+)  \(.*tag: ([^@]+@\d+\.\d+\.\d+).*\)$/) ||
+      line.match(/^([^(]+)  \(.*tag: ([^@]+@next).*\)$/)
     )
     .filter(Boolean)
     .map(([str, date, name]) => ({
