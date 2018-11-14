@@ -228,12 +228,12 @@ function diffReleases(dump: string|object, srcTag: string, dstTag: string) {
     dstBranchName = null;
   }
 
-  if (semver.eq(srcReleaseVersion, dstReleaseVersion)) {
+  if (semverEq(srcReleaseVersion, dstReleaseVersion)) {
     return '';
   }
 
   // Test result will be used later on
-  const reversed = semver.gt(srcReleaseVersion, dstReleaseVersion)
+  const reversed = semverGt(srcReleaseVersion, dstReleaseVersion)
 
   if (reversed) {
     let temp;
@@ -359,6 +359,24 @@ function postTransformDiff(diff) {
       /--- a\/(.+)\n\+\+\+ b\/(.+)\n@@ -1 \+1 @@\n-__tortilla_bin__\n\+__tortilla_bin__/g,
       'Binary files a/$1 and b/$2 differ'
     )
+}
+
+// Add vNext to semver.eq()
+function semverEq(src, dst) {
+  if (src === 'next' && dst === 'next') { return true }
+  if (src === 'next') { return false }
+  if (dst === 'next') { return false }
+
+  return semver.eq(src, dst)
+}
+
+// Add vNext to semver.gt()
+function semverGt(src, dst) {
+  if (src === 'next' && dst === 'next') { return false }
+  if (src === 'next') { return true }
+  if (dst === 'next') { return false }
+
+  return semver.gt(src, dst)
 }
 
 export const Dump = {
