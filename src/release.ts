@@ -123,7 +123,7 @@ async function bumpRelease(releaseType, options) {
     };
   }
   else {
-    currentRelease = getCurrentRelease();
+    currentRelease = getCurrentRelease(true);
 
     // Increase release type
     switch (releaseType) {
@@ -508,8 +508,8 @@ function printCurrentRelease() {
 
 // Gets the current release based on the latest release tag
 // e.g. if we have the tags 'master@0.0.1', 'master@0.0.2' and 'master@0.1.0' this method
-// will return { major: 0, minor: 1, patch: 0 }
-function getCurrentRelease() {
+// will return { major: 0, minor: 1, patch: 0, next: false }
+function getCurrentRelease(skipNext = false) {
   // Return potential release, if defined
   const potentialRelease = LocalStorage.getItem('POTENTIAL_RELEASE');
 
@@ -517,13 +517,35 @@ function getCurrentRelease() {
     return JSON.parse(potentialRelease);
   }
 
-  // If release was yet to be released, assume this is a null release
-  return getAllReleases()[0] || {
-    major: 0,
-    minor: 0,
-    patch: 0,
-    next: false,
-  };
+  const allReleases = getAllReleases();
+  let currentRelease = allReleases.shift();
+
+  // If version was yet to be released, assume this is a null version
+  if (!currentRelease) {
+    return {
+      major: 0,
+      minor: 0,
+      patch: 0,
+      next: false,
+    };
+  }
+
+  // Skip next if we asked to and if necessary
+  if (skipNext && currentRelease.next) {
+    currentRelease = allReleases.shift();
+  }
+
+  // No version before next
+  if (!currentRelease) {
+    return {
+      major: 0,
+      minor: 0,
+      patch: 0,
+      next: false,
+    };
+  }
+
+  return currentRelease;
 }
 
 function getAllReleasesOfAllBranches(path = null) {

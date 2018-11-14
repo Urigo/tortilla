@@ -84,10 +84,10 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@1.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@1.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should bump a minor version', function () {
@@ -96,10 +96,10 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@0.1.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@0.1.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should bump a patch version', function () {
@@ -108,10 +108,10 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@0.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@0.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should bump to next version', function () {
@@ -120,10 +120,10 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@next']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@next']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should override next version', function () {
@@ -133,16 +133,16 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@next']);
-      expect(tagExists).toThrowError(Error);
+      expect(tagExists).toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@next']);
-      expect(tagExists).toThrowError(Error);
+      expect(tagExists).toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@0.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@0.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     })
 
     it('should bump a major, minor and patch versions', function () {
@@ -153,22 +153,22 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@1.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@1.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@1.1.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@1.1.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should bump a version for all step tags', function () {
@@ -183,19 +183,19 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@step1@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@step2@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@step3@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should change the prefix of the release based on the active branch', function () {
@@ -212,19 +212,19 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'test@root@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'test@step1@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'test@step2@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'test@step3@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'test@1.1.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should be able to handle multiple bumps for the same version type', function () {
@@ -237,34 +237,34 @@ describe('Release', () => {
       let tagExists;
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@0.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@0.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@0.1.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@0.1.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@1.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@1.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@2.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@2.0.0']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@root@2.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
 
       tagExists = context.git.bind(context, ['rev-parse', 'master@2.0.1']);
-      expect(tagExists).not.toThrowError(Error);
+      expect(tagExists).not.toThrowError(/(.|\n)*/);
     });
 
     it('should create a diff branch whose commits represent the releases', function () {
