@@ -112,24 +112,36 @@ async function promptAndHandleSubmodules(listSubmodules) {
 async function bumpRelease(releaseType, options) {
   options = options || {};
 
-  const currentRelease = getCurrentRelease();
+  let currentRelease;
 
-  // Increase release type
-  switch (releaseType) {
-    case 'major':
-      currentRelease.major++;
-      currentRelease.minor = 0;
-      currentRelease.patch = 0;
-      break;
-    case 'minor':
-      currentRelease.minor++;
-      currentRelease.patch = 0;
-      break;
-    case 'patch':
-      currentRelease.patch++;
-      break;
-    default:
-      throw Error('Provided release type must be one of "major", "minor" or "patch"');
+  if (releaseType === 'next') {
+    currentRelease = {
+      major: 0,
+      minor: 0,
+      patch: 0,
+      next: true,
+    };
+  }
+  else {
+    currentRelease = getCurrentRelease();
+
+    // Increase release type
+    switch (releaseType) {
+      case 'major':
+        currentRelease.major++;
+        currentRelease.minor = 0;
+        currentRelease.patch = 0;
+        break;
+      case 'minor':
+        currentRelease.minor++;
+        currentRelease.patch = 0;
+        break;
+      case 'patch':
+        currentRelease.patch++;
+        break;
+      default:
+        throw Error('Provided release type must be one of "major", "minor", "patch" or "next"');
+    }
   }
 
   const listSubmodules = Submodule.list();
@@ -154,6 +166,9 @@ async function bumpRelease(releaseType, options) {
       }
     }
   }
+
+  // Since 'next' release is weakly held, it should be overridden by the given release
+  deleteNextReleaseTags();
 
   try {
     // Store potential release so it can be used during rendering
@@ -507,6 +522,7 @@ function getCurrentRelease() {
     major: 0,
     minor: 0,
     patch: 0,
+    next: false,
   };
 }
 
@@ -518,9 +534,13 @@ function getAllReleasesOfAllBranches(path = null) {
     .filter(Boolean)
     // Filter all the release tags which are proceeded by their release
     .filter((tagName) => {
-      const pattern = /^[^@]+@\d+\.\d+\.\d+$/;
+      const pattern1 = /^[^@]+@\d+\.\d+\.\d+$/;
+      const pattern2 = /^[^@]+@next$/;
 
-      return tagName.match(pattern);
+      return (
+        tagName.match(pattern1) ||
+        tagName.match(pattern2)
+      );
     })
     // Map all the release strings
     .map((tagName) => {
@@ -533,12 +553,12 @@ function getAllReleasesOfAllBranches(path = null) {
     })
     // Put the latest release first
     .sort((a, b) => (
+      b.deformatted.next ? 1 : a.deformatted.next ? -1 :
       (b.deformatted.major - a.deformatted.major) ||
       (b.deformatted.minor - a.deformatted.minor) ||
       (b.deformatted.patch - a.deformatted.patch)
     ));
 }
-
 // Gets a list of all the releases represented as JSONs e.g.
 // [{ major: 0, minor: 1, patch: 0 }]
 function getAllReleases(path = null) {
@@ -551,9 +571,13 @@ function getAllReleases(path = null) {
     .filter(Boolean)
     // Filter all the release tags which are proceeded by their release
     .filter((tagName) => {
-      const pattern = new RegExp(`${branch}@\\d+\\.\\d+\\.\\d+`);
+      const pattern1 = new RegExp(`^${branch}@\\d+\\.\\d+\\.\\d+`);
+      const pattern2 = new RegExp(`${branch}@next$`);
 
-      return tagName.match(pattern);
+      return (
+        tagName.match(pattern1) ||
+        tagName.match(pattern2)
+      )
     })
     // Map all the release strings
     .map((tagName) => tagName.split('@').pop())
@@ -561,6 +585,7 @@ function getAllReleases(path = null) {
     .map((releaseString) => deformatRelease(releaseString))
     // Put the latest release first
     .sort((a, b) => (
+      b.next ? 1 : a.next ? -1 :
       (b.major - a.major) ||
       (b.minor - a.minor) ||
       (b.patch - a.patch)
@@ -568,8 +593,12 @@ function getAllReleases(path = null) {
 }
 
 // Takes a release json and puts it into a pretty string
-// e.g. { major: 1, minor: 1, patch: 1 } -> '1.1.1'
+// e.g. { major: 1, minor: 1, patch: 1, next: false } -> '1.1.1'
 function formatRelease(releaseJson) {
+  if (releaseJson.next) {
+    return 'next';
+  }
+
   return [
     releaseJson.major,
     releaseJson.minor,
@@ -578,14 +607,24 @@ function formatRelease(releaseJson) {
 }
 
 // Takes a release string and puts it into a pretty json object
-// e.g. '1.1.1' -> { major: 1, minor: 1, patch: 1 }
+// e.g. '1.1.1' -> { major: 1, minor: 1, patch: 1, next: false }
 function deformatRelease(releaseString) {
+  if (releaseString === 'next') {
+    return {
+      major: 0,
+      minor: 0,
+      patch: 0,
+      next: true,
+    };
+  }
+
   const releaseSlices = releaseString.split('.').map(Number);
 
   return {
     major: releaseSlices[0],
     minor: releaseSlices[1],
     patch: releaseSlices[2],
+    next: false,
   };
 }
 
@@ -620,6 +659,21 @@ function createReleaseTag(tag, dstHash, message?) {
   Git(['checkout', srcHash]);
   // Restore renovate.json and .travis.yml
   Git(['checkout', '.']);
+}
+
+// Delete all @next tag releases of the current branch.
+// e.g. master@next, master@root@next, master@step1@next
+function deleteNextReleaseTags() {
+  const branch = Git.activeBranchName();
+
+  Git(['tag', '-l']).split('\n').filter(Boolean).forEach((tagName) => {
+    if (
+      new RegExp(`^${branch}@`).test(tagName) &&
+      new RegExp(`@next$`).test(tagName)
+    ) {
+      Git(['tag', '--delete', tagName]);
+    }
+  });
 }
 
 export const Release = {

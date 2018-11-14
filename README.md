@@ -421,7 +421,7 @@ For more information see the [releases](#releases) section.
 
 **command:** `tortilla release bump <type>`
 
-Bumps the current release of the tutorial. This will create some new release tags accordingly and will update the associated history branch. The provided type represents a [semver version type](http://semver.org/) (major, minor and patch) we would like to bump.
+Bumps the current release of the tutorial. This will create some new release tags accordingly and will update the associated history branch. The provided type represents a [semver version type](http://semver.org/) (major, minor and patch) we would like to bump. We can also specify `next` as the release number which will then store a weak reference to the potential upcoming version; this means that by the time we release another `next` version or another stable release, the most recent `next` version should be overridden.
 
 - *option:* `-m, --message [message]` - A message describing the newly created release. If not provided, and editor will be opened instead where we can type a full document.
 
