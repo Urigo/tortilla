@@ -114,6 +114,37 @@ describe('Release', () => {
       expect(tagExists).not.toThrowError(Error);
     });
 
+    it('should bump to next version', function () {
+      context.tortilla(['release', 'bump', 'next', '-m', 'next version test']);
+
+      let tagExists;
+
+      tagExists = context.git.bind(context, ['rev-parse', 'master@root@next']);
+      expect(tagExists).not.toThrowError(Error);
+
+      tagExists = context.git.bind(context, ['rev-parse', 'master@next']);
+      expect(tagExists).not.toThrowError(Error);
+    });
+
+    it('should override next version', function () {
+      context.tortilla(['release', 'bump', 'next', '-m', 'next version test']);
+      context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
+
+      let tagExists;
+
+      tagExists = context.git.bind(context, ['rev-parse', 'master@root@next']);
+      expect(tagExists).toThrowError(Error);
+
+      tagExists = context.git.bind(context, ['rev-parse', 'master@next']);
+      expect(tagExists).toThrowError(Error);
+
+      tagExists = context.git.bind(context, ['rev-parse', 'master@root@0.0.1']);
+      expect(tagExists).not.toThrowError(Error);
+
+      tagExists = context.git.bind(context, ['rev-parse', 'master@0.0.1']);
+      expect(tagExists).not.toThrowError(Error);
+    })
+
     it('should bump a major, minor and patch versions', function () {
       context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
@@ -338,6 +369,7 @@ describe('Release', () => {
   describe('current()', function () {
     it('should get the current version', function () {
       context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+      context.tortilla(['release', 'bump', 'next', '-m', 'next version test']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
       context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
 
