@@ -465,36 +465,6 @@ function createDiffReleasesRepo(...tags) {
   ]).shift();
 }
 
-// Will get rid of files that we don't wanna show on the diff, like tortilla essentials
-// and submodules .git dir
-function filterDiffFiles(dir, tag, submodulesUrls) {
-  const dirPaths = Paths.resolveProject(dir);
-  const submodulesNames = Object.keys(submodulesUrls);
-
-  // Dir will be initialized with git at master by default
-  Submodule.getFSNodes({
-    whitelist: submodulesNames,
-    revision: 'master',
-    cwd: dir,
-  }).forEach(({ hash, file }, ...args) => {
-    const url = submodulesUrls[file];
-    const subDir = `${dir}/${file}`;
-    const subPaths = Paths.resolveProject(subDir);
-
-    Git(['clone', url, file], { cwd: dir });
-    Git(['checkout', hash], { cwd: subDir });
-
-    Fs.removeSync(subPaths.readme);
-    Fs.removeSync(subPaths.tortillaDir);
-    Fs.removeSync(subPaths.git.resolve());
-  });
-
-  // Removing tortilla related files which are irrelevant for diff
-  Fs.removeSync(dirPaths.readme);
-  Fs.removeSync(dirPaths.tortillaDir);
-  Fs.removeSync(dirPaths.gitModules);
-}
-
 function printCurrentRelease() {
   const currentRelease = getCurrentRelease();
   const formattedRelease = formatRelease(currentRelease);
