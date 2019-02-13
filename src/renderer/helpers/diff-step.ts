@@ -79,12 +79,21 @@ Renderer.registerHelper('diffStep', (step, options) => {
   }
 
   const stepHash = stepData[0];
-  let stepMessage = stepData.slice(1).join(' ');
-  const commitReference = Renderer.resolve('~/commit', stepHash);
+  let commitReference
+
+  // URL composition should be done in relation to the submodule
+  if (hash.module) {
+    commitReference = Utils.tempCwd(() => {
+      return Renderer.resolve('~/commit', stepHash);
+    }, cwd);
+  }
+  else {
+    commitReference = Renderer.resolve('~/commit', stepHash);
+  }
 
   // Translate step message, if at all
-  stepMessage = Renderer.call('stepMessage', {
-    commitMessage: stepMessage,
+  const stepMessage = Renderer.call('stepMessage', {
+    commitMessage: stepData.slice(1).join(' '),
   });
 
   let stepTitle;

@@ -1,6 +1,8 @@
 import { tortillaBeforeAll, tortillaBeforeEach } from './tests-helper';
 import { Renderer } from '../src/renderer';
 import * as Fs from 'fs-extra';
+import * as Path from 'path';
+import * as Tmp from 'tmp';
 import { Paths } from '../src/paths';
 
 let context: any = {};
@@ -206,6 +208,44 @@ describe('Renderer', () => {
       });
 
       expect(view).toEqual('./step2.md');
+    });
+
+    it('should resolve path in relation to the current submodule', function() {
+      const fooModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+
+      context.createRepo(fooModuleDir);
+      context.tortilla(['submodule', 'add', fooModuleDir]);
+      context.tortilla(['step', 'edit', '--root']);
+
+      const fooPath = context.exec('realpath', [Path.basename(fooModuleDir)]);
+      const fooPack = Fs.readJsonSync(`${fooPath}/package.json`);
+      fooPack.repository = {
+        type: 'git',
+        url: 'https://user@github.com/user/foo.git',
+      };
+      Fs.writeJsonSync(`${fooPath}/package.json`, fooPack);
+      context.git(['add', 'package.json'], { cwd: fooPath });
+      context.git(['commit', '--amend'], { cwd: fooPath, env: { GIT_EDITOR: true } });
+      context.git(['push', 'origin', 'master', '-f'], { cwd: fooPath });
+      context.git(['tag', 'master@next'], { cwd: fooPath });
+      context.git(['push', 'origin', '--tags'], { cwd: fooPath });
+
+      context.git(['add', Path.basename(fooModuleDir)]);
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.tortilla(['submodule', 'reset', Path.basename(fooModuleDir)]);
+
+      Renderer.registerHelper('testHelper', function() {
+        return context.tempCwd(() => {
+          return Renderer.resolve('~/commit/abc0xyz');
+        }, fooPath);
+      });
+
+      const view = Renderer.renderTemplate(`{{{testHelper module="${Path.basename(fooModuleDir)}"}}}`, {
+        viewPath: '.tortilla/manuals/views/step1.md'
+      });
+
+      expect(view).toEqual('https://github.com/user/foo/commit/abc0xyz');
     });
   });
 
