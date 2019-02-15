@@ -1,24 +1,25 @@
 import * as ChildProcess from 'child_process';
+import { EventEmitter } from 'events';
 import * as Fs from 'fs-extra';
 
 /**
  Contains general utilities.
  */
 
-let cwd: () => string;
+let cwdReturnValue: string;
 let git;
 let npm;
 let node;
 
 function init() {
   // Defaults to process's current working dir
-  let tempCwd = process.env.TORTILLA_CWD || process.cwd();
+  cwdReturnValue = process.env.TORTILLA_CWD || process.cwd();
 
   try {
-    tempCwd = ChildProcess.execFileSync('git', [
+    cwdReturnValue = ChildProcess.execFileSync('git', [
       'rev-parse', '--show-toplevel',
     ], {
-      cwd: tempCwd,
+      cwd: cwdReturnValue,
       stdio: ['pipe', 'pipe', 'ignore'],
     }).toString()
       .trim();
@@ -26,7 +27,7 @@ function init() {
     // If no git-exists nor git-failed use default value instead
   }
 
-// Setting all relative utils
+  // Setting all relative utils
   (exec as any).print = spawn;
   git = exec.bind(null, 'git');
   git.print = spawn.bind(null, 'git');
@@ -34,12 +35,13 @@ function init() {
   npm.print = spawn.bind(null, 'npm');
   node = exec.bind(null, 'node');
   node.print = spawn.bind(null, 'node');
-// It's better to have a getter rather than an explicit value otherwise
-// it might be reset
-  cwd = String.bind(null, tempCwd);
 }
 
 init();
+
+function cwd () {
+  return cwdReturnValue;
+}
 
 // Checks if one of the parent processes launched by the provided file and has
 // the provided arguments
@@ -444,6 +446,25 @@ function naturalSort(as, bs) {
   return b[i] ? -1 : 0;
 }
 
+// Temporarily changes CWD for child_process and then restores it at the end
+// of the execution. Useful for submodules. Will emit a 'cwdChange' event once
+// it happens to do so
+function setTempCwd(callback, tempCwd) {
+  const result = scopeEnv(() => {
+    init();
+    Utils.emit('cwdChange', tempCwd);
+
+    return callback();
+  }, {
+    TORTILLA_CWD: tempCwd
+  });
+
+  init();
+  Utils.emit('cwdChange', cwdReturnValue);
+
+  return result;
+}
+
 function log(...args) {
   console.log(...args);
 }
@@ -454,7 +475,7 @@ function debug(...args) {
   }
 }
 
-export const Utils = {
+export const Utils = Object.assign(new EventEmitter(), {
   cwd,
   exec,
   inspect,
@@ -480,6 +501,7 @@ export const Utils = {
   escapeBrackets,
   shCmd,
   naturalSort,
+  tempCwd: setTempCwd,
   log,
   debug,
-};
+});

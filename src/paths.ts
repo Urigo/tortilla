@@ -211,7 +211,7 @@ export function resolveProject(cwd: string): TortillaPaths {
     views: resolve(cwd, '.tortilla/manuals/views'),
   });
 
-  return cache[cwd] = resolveTree(cwd, {
+  const r = cache[cwd] = resolveTree(cwd, {
     tortillaDir: resolve(cwd, '.tortilla'),
     config: resolve(cwd, '.tortilla/config.js'),
     checkouts: resolve(cwd, '.tortilla/checkouts.json'),
@@ -229,6 +229,14 @@ export function resolveProject(cwd: string): TortillaPaths {
     resolveTree,
     resolveProject,
   });
+
+  return r;
 }
 
-export const Paths: TortillaPaths = resolveProject(Utils.cwd());
+// Clone is necessary otherwise the original cache might be accidentally modified
+export const Paths: TortillaPaths = {...resolveProject(Utils.cwd())};
+
+// The same instance of the exported Paths module should reference different values
+Utils.on('cwdChange', (cwd) => {
+  Object.assign(Paths, resolveProject(cwd));
+});

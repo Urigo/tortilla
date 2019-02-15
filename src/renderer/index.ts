@@ -240,7 +240,7 @@ function resolvePath(/* reserved path, user defined path */) {
   }
 
   const repository = Fs.readJsonSync(Paths.npm.package).repository;
-  let repositoryUrl = typeof repository === 'object' ? repository.url : repository
+  let repositoryUrl = typeof repository === 'object' ? repository.url : repository;
 
   // If no repository was defined, or
   // repository type is not git, or

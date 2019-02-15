@@ -32,23 +32,31 @@ import { Utils } from './utils';
     tortilla repo and not in the current repo where the process started running at.
  */
 
-export let localStorage: any;
+const cache = {};
 
 // Creates a new instance of local-storage
 function createLocalStorage(cwd) {
+  // LocalStorage instance creating involves FS operations which is a quiet heavy task.
+  // With the cache, we can save ourselves the extra work which will result in a visible
+  // performance boost
+  if (!process.env.TORTILLA_CACHE_DISABLED && cache[cwd]) {
+    return cache[cwd];
+  }
+
   const paths = cwd.resolve ? cwd : Paths.resolveProject(cwd);
 
+  let l;
   // If git dir exists use it as a local-storage dir
   if (Utils.exists(paths.git.resolve(), 'dir')) {
     // If initialized a second time after the dir has been removed, LocalStorage would
     // assume the dir exists based on cache, which is not necessarily true in some cases
     Fs.ensureDirSync(paths.storage);
-    localStorage = new LocalStorage(paths.storage);
+    l = new LocalStorage(paths.storage);
   } else {
-    localStorage = new LocalCache();
+    l = new LocalCache();
   }
 
-  return Utils.extend(localStorage, {
+  return cache[cwd] = Utils.extend(l, {
     create: createLocalStorage,
     assertTortilla,
   });
@@ -72,7 +80,39 @@ function assertTortilla(exists) {
   }
 }
 
-localStorage = createLocalStorage(Paths.resolve());
+export const localStorage: any = createLocalStorage(Paths.resolve());
+
+// The same instance of the exported LocalStorage module should reference a difference storage
+Utils.on('cwdChange', (cwd) => {
+  const l = createLocalStorage(cwd);
+  const descriptors = Object.getOwnPropertyDescriptors(l.__proto__);
+
+  Object.entries(descriptors).forEach(([key, descriptor]) => {
+    const delegator: PropertyDescriptor = {};
+
+    if ('configurable' in descriptor) { delegator.configurable = descriptor.configurable; }
+    if ('enumerable' in descriptor) { delegator.enumerable = descriptor.configurable; }
+    if ('writable' in descriptor) { delegator.writable = descriptor.configurable; }
+
+    if (descriptor.get) {
+      delegator.get = (...args) => {
+        return descriptor.get.apply(l, args);
+      };
+    }
+    if (descriptor.set) {
+      delegator.set = (...args) => {
+        return descriptor.set.apply(l, args);
+      };
+    }
+    if (typeof descriptor.value === 'function') {
+      delegator.value = (...args) => {
+        return descriptor.value.apply(l, args);
+      };
+    }
+
+    Object.defineProperty(localStorage, key, delegator);
+  });
+});
 
 (() => {
   if (require.main !== module) {
