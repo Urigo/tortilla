@@ -33,6 +33,10 @@ import { Utils } from './utils';
  */
 
 const cache = {};
+export const localStorage: any = {
+  create: createLocalStorage,
+  assertTortilla,
+};
 
 // Creates a new instance of local-storage
 function createLocalStorage(cwd) {
@@ -56,34 +60,12 @@ function createLocalStorage(cwd) {
     l = new LocalCache();
   }
 
-  return cache[cwd] = Utils.extend(l, {
-    create: createLocalStorage,
-    assertTortilla,
-  });
+  return cache[cwd] = l;
 }
 
-// Asserts if tortilla is initialized or not
-function assertTortilla(exists) {
-  const isInit = this.getItem('INIT');
-
-  if (exists && !isInit) {
-    throw Error([
-      'Tortilla essentials must be initialized!',
-      'Please run `$ tortilla init` before proceeding.',
-    ].join('\n'));
-  }
-
-  if (!exists && isInit) {
-    throw Error([
-      'Tortilla essentials are already initialized!',
-    ].join('\n'));
-  }
-}
-
-export const localStorage: any = createLocalStorage(Paths.resolve());
-
-// The same instance of the exported LocalStorage module should reference a difference storage
-Utils.on('cwdChange', (cwd) => {
+// Creates a new instance of local storage, and delegates all its method calls through the exported
+// object
+function delegateLocalStorage(cwd) {
   const l = createLocalStorage(cwd);
   const descriptors = Object.getOwnPropertyDescriptors(l.__proto__);
 
@@ -112,7 +94,29 @@ Utils.on('cwdChange', (cwd) => {
 
     Object.defineProperty(localStorage, key, delegator);
   });
-});
+}
+
+// Asserts if tortilla is initialized or not
+function assertTortilla(exists) {
+  const isInit = this.getItem('INIT');
+
+  if (exists && !isInit) {
+    throw Error([
+      'Tortilla essentials must be initialized!',
+      'Please run `$ tortilla init` before proceeding.',
+    ].join('\n'));
+  }
+
+  if (!exists && isInit) {
+    throw Error([
+      'Tortilla essentials are already initialized!',
+    ].join('\n'));
+  }
+}
+
+delegateLocalStorage(Paths.resolve());
+// The same instance of the exported LocalStorage module should reference a difference storage
+Utils.on('cwdChange', delegateLocalStorage);
 
 (() => {
   if (require.main !== module) {
