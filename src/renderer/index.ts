@@ -255,16 +255,25 @@ function resolvePath(/* reserved path, user defined path */) {
     // Remove USERNAME@githost.com prefix
     .replace(/[\w]+@/g, '');
 
-  const currentRelease = Release.format(Release.current());
+  let releaseTag
+  // First try to see if HEAD is referencing a release tag already. This is necessary
+  // if we're running executing the current template helper for a submodule
+  try {
+    releaseTag = Git(['describe', '--exact-match', 'HEAD']);
+  // If not, manually compose it. Necessary for the main git-module
+  } catch (e) {
+    const currentRelease = Release.format(Release.current());
 
-  // Any release is yet to exist
-  if (currentRelease === '0.0.0') {
-    return defaultPath;
+    // Any release is yet to exist
+    if (currentRelease === '0.0.0') {
+      return defaultPath;
+    }
+
+    releaseTag = `${Git.activeBranchName()}@${currentRelease}`;
   }
 
   // Compose branch path for current release tree
   // e.g. github.com/Urigo/Ionic2CLI-Meteor-Whatsapp/tree/master@0.0.1
-  const releaseTag = `${Git.activeBranchName()}@${currentRelease}`;
   const branchUrl = [repositoryUrl, 'tree', releaseTag].join('\/');
   const protocol = (branchUrl.match(/^.+\:\/\//) || [''])[0];
   // Using a / so we can use it with the 'path' module
