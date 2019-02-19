@@ -129,7 +129,7 @@ function updateDependencies(updatedDeps?) {
     if (headPackContent !== currPackContent) {
       // Picking the updated dependencies versions
       depsTypes.forEach((depsType) => {
-        if (!currPack[depsType]) {
+        if (!currPack[depsType] || !headPack[depsType]) {
           return;
         }
 
