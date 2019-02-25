@@ -1,5 +1,6 @@
 import * as Fs from 'fs-extra';
 import { Git } from './git';
+import { localStorage } from './local-storage';
 import { Manual } from './manual';
 import { Paths } from './paths';
 import { Step } from './step';
@@ -94,97 +95,117 @@ function updateDependencies(updatedDeps?) {
 
   Step.edit(steps);
 
-  while (Git.rebasing()) {
-    // Reading package.json content and ensuring it's formatted correctly
-    const packContent = Fs.readFileSync(Paths.npm.package).toString();
-    // Plucking indention
-    let indent: any = packContent.match(/\{\n([^"]+)/) || [];
-    // Default indention
-    indent = indent[1] || '\s\s';
+  let rebaseHooksDisabled;
+  try {
+    rebaseHooksDisabled = localStorage.getItem('REBASE_HOOKS_DISABLED');
+  } catch (e) {
+    rebaseHooksDisabled = '';
+  }
 
-    let currPackContent: any;
-    let headPackContent = currPackContent = packContent;
-    // Keep replacing conflict notations until we get both unresolved versions
-    for (
-      let newHeadPackContent, newCurrPackContent;
-      newHeadPackContent !== headPackContent &&
-      newCurrPackContent !== currPackContent;
-      newHeadPackContent = headPackContent.replace(Git.conflict, '$1'),
-        newCurrPackContent = currPackContent.replace(Git.conflict, '$2')
-    ) {
-      // Force initialization
-      if (!newHeadPackContent || !newCurrPackContent) {
-        continue;
-      }
+  try {
+    // We completely trust Tortilla to do its thing right now and we don't need any
+    // modifications to the commit messages
+    localStorage.setItem('REBASE_HOOKS_DISABLED', 1)
 
-      headPackContent = newHeadPackContent;
-      currPackContent = newCurrPackContent;
-    }
+    while (Git.rebasing()) {
+      // Reading package.json content and ensuring it's formatted correctly
+      const packContent = Fs.readFileSync(Paths.npm.package).toString();
+      // Plucking indention
+      let indent: any = packContent.match(/\{\n([^"]+)/) || [];
+      // Default indention
+      indent = indent[1] || '\s\s';
 
-    const headPack = JSON.parse(headPackContent);
-    const currPack = JSON.parse(currPackContent);
-    const depsTypes = ['dependencies', 'devDependencies', 'peerDependencies'];
-
-    // We have some conflicts to resolve
-    if (headPackContent !== currPackContent) {
-      // Picking the updated dependencies versions
-      depsTypes.forEach((depsType) => {
-        if (!currPack[depsType] || !headPack[depsType]) {
-          return;
+      let currPackContent: any;
+      let headPackContent = currPackContent = packContent;
+      // Keep replacing conflict notations until we get both unresolved versions
+      for (
+        let newHeadPackContent, newCurrPackContent;
+        newHeadPackContent !== headPackContent &&
+        newCurrPackContent !== currPackContent;
+        newHeadPackContent = headPackContent.replace(Git.conflict, '$1'),
+          newCurrPackContent = currPackContent.replace(Git.conflict, '$2')
+      ) {
+        // Force initialization
+        if (!newHeadPackContent || !newCurrPackContent) {
+          continue;
         }
 
-        Object.keys(headPack[depsType]).forEach((dep) => {
-          if (currPack[depsType][dep]) {
-            currPack[depsType][dep] = headPack[depsType][dep];
-          }
-        });
-      });
-    }
-
-    // Running a second update based on the provided manifest
-    Object.keys(updatedDeps).forEach((dep) => {
-      // Picking the updated dependencies versions
-      depsTypes.forEach((depsType) => {
-        if (!currPack[depsType]) {
-          return;
-        }
-
-        Object.keys(updatedDeps).forEach((dependencyName) => {
-          if (currPack[depsType][dependencyName]) {
-            currPack[depsType][dependencyName] = updatedDeps[dependencyName];
-          }
-        });
-      });
-    });
-
-    Fs.writeFileSync(Paths.npm.package, JSON.stringify(currPack, null, indent));
-
-    Git.print(['add', Paths.npm.package]);
-    Git.print(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-
-    // If this is root commit or a super-step, re-render the correlated manual
-    const commitMsg = Git.recentCommit(['--format=%s']);
-    const isSuperStep = !!Step.superDescriptor(commitMsg);
-
-    if (isSuperStep) {
-      Manual.render();
-    }
-
-    try {
-      Git.print(['rebase', '--continue']);
-    } catch (e) {
-      const modifiedFiles = Git(['diff', '--name-only'])
-        .split('\n')
-        .filter(Boolean);
-
-      // Checking if only package.json is both modified
-      const expectedConflict = modifiedFiles.length === 2 && modifiedFiles.every((file) => {
-        return file === 'package.json';
-      });
-
-      if (!expectedConflict) {
-        throw e;
+        headPackContent = newHeadPackContent;
+        currPackContent = newCurrPackContent;
       }
+
+      const headPack = JSON.parse(headPackContent);
+      const currPack = JSON.parse(currPackContent);
+      const depsTypes = ['dependencies', 'devDependencies', 'peerDependencies'];
+
+      // We have some conflicts to resolve
+      if (headPackContent !== currPackContent) {
+        // Picking the updated dependencies versions
+        depsTypes.forEach((depsType) => {
+          if (!currPack[depsType] || !headPack[depsType]) {
+            return;
+          }
+
+          Object.keys(headPack[depsType]).forEach((dep) => {
+            if (currPack[depsType][dep]) {
+              currPack[depsType][dep] = headPack[depsType][dep];
+            }
+          });
+        });
+      }
+
+      // Running a second update based on the provided manifest
+      Object.keys(updatedDeps).forEach((dep) => {
+        // Picking the updated dependencies versions
+        depsTypes.forEach((depsType) => {
+          if (!currPack[depsType]) {
+            return;
+          }
+
+          Object.keys(updatedDeps).forEach((dependencyName) => {
+            if (currPack[depsType][dependencyName]) {
+              currPack[depsType][dependencyName] = updatedDeps[dependencyName];
+            }
+          });
+        });
+      });
+
+      Fs.writeFileSync(Paths.npm.package, JSON.stringify(currPack, null, indent));
+      Git.print(['add', Paths.npm.package]);
+
+      // If this is root commit or a super-step, re-render the correlated manual
+      const commitMsg = Git.recentCommit(['--format=%s']);
+      const isSuperStep = !!Step.superDescriptor(commitMsg);
+
+      // If there are staged files, it's probably a conflict in the following step in
+      // we're not really in a super step
+      if (isSuperStep && !Git.stagedFiles().length) {
+        Manual.render();
+      }
+
+      try {
+        Git.print(['rebase', '--continue'], { env: { GIT_EDITOR: true } });
+      } catch (e) {
+        const modifiedFiles = Git(['diff', '--name-only'])
+          .split('\n')
+          .filter(Boolean);
+
+        // Checking if only package.json is both modified
+        const expectedConflict = modifiedFiles.length === 2 && modifiedFiles.every((file) => {
+          return file === 'package.json';
+        });
+
+        if (!expectedConflict) {
+          throw e;
+        }
+      }
+    }
+  } finally {
+    // Resume editing commit messages
+    if (rebaseHooksDisabled) {
+      localStorage.setItem('REBASE_HOOKS_DISABLED', rebaseHooksDisabled);
+    } else {
+      localStorage.removeItem('REBASE_HOOKS_DISABLED');
     }
   }
 }
