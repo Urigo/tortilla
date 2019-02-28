@@ -4,7 +4,6 @@ import * as Path from 'path';
 import { Git } from './git';
 import { localStorage as LocalStorage } from './local-storage';
 import { Paths } from './paths';
-import { Submodule } from './submodule';
 import { Utils } from './utils';
 
 // Get recent commit by specified arguments
@@ -147,10 +146,6 @@ function tagStep(message) {
   Git(['add', manualTemplatePath]);
 
   commitStep(step, message);
-
-  // Note that first we need to commit the new step and only then read the checkouts file
-  // so we can have an updated hash list
-  Submodule.ensure(step);
 
   // If we're in edit mode all the branches will be set after the rebase
   if (!Git.rebasing()) {

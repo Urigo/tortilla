@@ -107,8 +107,6 @@ export function superPickStep(hash) {
   Git(['am'], {
     input: fixedPatch,
   });
-
-  Submodule.ensure(newStep);
 }
 
 // Updates the branches referencing all super steps

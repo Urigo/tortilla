@@ -6,7 +6,6 @@ export interface TortillaPaths {
   resolveTree: (path: string) => object;
   resolveProject: (path: string) => TortillaPaths;
   config: string;
-  checkouts: string;
   locales: string;
   readme: string;
   renovate: string;
@@ -33,6 +32,7 @@ export interface TortillaPaths {
     hooks: string;
     rebaseApply: string;
     rebaseMerge: string;
+    modules: string;
     heads: {
       resolve: () => string;
       cherryPick: string;
@@ -195,6 +195,7 @@ export function resolveProject(cwd: string): TortillaPaths {
     hooks: resolve(cwd, '.git/hooks'),
     rebaseApply: resolve(cwd, '.git/rebase-apply'),
     rebaseMerge: resolve(cwd, '.git/rebase-merge'),
+    modules: resolve(cwd, '.git/modules'),
     heads: gitHeads,
     messages: gitMessages,
     refs: gitRefs,
@@ -214,7 +215,6 @@ export function resolveProject(cwd: string): TortillaPaths {
   const r = cache[cwd] = resolveTree(cwd, {
     tortillaDir: resolve(cwd, '.tortilla'),
     config: resolve(cwd, '.tortilla/config.js'),
-    checkouts: resolve(cwd, '.tortilla/checkouts.json'),
     locales: resolve(cwd, '.tortilla/locales'),
     readme: resolve(cwd, 'README.md'),
     renovate: resolve(cwd, 'renovate.json'),

@@ -135,14 +135,21 @@ function ensureTortilla(projectDir) {
     // Place an executor in the project's git hooks
     const hook = [
       '',
-      '# Tortilla',
+      '### TORTILLA ###',
       'cd .',
       `node ${handlerPath} "$@"`,
     ].join('\n');
 
     // If exists, append logic
     if (Utils.exists(hookPath, 'file')) {
-      Fs.appendFileSync(hookPath, `\n${hook}`);
+      let contents = Fs.readFileSync(hookPath).toString()
+
+      // Don't hook logic if already initialized
+      if (!/\n### TORTILLA ###\n/.test(contents)) {
+        contents += `\n${hook}`
+
+        Fs.writeFileSync(hookPath, contents);
+      }
     } else { // Else, create file
       Fs.writeFileSync(hookPath, `#!/bin/sh${hook}`);
     }
@@ -160,8 +167,16 @@ function ensureTortilla(projectDir) {
   }
 
   // Ensure submodules are initialized
-  Git.print(['submodule', 'init'], { cwd });
-  Git.print(['submodule', 'update', '--recursive', '--remote'], { cwd });
+  Submodule.list().forEach((submodule) => {
+    Submodule.update(submodule)
+
+    // If hash not found
+    if (
+      Git(['diff', '--name-only']).split('\n').filter(Boolean).includes(submodule)
+    ) {
+      Submodule.reset(submodule)
+    }
+  })
 
   // Mark tortilla flag as initialized
   localStorage.setItem('INIT', true);

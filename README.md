@@ -40,7 +40,6 @@ See:
   - [release-tags](#release-tags)
   - [history-branches](#history-branches)
 - [submodules](#submodules)
-  - [checkouts](#checkouts)
 
 ### Steps
 
@@ -252,25 +251,6 @@ Often times, we would like to have a single repository where we include all the 
 
 **Related CLI:** [tortilla-submodule CLI](#tortilla-submodule-cli)
 
-#### Checkouts
-
-There would be cases where submodule's steps won't be correlated to the same step indices in the main repository; E.g. in manual file for step 3 the client would be set to step 1 and the server would be et to step 2. In-order to specify which steps should be checked out in the submodules for each step in the main repository, we would need to specify a `checkouts.json` file under the `.tortilla` directory. Here's an example checkouts file:
-
-```json
-{
-  "server": {
-    "head": "master",
-    "steps": ["root", "root", 1, 1]
-  },
-  "client": {
-    "head": "master",
-    "steps": ["root", 1, 1, 2]
-  }
-}
-```
-
-Each key represents a submodule name. The `head` property represents which branch should be checked out before looking for the steps at each submodule, and the `steps` property represents the steps that should be checked out at the submodule at each step at the main repository (e.g. "root" would be checked out at the server and step number 1 would be checked out in the client for step 1 in the main repository). Needless to say that submodules should be defined beforehand.
-
 ## Quick Startup
 
 First you will need to install Tortilla's CLI tool:
@@ -305,6 +285,7 @@ See:
   - [tortilla-release](#tortilla-release-cli)
   - [tortilla-step](#tortilla-step-cli)
   - [tortilla-strict](#tortilla-strict-cli)
+  - [tortilla-submodule](#tortilla-submodule-cli)
   - [tortilla-package](#tortilla-package-cli)
 
 ### tortilla CLI
@@ -482,21 +463,29 @@ Sets strict mode. Provided mode must be either a truthy value (e.g. `1`, `true`)
 
 Submodules are useful whenever you would like to split the tutorial into different logical segments, e.g. we will have the repo with all the instructions manual referencing the backend repo and the frontend repo.
 
-**command:** `tortilla submodule add <remotes...>`
+**command:** `tortilla submodule add <name> <url>`
 
-Add a new submodules to the root commit. We can either provide a set of remotes or a remote following by its submodule name. A remote and a submodule will be differentiated based on whether they contain a `/` character or not, which indicates that a remote path was provided.
+Like `$ git submodule add`, this will add the specified submodule name using the provided URL, but it will ensure that the repo is currently checked out at the root commit.
 
-**command:** `tortilla submodule remove [submodules...]`
+**command:** `tortilla submodule remove <name>`
 
-Remove submodules from the root commit. If non was provided - will remove all submodules.
+Will remove the submodule completely, even from the git-registry. This command doesn't exist on git and it can be very useful.
 
-**command:** `tortilla submodule update [submodules...]`
+**command:** `tortilla submodule update <name>`
 
-Update submodules in the root commit. If non was provided - will update all submodules.
+Will run `$ git submodule update --init`, and it will remove deleted files from stage if pointed object doesn't exist in submodule's remote.
 
-**command:** `tortilla submodule reset [submodules...]`
+**command:** `tortilla submodule fetch <name>`
 
-Reset submodules in the root commit. If non was provided - will update all submodules. Unlike the `update` function, this will remove all the given submodules and re-add them, which will always result in the most recent submodules, event if the HEAD was rebased.
+Will fetch all objects from `origin` remote of the submodule, including tags. If the submodule is not updated, an error message will be printed instead.
+
+**command:** `tortilla submodule reset <name>`
+
+In other words, this will "unclone" the submodule, but will keep it initialized. This is reliable method to get away from messy situations with submodules, so whenever you don't know what to do, run this command.
+
+**command:** `tortilla submodule checkout <name> <ref>`
+
+This will check out the specified submodule to provided ref. It will also guide you through with some detailed instructions if you should do things beforehand, this can prevent a lot of potential issues and confusion.
 
 ### tortilla-package CLI
 

@@ -31,7 +31,6 @@ async function promptForGitRevision(submoduleName, submodulePath) {
       choices: [
         { name: `Yes, it's the correct commit!`, value: 'yes' },
         { name: `No - I need to make sure some things before releasing`, value: 'exit' },
-        { name: `No - I need to update this submodule to the latest commit`, value: 'update' },
       ],
       default: 'yes',
     },
@@ -45,11 +44,6 @@ async function promptForGitRevision(submoduleName, submodulePath) {
     };
   } else if (answer === 'exit') {
     return null;
-  } else if (answer === 'update') {
-    console.log(`🔃 Updating submodule ${submoduleName}...`);
-    Submodule.update([submodulePath]);
-
-    return promptForGitRevision(submoduleName, submodulePath);
   }
 }
 
@@ -63,8 +57,19 @@ async function promptAndHandleSubmodules(listSubmodules) {
 
   for (const submodulePath of listSubmodules) {
     const fullPath = Path.resolve(Utils.cwd(), submodulePath);
-    const isTortillaProject = Utils.exists(resolveProject(fullPath).tortillaDir);
     const submoduleName = Path.basename(submodulePath);
+
+    Submodule.update(submoduleName)
+
+    // If hash doesn't exist
+    if (
+      Git(['diff', '--name-only']).split('\n').filter(Boolean).includes(submoduleName)
+    ) {
+      // Fetch so we can have all release tags available to us
+      Submodule.fetch(submoduleName)
+    }
+
+    const isTortillaProject = Utils.exists(resolveProject(fullPath).tortillaDir);
 
     if (isTortillaProject) {
       const allReleases = getAllReleasesOfAllBranches(fullPath);
@@ -147,21 +152,25 @@ async function bumpRelease(releaseType, options) {
   const listSubmodules = Submodule.list();
 
   let submodulesRevisions: { [submoduleName: string]: string } = {};
+  let onInitialCheckout = async () => undefined;
   const hasSubmodules = listSubmodules.length > 0;
 
   if (hasSubmodules) {
-    submodulesRevisions = await promptAndHandleSubmodules(listSubmodules);
+    // This will run at the root commit, just before we render all the manuals
+    onInitialCheckout = async () => {
+      submodulesRevisions = await promptAndHandleSubmodules(listSubmodules);
 
-    if (!submodulesRevisions || Object.keys(submodulesRevisions).length !== listSubmodules.length) {
-      throw new Error(`Unexpected submodules versions results!`);
-    } else {
-      for (const [submodulePath, revisionChoice] of Object.entries<any>(submodulesRevisions)) {
-        if (revisionChoice && revisionChoice.tortillaVersion) {
-          console.log(`▶️ Checking out "${revisionChoice.tortillaVersion}" in Tortilla submodule "${Path.basename(submodulePath)}"...`);
-          Git(['checkout', revisionChoice.tortillaVersion], { cwd: submodulePath });
-        } else if (revisionChoice && revisionChoice.gitRevision) {
-          console.log(`▶️ Checking out "${revisionChoice.gitRevision}" in submodule "${Path.basename(submodulePath)}"...`);
-          Git(['checkout', revisionChoice.gitRevision], { cwd: submodulePath });
+      if (!submodulesRevisions || Object.keys(submodulesRevisions).length !== listSubmodules.length) {
+        throw new Error(`Unexpected submodules versions results!`);
+      } else {
+        for (const [submodulePath, revisionChoice] of Object.entries<any>(submodulesRevisions)) {
+          if (revisionChoice && revisionChoice.tortillaVersion) {
+            console.log(`▶️ Checking out "${revisionChoice.tortillaVersion}" in Tortilla submodule "${Path.basename(submodulePath)}"...`);
+            Git(['checkout', revisionChoice.tortillaVersion], { cwd: submodulePath });
+          } else if (revisionChoice && revisionChoice.gitRevision) {
+            console.log(`▶️ Checking out "${revisionChoice.gitRevision}" in submodule "${Path.basename(submodulePath)}"...`);
+            Git(['checkout', revisionChoice.gitRevision], { cwd: submodulePath });
+          }
         }
       }
     }
@@ -173,9 +182,27 @@ async function bumpRelease(releaseType, options) {
   try {
     // Store potential release so it can be used during rendering
     LocalStorage.setItem('POTENTIAL_RELEASE', JSON.stringify(currentRelease));
-    // Render manuals before bumping version to make sure the views are correlated with
-    // the templates
-    Manual.render('all');
+
+    Step.edit('root')
+
+    // Render once we continue
+    Git.print(['rebase', '--edit-todo'], {
+      env: {
+        GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} render`,
+      },
+    });
+
+    // Update the submodules to desired versions
+    try {
+      await onInitialCheckout()
+    } catch (e) {
+      // Abort before throw if error occurred
+      Git.print(['rebase', '--abort'])
+
+      throw e
+    }
+
+    Git.print(['rebase', '--continue'])
   } finally {
     LocalStorage.removeItem('POTENTIAL_RELEASE');
   }

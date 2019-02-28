@@ -1,6 +1,7 @@
 import * as ChildProcess from 'child_process';
 import { EventEmitter } from 'events';
 import * as Fs from 'fs-extra';
+import { resolve } from 'path';
 
 /**
  Contains general utilities.
@@ -450,6 +451,8 @@ function naturalSort(as, bs) {
 // of the execution. Useful for submodules. Will emit a 'cwdChange' event once
 // it happens to do so
 function setTempCwd(callback, tempCwd) {
+  tempCwd = resolve(cwd(), tempCwd);
+
   const result = scopeEnv(() => {
     init();
     Utils.emit('cwdChange', tempCwd);
