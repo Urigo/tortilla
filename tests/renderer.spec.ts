@@ -214,8 +214,8 @@ describe('Renderer', () => {
       const fooModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
 
       context.createRepo(fooModuleDir);
-      context.tortilla(['submodule', 'add', fooModuleDir]);
       context.tortilla(['step', 'edit', '--root']);
+      context.tortilla(['submodule', 'add', Path.basename(fooModuleDir), fooModuleDir]);
 
       const fooPath = context.exec('realpath', [Path.basename(fooModuleDir)]);
       const fooPack = Fs.readJsonSync(`${fooPath}/package.json`);
@@ -233,7 +233,7 @@ describe('Renderer', () => {
       context.git(['add', Path.basename(fooModuleDir)]);
       context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
       context.git(['rebase', '--continue']);
-      context.tortilla(['submodule', 'reset', Path.basename(fooModuleDir)]);
+      context.tortilla(['submodule', 'update', Path.basename(fooModuleDir)]);
 
       Renderer.registerHelper('testHelper', function() {
         return context.tempCwd(() => {

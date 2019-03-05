@@ -23,9 +23,10 @@ function addSubmodule(name: string, url: string) {
     }
   }
 
+  Git.print(['submodule', 'add', url, name])
+
   const cwd = resolveSubmodulePath(name)
 
-  Git.print(['submodule', 'add', url, name])
   Git.print(['checkout', 'HEAD'], { cwd })
   Git(['add', '.gitmodules', name])
 }

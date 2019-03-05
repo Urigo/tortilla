@@ -75,10 +75,10 @@ describe('Template Helpers', () => {
       expect(view).toContainSameContentAsFile('referenced-diff.md');
     });
 
-    it('should render step from the specified submodule', function() {
+    it.only('should render step from the specified submodule', function() {
       const repoDir = context.createRepo();
 
-      context.tortilla(['submodule', 'add', repoDir]);
+      context.tortilla(['submodule', 'add', Path.basename(repoDir), repoDir]);
 
       const view = Renderer.renderTemplate(`{{{diffStep 1.1 module="${Path.basename(repoDir)}"}}}`);
 

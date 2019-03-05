@@ -1,3 +1,4 @@
+import * as Fs from 'fs-extra';
 import * as Path from 'path';
 import * as Tmp from 'tmp';
 import { tortillaBeforeAll, tortillaBeforeEach } from './tests-helper';
@@ -10,138 +11,238 @@ describe('Submodule', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
   beforeAll(() => {
-    context.fooModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
-    context.barModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
-    context.bazModuleDir = Tmp.dirSync({ unsafeCleanup: true }).name;
+    context.hostRepo = Tmp.dirSync({ unsafeCleanup: true }).name;
+    context.localRepo = Tmp.dirSync({ unsafeCleanup: true }).name;
   });
 
-  beforeEach(function() {
-    // Initializing repos
-    context.createRepo(context.fooModuleDir);
-    context.createRepo(context.barModuleDir);
-    context.createRepo(context.bazModuleDir);
+  beforeEach(() => {
+    context.createRepo(context.hostRepo, context.localRepo);
   });
 
-  describe('add()', function() {
-    it('should add specified submodules to the root commit', function() {
-      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
+  describe('add()', () => {
+    it('should throw an error if not at root commit', () => {
+      context.tortilla(['step', 'push', '--allow-empty', '-m', 'dummy message'])
 
-      const isRebasing = Git.rebasing();
-      expect(isRebasing).toBeFalsy();
+      expect(() => {
+        context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
+      }).toThrowError();
 
-      context.tortilla(['step', 'edit', '--root']);
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
 
-      let remote;
-
-      remote = context.git(['config', '--get', 'remote.origin.url'], {
-        cwd: `${context.testDir}/${Path.basename(context.fooModuleDir)}`
-      });
-      expect(remote).toEqual(context.fooModuleDir);
-
-      remote = context.git(['config', '--get', 'remote.origin.url'], {
-        cwd: `${context.testDir}/${Path.basename(context.barModuleDir)}`
-      });
-      expect(remote).toEqual(context.barModuleDir);
-
-      remote = context.git(['config', '--get', 'remote.origin.url'], {
-        cwd: `${context.testDir}/${Path.basename(context.bazModuleDir)}`
-      });
-      expect(remote).toEqual(context.bazModuleDir);
+      expect(context.exists(submoduleLocalPath)).toBe(false);
     });
 
-    it('should stage specified submodules if editing the root commit', function() {
-      context.tortilla(['step', 'edit', '--root']);
+    it('should add specified submodule based on provided url', () => {
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
 
-      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
-
-      const isRebasing = Git.rebasing();
-      expect(isRebasing).toBeTruthy();
+      const remote = context.git(['config', '--get', 'remote.origin.url'], {
+        cwd: `${context.testDir}/${Path.basename(context.hostRepo)}`
+      });
+      expect(remote).toEqual(context.hostRepo);
 
       const stagedFiles = Git.stagedFiles();
 
-      expect(stagedFiles).toEqual(expect.arrayContaining([Path.basename(context.fooModuleDir), Path.basename(context.barModuleDir), Path.basename(context.bazModuleDir), '.gitmodules']));
+      expect(stagedFiles).toEqual(expect.arrayContaining([Path.basename(context.hostRepo), '.gitmodules']));
+
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      expect(context.exists(submoduleLocalPath)).toBe(true);
     });
   });
 
-  describe('remove()', function() {
-    beforeEach(function() {
-      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
+  describe('remove()', () => {
+    beforeEach(() => {
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
     });
 
-    it('should remove specified submodules from the root commit', function() {
-      context.tortilla(['submodule', 'remove', Path.basename(context.fooModuleDir)]);
+    it('should throw an error if not at root commit', () => {
+      context.tortilla(['step', 'push', '-m', 'dummy message']);
 
-      expect(Submodule.list()).toEqual(expect.arrayContaining([Path.basename(context.barModuleDir), Path.basename(context.bazModuleDir)]));
+      expect(() => {
+        context.tortilla(['submodule', 'remove', Path.basename(context.hostRepo)]);
+      }).toThrowError();
+
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      expect(context.exists(submoduleLocalPath)).toBe(true);
     });
 
-    it('should remove all submodules from the root commit if non was specified', function() {
-      context.tortilla(['submodule', 'remove']);
-
-      expect(Submodule.list()).toEqual([]);
-    });
-
-    it('should stage removed submodules if editing the root commit', function() {
-      context.tortilla(['step', 'edit', '--root']);
-      context.tortilla(['submodule', 'remove', Path.basename(context.fooModuleDir)]);
-
-      const isRebasing = Git.rebasing();
-      expect(isRebasing).toBeTruthy();
+    it('should remove specified submodule', () => {
+      context.tortilla(['submodule', 'remove', Path.basename(context.hostRepo)]);
 
       const stagedFiles = Git.stagedFiles();
 
-      expect(stagedFiles).toEqual(expect.arrayContaining([Path.basename(context.fooModuleDir), '.gitmodules']));
+      expect(stagedFiles).toEqual(expect.arrayContaining(['.gitmodules']));
+
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      expect(context.exists(submoduleLocalPath)).toBe(false);
     });
   });
 
-  describe('update()', function() {
-    beforeEach(function() {
-      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
+  describe('update()', () => {
+    beforeEach(() => {
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
+
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      Fs.removeSync(submoduleLocalPath)
+      context.git(['checkout', submoduleLocalPath])
     });
 
-    it('should update specified submodules', function() {
-      context.tortilla(['step', 'edit', '--root']);
+    it('should init specified submodule if not yet so', () => {
+      const submoduleGitDir = `${context.testDir}/${Path.basename(context.hostRepo)}/.git`
 
-      const fooPath = context.exec('realpath', [Path.basename(context.fooModuleDir)]);
+      expect(context.exists(submoduleGitDir)).toBe(false)
 
-      context.git(['checkout', 'HEAD~1'], { cwd: fooPath });
-      context.git(['add', Path.basename(context.fooModuleDir)]);
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      context.git(['rebase', '--continue']);
-      debugger;
+      context.tortilla(['submodule', 'update', Path.basename(context.hostRepo)])
 
-      context.tortilla(['submodule', 'update', Path.basename(context.fooModuleDir)]);
+      expect(context.exists(submoduleGitDir)).toBe(true)
+    });
 
-      expect(context.exists(`${fooPath}/hello_world`)).toBeTruthy();
+    it('should update specified submodule', () => {
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      context.tortilla(['submodule', 'update', Path.basename(context.hostRepo)])
+
+      expect(context.exists(`${submoduleLocalPath}/hello_world`)).toBe(true);
+
+      context.git(['checkout', 'HEAD~1'], { cwd: submoduleLocalPath });
+
+      expect(context.exists(`${submoduleLocalPath}/hello_world`)).toBe(false);
+
+      context.tortilla(['submodule', 'update', Path.basename(context.hostRepo)]);
+
+      expect(context.exists(`${submoduleLocalPath}/hello_world`)).toBe(true);
     });
   });
 
-  describe('reset()', function() {
-    beforeEach(function() {
-      context.tortilla(['submodule', 'add', context.fooModuleDir, context.barModuleDir, context.bazModuleDir]);
+  describe('reset()', () => {
+    it('should empty submodule dir content, but keep it initialized', () => {
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
+
+      context.tortilla(['step', 'push', '-m', 'dummy message']);
+
+      let remote
+      const submoduleGitDir = `${context.testDir}/${Path.basename(context.hostRepo)}/.git`
+
+      expect(context.exists(submoduleGitDir)).toBe(true);
+
+      remote = context.git(['config', '--file', '.gitmodules', '--get', `submodule.${Path.basename(context.hostRepo)}.url`]);
+
+      expect(remote).toEqual(context.hostRepo);
+
+      context.tortilla(['submodule', 'reset', Path.basename(context.hostRepo)])
+
+      expect(context.exists(submoduleGitDir)).toBe(false);
+
+      remote = context.git(['config', '--file', '.gitmodules', '--get', `submodule.${Path.basename(context.hostRepo)}.url`]);
+
+      expect(remote).toEqual(context.hostRepo);
+    });
+  });
+
+  describe('fetch()', () => {
+    beforeEach(() => {
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
+      context.tortilla(['step', 'push', '--allow-empty', '-m', 'dummy message'])
+      context.tortilla(['release', 'bump', 'minor', '-m', 'Initial Release'], {
+        cwd: context.localRepo,
+        env: { TORTILLA_CWD: context.localRepo }
+      });
+      context.git(['push', 'origin', '--all', '-f'], { cwd: context.localRepo });
+      context.git(['push', 'origin', '--tags', '-f'], { cwd: context.localRepo });
     });
 
-    it('should result in submodules which are referencing the most recent hash', function() {
+    it('should throw an error if submodule is not updated', () => {
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      Fs.removeSync(submoduleLocalPath)
+      context.git(['checkout', submoduleLocalPath])
+
+      expect(() => {
+        context.tortilla(['submodule', 'fetch', Path.basename(context.hostRepo)]);
+      }).toThrowError();
+
+      const submoduleTags = context.git(['tag', '-l'], { cwd: submoduleLocalPath })
+
+      expect(submoduleTags).toEqual('')
+    });
+
+    it('should fetch most recent changes, including tags', () => {
+      let submoduleTags;
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      submoduleTags = context.git(['tag', '-l'], { cwd: submoduleLocalPath })
+
+      expect(submoduleTags).toEqual('')
+
+      context.tortilla(['submodule', 'fetch', Path.basename(context.hostRepo)]);
+
+      submoduleTags = context.git(['tag', '-l'], { cwd: submoduleLocalPath })
+
+      expect(submoduleTags).toEqual('master@0.1.0\nmaster@root@0.1.0')
+    });
+  });
+
+  describe('checkout()', () => {
+    beforeEach(() => {
+      context.tortilla(['release', 'bump', 'minor', '-m', 'Initial Release'], {
+        cwd: context.localRepo,
+        env: { TORTILLA_CWD: context.localRepo }
+      });
+      context.git(['push', 'origin', '--all', '-f'], { cwd: context.localRepo });
+      context.git(['push', 'origin', '--tags', '-f'], { cwd: context.localRepo });
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
+      context.tortilla(['step', 'push', '--allow-empty', '-m', 'dummy message'])
+    });
+
+    it('should throw an error if not at root commit', () => {
+      expect(() => {
+        context.tortilla(['submodule', 'checkout', Path.basename(context.hostRepo), 'master@0.1.0']);
+      }).toThrowError();
+
+      context.tortilla(['step', 'edit', '--root'])
+
+      expect(() => {
+        context.tortilla(['submodule', 'checkout', Path.basename(context.hostRepo), 'master@0.1.0']);
+      }).not.toThrowError();
+    });
+
+    it('should throw an error if submodule is not updated', () => {
+      context.tortilla(['step', 'edit', '--root'])
+
+      expect(() => {
+        context.tortilla(['submodule', 'checkout', Path.basename(context.hostRepo), 'master@0.1.0']);
+      }).not.toThrowError();
+
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      Fs.removeSync(submoduleLocalPath);
+      context.git(['checkout', submoduleLocalPath]);
+
+      expect(() => {
+        context.tortilla(['submodule', 'checkout', Path.basename(context.hostRepo), 'master@0.1.0']);
+      }).toThrowError();
+    });
+
+    it('should throw an error if reference does not exist', () => {
+      context.tortilla(['step', 'edit', '--root'])
+
+      expect(() => {
+        context.tortilla(['submodule', 'checkout', Path.basename(context.hostRepo), 'master@1.0.0']);
+      }).toThrowError();
+    });
+
+    it('should checkout submodule to specified ref', () => {
       context.tortilla(['step', 'edit', '--root']);
+      context.tortilla(['submodule', 'checkout', Path.basename(context.hostRepo), 'master@0.1.0']);
 
-      const fooPath = context.exec('realpath', [Path.basename(context.fooModuleDir)]);
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+      const head = context.git(['rev-parse', 'HEAD'], { cwd: submoduleLocalPath });
+      const tag = context.git(['rev-parse', 'master@0.1.0^{}'], { cwd: submoduleLocalPath });
 
-      context.git(['checkout', 'HEAD~1'], { cwd: fooPath });
-      context.exec('touch', ['hello_planet'], { cwd: fooPath });
-      context.git(['add', 'hello_planet'], { cwd: fooPath });
-      context.git(['commit', '-m', 'hello_planet'], { cwd: fooPath });
-      context.git(['branch', '-D', 'master'], { cwd: fooPath });
-      context.git(['checkout', '-b', 'master'], { cwd: fooPath });
-      context.git(['push', 'origin', 'master', '-f'], { cwd: fooPath });
-
-      context.git(['add', Path.basename(context.fooModuleDir)]);
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-
-      context.git(['rebase', '--continue']);
-
-      context.tortilla(['submodule', 'reset', Path.basename(context.fooModuleDir)]);
-
-      expect(context.exists(`${fooPath}/hello_world`)).toBeFalsy();
-      expect(context.exists(`${fooPath}/hello_planet`)).toBeTruthy();
+      expect(head).toEqual(tag);
     });
   });
 });

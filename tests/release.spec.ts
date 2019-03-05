@@ -33,7 +33,7 @@ describe('Release', () => {
       }, { TORTILLA_CWD: context.fooModuleDir });
 
       // Add the sub project as submodule
-      context.tortilla(['submodule', 'add', context.fooModuleDir]);
+      context.tortilla(['submodule', 'add', Path.basename(context.fooModuleDir), context.fooModuleDir]);
 
       // Release a new version of the root
       const out = context.tortilla(['release', 'bump', 'minor', '-m', 'submodule root']);
@@ -64,8 +64,8 @@ describe('Release', () => {
       }, { TORTILLA_CWD: barModuleDir });
 
       // Add the sub project as submodule
-      context.tortilla(['submodule', 'add', context.fooModuleDir]);
-      context.tortilla(['submodule', 'add', barModuleDir]);
+      context.tortilla(['submodule', 'add', Path.basename(context.fooModuleDir), context.fooModuleDir]);
+      context.tortilla(['submodule', 'add', Path.basename(barModuleDir), barModuleDir]);
 
       // Release a new version of the root
       const out = context.tortilla(['release', 'bump', 'minor', '-m', 'submodule root']);
@@ -74,7 +74,6 @@ describe('Release', () => {
       expect(out).toContain('Checking out "master@1.0.0" in Tortilla submodule ');
       expect(out).toContain('Release: 0.1.0');
     });
-
   });
 
   describe('bump()', function () {

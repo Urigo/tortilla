@@ -114,42 +114,6 @@ describe('Step', () => {
       expect(context.git(['rev-parse', 'HEAD~2'])).toEqual(context.git(['rev-parse', 'master-step1']));
       expect(context.git(['rev-parse', 'HEAD~3'])).toEqual(context.git(['rev-parse', 'master-root']));
     });
-
-    it('should set submodule to right revision based on checkouts file', function() {
-      context.tortilla(['step', 'edit', '--root']);
-
-      const checkoutsPath = Paths.checkouts;
-      Fs.writeFileSync(
-        checkoutsPath,
-        JSON.stringify({
-          test_submodule: {
-            head: 'master',
-            steps: ['root', 1, 'root']
-          }
-        })
-      );
-
-      const testRemote = context.createRepo();
-      const testModuleName = 'test_submodule';
-      context.git(['submodule', 'add', testRemote, testModuleName]);
-
-      const testModulePath = Path.resolve(context.testDir, testModuleName);
-      const testFilePath = `${testModulePath}/test.txt`;
-
-      Fs.writeFileSync(testFilePath, '');
-      context.git(['add', testFilePath], { cwd: testModulePath });
-      context.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
-
-      context.git(['add', '.']);
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      context.git(['rebase', '--continue']);
-
-      context.tortilla(['step', 'tag', '-m', 'foo']);
-      context.tortilla(['step', 'tag', '-m', 'bar']);
-
-      const msg = context.git(['log', '--format=%s'], { cwd: testModulePath });
-      expect(msg).toEqual('New Repo');
-    });
   });
 
   describe('reword()', function() {
@@ -602,44 +566,6 @@ describe('Step', () => {
       expect(context.git(['rev-parse', 'HEAD~1'])).toEqual(context.git(['rev-parse', 'master-step2']));
       expect(context.git(['rev-parse', 'HEAD~2'])).toEqual(context.git(['rev-parse', 'master-step1']));
       expect(context.git(['rev-parse', 'HEAD~3'])).toEqual(context.git(['rev-parse', 'master-root']));
-    });
-
-    it('should adjust submodules on the run when editing a step', function() {
-      context.tortilla(['step', 'tag', '-m', 'foo']);
-      context.tortilla(['step', 'tag', '-m', 'bar']);
-      context.tortilla(['step', 'edit', '--root']);
-
-      const testRemote = context.createRepo();
-      const testModuleName = 'test_submodule';
-
-      context.git(['submodule', 'add', testRemote, testModuleName]);
-
-      const testModulePath = Path.resolve(context.testDir, testModuleName);
-      const testFilePath = `${testModulePath}/test.txt`;
-
-      Fs.writeFileSync(testFilePath, '');
-      context.git(['add', testFilePath], { cwd: testModulePath });
-      context.git(['commit', '-m', 'Step 1: Test'], { cwd: testModulePath });
-
-      context.git(['add', testModuleName]);
-
-      const checkoutsPath = Paths.checkouts;
-      Fs.writeFileSync(
-        checkoutsPath,
-        JSON.stringify({
-          [testModuleName]: {
-            head: 'master',
-            steps: [1, 1, 'root']
-          }
-        })
-      );
-      context.git(['add', checkoutsPath]);
-
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      context.git(['rebase', '--continue']);
-
-      const msg = context.git(['log', '--format=%s', '-1'], { cwd: testModulePath });
-      expect(msg).toEqual('New Repo');
     });
   });
 

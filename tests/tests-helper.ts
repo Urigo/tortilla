@@ -100,24 +100,25 @@ export function tortillaBeforeAll() {
   };
 
   // Creates a new local repository with a single commit
-  this.createRepo = dir => {
-    dir = dir || Tmp.dirSync({ unsafeCleanup: true }).name;
+  this.createRepo = (hostRepo, localRepo) => {
+    hostRepo = hostRepo || Tmp.dirSync({ unsafeCleanup: true }).name;
+    localRepo = localRepo || this.tempDir;
 
-    Fs.removeSync(dir);
-    Fs.removeSync(this.tempDir);
+    Fs.removeSync(hostRepo);
+    Fs.removeSync(localRepo);
 
-    this.git(['init', dir, '--bare']);
-    this.tortilla(['create', this.tempDir, '-m', 'New Repo']);
-    this.git(['remote', 'add', 'origin', dir], { cwd: this.tempDir });
-    this.exec('sh', ['-c', 'echo "Hello World" > hello_world'], { cwd: this.tempDir });
-    this.git(['add', 'hello_world'], { cwd: this.tempDir });
+    this.git(['init', hostRepo, '--bare']);
+    this.tortilla(['create', localRepo, '-m', 'New Repo']);
+    this.git(['remote', 'add', 'origin', hostRepo], { cwd: localRepo });
+    this.exec('sh', ['-c', 'echo "Hello World" > hello_world'], { cwd: localRepo });
+    this.git(['add', 'hello_world'], { cwd: localRepo });
     this.tortilla(['step', 'push', '-m', 'Hello World'], {
-      cwd: this.tempDir,
-      env: { TORTILLA_CWD: this.tempDir }
+      cwd: localRepo,
+      env: { TORTILLA_CWD: localRepo }
     });
-    this.git(['push', 'origin', 'master'], { cwd: this.tempDir });
+    this.git(['push', 'origin', 'master'], { cwd: localRepo });
 
-    return dir;
+    return hostRepo;
   };
 
   this.newEditor = fn => {
