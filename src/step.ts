@@ -187,6 +187,20 @@ function getStepBase(step) {
 
 // Edit the provided step
 function editStep(steps, options: any = {}) {
+  const rootSha1 = Git.rootHash();
+
+  // Map git-refs to step indexes
+  steps = [].concat(steps).filter(Boolean).map((step) => {
+    // If an index was provided, return it; otherwise try to find the index by SHA1
+    if (/^\d+(\.\d+)?$/.test(step)) { return step; }
+    if (step === rootSha1) { return 'root'; }
+
+    const commitMessage = Git(['log', step, '-1', '--format=%s'])
+    const descriptor = getStepDescriptor(commitMessage);
+
+    return descriptor && descriptor.number;
+  }).filter(Boolean);
+
   if (steps instanceof Array) {
     steps = steps.slice().sort((a, b) => {
       const [superA, subA] = a.split('.').concat('Infinity');

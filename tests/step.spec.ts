@@ -13,15 +13,15 @@ describe('Step', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
 
-  describe('push()', function() {
-    it('should push a new step to the top of the stack', function() {
+  describe('push()', () => {
+    it('should push a new step to the top of the stack', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
       const message = Step.recentCommit('%s');
       expect(message).toEqual('Step 1.1: target');
     });
 
-    it('should add a new step with an updated sub-index', function() {
+    it('should add a new step with an updated sub-index', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
@@ -29,7 +29,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.2: target');
     });
 
-    it('should add a new step with an updated super-index', function() {
+    it('should add a new step with an updated super-index', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
@@ -39,8 +39,8 @@ describe('Step', () => {
     });
   });
 
-  describe('pop()', function() {
-    it('should push the last step from the top of the stack', function() {
+  describe('pop()', () => {
+    it('should push the last step from the top of the stack', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'pop']);
@@ -49,7 +49,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.1: target');
     });
 
-    it('should remove manual files', function() {
+    it('should remove manual files', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'pop']);
@@ -61,7 +61,7 @@ describe('Step', () => {
       expect(fileExists).toBeFalsy();
     });
 
-    it('should delete branch referencing super step', function() {
+    it('should delete branch referencing super step', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -78,15 +78,15 @@ describe('Step', () => {
     });
   });
 
-  describe('tag()', function() {
-    it('should push a new step to the top of the stack', function() {
+  describe('tag()', () => {
+    it('should push a new step to the top of the stack', () => {
       context.tortilla(['step', 'tag', '-m', 'target']);
 
       const message = Step.recentCommit('%s');
       expect(message).toEqual('Step 1: target');
     });
 
-    it('should push a new step with an updated super-index', function() {
+    it('should push a new step with an updated super-index', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'target']);
 
@@ -94,7 +94,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 2: target');
     });
 
-    it('should create a manual file', function() {
+    it('should create a manual file', () => {
       context.tortilla(['step', 'tag', '-m', 'target']);
 
       const message = Step.recentCommit('%s');
@@ -104,7 +104,7 @@ describe('Step', () => {
       expect(fileExists).toBeTruthy();
     });
 
-    it('should create a new branch referencing the tagged step', function() {
+    it('should create a new branch referencing the tagged step', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -116,8 +116,8 @@ describe('Step', () => {
     });
   });
 
-  describe('reword()', function() {
-    it('should reword the provided step', function() {
+  describe('reword()', () => {
+    it('should reword the provided step', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'reword', '1.1', '-m', 'target']);
@@ -126,7 +126,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.1: target');
     });
 
-    it('should be able to reword root', function() {
+    it('should be able to reword root', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'reword', '--root', '-m', 'target']);
 
@@ -135,7 +135,7 @@ describe('Step', () => {
       expect(message).toEqual('target');
     });
 
-    it('should reword the last step by default if no step specified', function() {
+    it('should reword the last step by default if no step specified', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'reword', '-m', 'target']);
@@ -145,8 +145,8 @@ describe('Step', () => {
     });
   });
 
-  describe('edit()', function() {
-    it('should edit the provided step', function() {
+  describe('edit()', () => {
+    it('should edit the provided step', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'edit', '1.1']);
@@ -158,7 +158,19 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.1: target');
     });
 
-    it('should be able to edit steps with multiple digits', function() {
+    it('should map git-refs to step indexes', () => {
+      context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
+      context.tortilla(['step', 'edit', 'HEAD~1']);
+
+      const isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      const message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: target');
+    });
+
+    it('should be able to edit steps with multiple digits', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
 
       let size = 10;
@@ -175,7 +187,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.1: target');
     });
 
-    it('should be able to edit root', function() {
+    it('should be able to edit root', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'edit', '--root']);
 
@@ -187,7 +199,7 @@ describe('Step', () => {
       expect(commitHash).toEqual(rootHash);
     });
 
-    it('should update step indices when pushing a step', function() {
+    it('should update step indices when pushing a step', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
       context.tortilla(['step', 'edit', '1.1']);
@@ -202,7 +214,7 @@ describe('Step', () => {
       expect(oldMessage).toEqual('Step 1.2: new');
     });
 
-    it('should update step indices when popping a step', function() {
+    it('should update step indices when popping a step', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
@@ -215,7 +227,7 @@ describe('Step', () => {
       expect(oldMessage).toEqual('Step 1.2: old');
     });
 
-    it('should update super-step indices when tagging a step', function() {
+    it('should update super-step indices when tagging a step', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'tag', '-m', 'old']);
       context.tortilla(['step', 'edit', '1.1']);
@@ -230,7 +242,7 @@ describe('Step', () => {
       expect(oldMessage).toEqual('Step 1: new');
     });
 
-    it('should update sub-step indices when tagging a step', function() {
+    it('should update sub-step indices when tagging a step', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
       context.tortilla(['step', 'edit', '1.1']);
@@ -242,7 +254,7 @@ describe('Step', () => {
       expect(oldMessage).toEqual('Step 2.1: old');
     });
 
-    it('should update super-step indices when popping a super-step', function() {
+    it('should update super-step indices when popping a super-step', () => {
       context.tortilla(['step', 'tag', '-m', 'target']);
       context.tortilla(['step', 'tag', '-m', 'old']);
       context.tortilla(['step', 'edit', '1']);
@@ -254,7 +266,7 @@ describe('Step', () => {
       expect(oldMessage).toEqual('Step 1: old');
     });
 
-    it('should update sub-step indices when popping a super-step', function() {
+    it('should update sub-step indices when popping a super-step', () => {
       context.tortilla(['step', 'tag', '-m', 'target']);
       context.tortilla(['step', 'push', '-m', 'old', '--allow-empty']);
       context.tortilla(['step', 'edit', '1']);
@@ -266,7 +278,7 @@ describe('Step', () => {
       expect(oldMessage).toEqual('Step 1.1: old');
     });
 
-    it('should resolve addition conflicts when tagging a step', function() {
+    it('should resolve addition conflicts when tagging a step', () => {
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'tag', '-m', 'old']);
       context.tortilla(['step', 'edit', '1.1']);
@@ -287,7 +299,7 @@ describe('Step', () => {
       expect(newFileExists).toBeTruthy();
     });
 
-    it('should resolve removal conflicts when tagging a step', function() {
+    it('should resolve removal conflicts when tagging a step', () => {
       context.tortilla(['step', 'tag', '-m', 'target']);
       context.tortilla(['step', 'tag', '-m', 'old']);
       context.tortilla(['step', 'edit', '1']);
@@ -302,7 +314,7 @@ describe('Step', () => {
       expect(oldFileExists).toBeTruthy();
     });
 
-    it('should edit the last step by default if no step specified', function() {
+    it('should edit the last step by default if no step specified', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'edit']);
@@ -314,7 +326,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.2: target');
     });
 
-    it('should be able to edit multiple steps if specified to', function() {
+    it('should be able to edit multiple steps if specified to', () => {
       context.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
@@ -340,7 +352,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.4: target');
     });
 
-    it('should be able to edit multiple steps in a random order', function() {
+    it('should be able to edit multiple steps in a random order', () => {
       context.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'target', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'placeholder', '--allow-empty']);
@@ -366,7 +378,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.4: target');
     });
 
-    it('should be able to edit multiple steps including the root commit', function() {
+    it('should be able to edit multiple steps including the root commit', () => {
       // Keep-empty is not allowed when using the --root flag
       context.exec('touch', ['1.1']);
 
@@ -394,7 +406,7 @@ describe('Step', () => {
       expect(message).toEqual('Step 1.1: target');
     });
 
-    it('should re-adjust indicies after editing multiple steps', function() {
+    it('should re-adjust indicies after editing multiple steps', () => {
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'pop', '--allow-empty']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
@@ -418,7 +430,7 @@ describe('Step', () => {
       expect(pushMessage).toEqual('Step 1.4: push');
     });
 
-    it('should be able to update diffStep() template helpers indexes', function() {
+    it('should be able to update diffStep() template helpers indexes', () => {
       context.exec('sh', ['-c', 'echo foo > file']);
       context.git(['add', 'file']);
       context.tortilla(['step', 'push', '-m', 'Create file']);
@@ -476,7 +488,7 @@ describe('Step', () => {
       expect(Fs.readFileSync(manualPath).toString()).toEqual(['Create file:', '', '{{{diffStep XX.XX}}}', '', 'Edit file:', '', '{{{diffStep 1.2}}}'].join('\n'));
     });
 
-    it.skip('should update all diffStep template helpers in manuals repo', async function() {
+    it.skip('should update all diffStep template helpers in manuals repo', async () => {
       context.exec('sh', ['-c', 'echo foo > file']);
       context.git(['add', 'file']);
       context.tortilla(['step', 'push', '-m', 'Create file']);
@@ -545,7 +557,7 @@ describe('Step', () => {
       expect(Fs.readFileSync(manualPath).toString()).toEqual(['Create file:', '', '{{{diffStep XX.XX module="submodule"}}}', '', 'Edit file:', '', '{{{diffStep 1.2 module="submodule"}}}'].join('\n'));
     });
 
-    it('should reset all branches referencing super steps', function() {
+    it('should reset all branches referencing super steps', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);
@@ -569,8 +581,8 @@ describe('Step', () => {
     });
   });
 
-  describe('sort()', function() {
-    it('should sort all step indexes from the given step', function() {
+  describe('sort()', () => {
+    it('should sort all step indexes from the given step', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
 
@@ -590,7 +602,7 @@ describe('Step', () => {
       expect(stepCommitMessage).toEqual('Step 2.2: target commit');
     });
 
-    it('should sort all step indexes from root', function() {
+    it('should sort all step indexes from root', () => {
       // Root re-basing can't be applied with `keep-empty`
       context.exec('touch', ['1.1']);
       context.exec('touch', ['1.3']);
@@ -621,7 +633,7 @@ describe('Step', () => {
       expect(stepCommitMessage).toEqual('Step 1.2: target commit');
     });
 
-    it('should sort recent super step by default', function() {
+    it('should sort recent super step by default', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'push', '-m', 'dummy', '--allow-empty']);
 

@@ -390,9 +390,9 @@ Mark this step as finished and move on to the next one. This will increase the i
 
 - *option:* `-m, --message [message]` - A message describing the newly created step.
 
-**command:** `tortilla step edit [step]`
+**command:** `tortilla step edit [...steps]`
 
-Edits the specified step/s. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
+Edits the specified steps. A step can be specified either by index or by git-ref. This will enter rebase mode where the step's hash is at. Once finished editing, you may proceed using [git-rebase commands](https://git-scm.com/docs/git-rebase).
 
 - *option:* `--root` - Edit the root step (initial commit).
 - *option:* `--udiff [path]` - Updates the `diffStep` template helpers of manuals being rebased. Note that manuals prior to the current step being edited won't be updated, since the rebasing process never looks backwards. An optional can be provided which will be a reference to another repository which contains the current repository as a submodule; This will result in updating the provided repository's manuals rather than the current one. Note that submodule's package names located in `package.json` should be distinct.
