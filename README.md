@@ -302,6 +302,10 @@ Creates a new Tortilla project with the provided name.
 
 Initializes Tortilla essentials in the provided project.
 
+**command:** `tortilla push <remote> <branch>`
+
+Push a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pushed. Note that everything will be pushed by FORCE and will override existing refs within the remote.
+
 ### tortilla-dump CLI
 
 **command:** `tortilla dump create [out]`

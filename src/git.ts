@@ -15,9 +15,36 @@ function git(argv, options?) {
   return gitBody(Utils.git, argv, options);
 }
 
-(git as any).print = (argv, options) => {
+const gitPrint = (git as any).print = (argv, options = {}) => {
   return gitBody(Utils.git.print, argv, options);
 };
+
+// Push a tutorial based on the provided branch.
+// e.g. given 'master' then 'master-history', 'master-root', 'master@0.1.0', etc, will be pushed.
+// Note that everything will be pushed by FORCE and will override existing refs within the remote
+function pushTutorial(remote: string, baseBranch: string) {
+  const relatedBranches = git(['branch', '-l']).split('\n').map(branch => {
+    if (!branch) { return null; }
+
+    branch = branch.split(/\*?\s+/)[1];
+
+    if (branch === baseBranch) { return branch; }
+    if (branch === `${baseBranch}-history`) { return branch; }
+    if (branch === `${baseBranch}-root`) { return branch; }
+    if (new RegExp(`^${baseBranch}-step\\d+$`).test(branch)) { return branch; }
+  }).filter(Boolean);
+
+  const relatedTags = git(['tag', '-l']).split('\n').map(tag => {
+    if (!tag) { return null; }
+    if (new RegExp(`^${baseBranch}@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
+    if (new RegExp(`^${baseBranch}@root@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
+    if (new RegExp(`^${baseBranch}@step\\d+@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
+  }).filter(Boolean);
+
+  const refs = [...relatedBranches, ...relatedTags];
+
+  return gitPrint(['push','-f', remote, ...refs]);
+}
 
 // The body of the git execution function, useful since we use the same logic both for
 // exec and spawn
@@ -177,6 +204,7 @@ function getRevisionIdFromObject(object: string): string {
 
 
 export const Git = Utils.extend(git.bind(null), git, {
+  pushTutorial,
   conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,

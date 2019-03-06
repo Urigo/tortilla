@@ -40,6 +40,13 @@ Program
   });
 
 Program
+  .command('push <remote> <branch>')
+  .description('Push tutorial <branch> and related git-assets to <remote>')
+  .action((remote, branch) => {
+    Git.pushTutorial(remote, branch);
+  });
+
+Program
   .command('dump <command...>', 'Manage dump file')
   .command('manual <command...>', 'Manage manual files')
   .command('package <command...>', 'Manage package.json')
