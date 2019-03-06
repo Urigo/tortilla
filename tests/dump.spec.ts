@@ -21,12 +21,12 @@ describe('Dump', () => {
 
   beforeEach(tortillaBeforeEach.bind(context));
 
-  afterEach(function() {
+  afterEach(() => {
     Fs.removeSync(context.dumpFile);
   });
 
   describe('create()', () => {
-    it('should dump all branches which has at least a single release', function() {
+    it('should dump all branches which has at least a single release', () => {
       const testBranches = ['foo', 'bar', 'baz'];
 
       testBranches.forEach(branchName => {
@@ -40,7 +40,31 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/branches-dump.json');
     });
 
-    it('should dump all releases - sorted by chronological order', function() {
+    it('should track history branch from remotes/origin if not exists', () => {
+      const testBranches = ['foo', 'bar', 'baz'];
+
+      testBranches.forEach(branchName => {
+        context.git(['checkout', '-b', branchName]);
+        context.tortilla(['release', 'bump', 'minor', '-m', `${branchName} release`]);
+        context.git(['checkout', 'master']);
+      });
+
+      context.git(['push', 'origin', '--all']);
+
+      testBranches.forEach(branchName => {
+        context.git(['branch', '-D', `${branchName}-history`])
+      });
+
+      context.tortilla(['dump', 'create', context.dumpFile]);
+
+      testBranches.forEach(branchName => {
+        expect(() => {
+          context.git(['rev-parse', `${branchName}-history`]);
+        }).not.toThrowError();
+      });
+    });
+
+    it('should dump all releases - sorted by chronological order', () => {
       context.tortilla(['release', 'bump', 'minor', '-m', 'master release 1']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'master release 2']);
       context.tortilla(['release', 'bump', 'minor', '-m', 'master release 3']);
@@ -49,7 +73,7 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/releases-dump.json');
     });
 
-    it('should dump all manuals - views should have no headers nor footers', function() {
+    it('should dump all manuals - views should have no headers nor footers', () => {
       const comments = ['foo', 'bar', 'baz'];
 
       comments.forEach((comment, index) => {
@@ -70,7 +94,7 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/manuals-dump.json');
     });
 
-    it('should dump all - mixed scenario', function() {
+    it('should dump all - mixed scenario', () => {
       // Manuals dump
       const comments = ['foo', 'bar', 'baz'];
 
@@ -101,7 +125,7 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/mixed-dump.json');
     });
 
-    it('should be able to filter branches', function() {
+    it('should be able to filter branches', () => {
       const testBranches = ['foo', 'bar', 'baz', 'qux'];
 
       testBranches.forEach(branchName => {
@@ -115,7 +139,7 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/branches-dump.json');
     });
 
-    it('should be able to reject branches', function() {
+    it('should be able to reject branches', () => {
       const testBranches = ['foo', 'bar', 'baz', 'qux'];
 
       testBranches.forEach(branchName => {
@@ -129,21 +153,21 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/branches-dump.json');
     });
 
-    it('should create dirs recursively if output not dir not exist', function() {
+    it('should create dirs recursively if output not dir not exist', () => {
       const out = `${context.dumpFile}/foo/bar/baz.json`;
       context.tortilla(['dump', 'create', out]);
 
       expect(context.exists(out, 'file')).toBeTruthy();
     });
 
-    it('should create a tutorial.json file inside dir if already exists', function() {
+    it('should create a tutorial.json file inside dir if already exists', () => {
       Fs.mkdirSync(context.dumpFile);
       context.tortilla(['dump', 'create', context.dumpFile]);
 
       expect(context.exists(`${context.dumpFile}/tutorial.json`, 'file'));
     });
 
-    it('should create a dump file for a tutorial which includes submodules', function() {
+    it('should create a dump file for a tutorial which includes submodules', () => {
       const submodule = `${context.testDir}/module`;
 
       context.tortilla(['step', 'edit', '--root']);
@@ -197,7 +221,7 @@ describe('Dump', () => {
   });
 
   describe('diffReleases()', () => {
-    it('should print the differences between 2 specified releases based on given dump file', function() {
+    it('should print the differences between 2 specified releases based on given dump file', () => {
       context.tortilla(['release', 'bump', 'minor', '-m', 'master release 1']);
 
       Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
@@ -219,7 +243,7 @@ describe('Dump', () => {
       expect(diff).toContainSameContentAsFile('releases.diff');
     });
 
-    it('should handle changes in binary files', function() {
+    it('should handle changes in binary files', () => {
       const dumpPath = context.resolveInputPath('dumps/binary-dump.json');
       let diff;
 

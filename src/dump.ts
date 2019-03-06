@@ -105,6 +105,14 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   const dump = branchNames.map((branchName) => {
     const historyBranchName = `${branchName}-history`;
 
+    // Check if branch exists
+    try {
+      Git(['rev-parse', historyBranchName]);
+    // If not, create it
+    } catch (e) {
+      Git.print(['branch', '--track', historyBranchName, `remotes/origin/${historyBranchName}`]);
+    }
+
     // Run command once
     const releaseTags = tags
       .filter((tag) =>
