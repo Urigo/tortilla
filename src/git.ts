@@ -71,6 +71,7 @@ function pullTutorial(remote: string, baseBranch: string) {
   });
 
   const refs = [...relatedBranches, ...relatedTags];
+  throw refs
   const activeBranchName = Git.activeBranchName();
 
   try {

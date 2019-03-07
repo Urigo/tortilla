@@ -62,7 +62,7 @@ describe('Git', () => {
   });
 
   describe('pullTutorial()', () => {
-    it('should pull tutorial based on specified branch and all related git-refs', () => {
+    it.only('should pull tutorial based on specified branch and all related git-refs', () => {
       const localRepo = Tmp.dirSync({ unsafeCleanup: true }).name;
 
       context.git(['clone', context.hostRepo, localRepo]);
