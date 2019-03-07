@@ -79,7 +79,7 @@ function pullTutorial(remote: string, baseBranch: string) {
     // Detach HEAD so we can change the reference of the branch
     Git(['checkout', sha1]);
     // --tags flag will overwrite tags
-    gitPrint(['fetch', '--tags', remote, ...refs]);
+    gitPrint(['fetch', '--tags', '-f', remote, ...refs]);
 
     // Make sure that all local branches track the right remote branches
     relatedBranches.forEach(branch => {
