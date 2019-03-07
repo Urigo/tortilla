@@ -306,6 +306,10 @@ Initializes Tortilla essentials in the provided project.
 
 Push a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pushed. Note that everything will be pushed by FORCE and will override existing refs within the remote.
 
+**command:** `tortilla pull <remote> <branch>`
+
+Pull a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pulled.
+
 ### tortilla-dump CLI
 
 **command:** `tortilla dump create [out]`

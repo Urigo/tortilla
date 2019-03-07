@@ -46,6 +46,57 @@ function pushTutorial(remote: string, baseBranch: string) {
   return gitPrint(['push','-f', remote, ...refs]);
 }
 
+// Pull a tutorial based on the provided branch. e.g. given 'master' then 'master-history',
+// 'master-root', 'master@0.1.0', etc, will be pulled.
+function pullTutorial(remote: string, baseBranch: string) {
+  const relatedBranches = [];
+  const relatedTags = [];
+
+  git(['ls-remote', '--tags', '--heads', remote]).split('\n').forEach(line => {
+    if (!line) { return; }
+
+    const [, ref] = line.split(/\s+/);
+
+    if (
+      new RegExp(`^refs/tags/${baseBranch}@(root|step-\\d+@)?(\\d+\\.\\d+\\.\\d+|next)$`).test(ref)
+    ) {
+      relatedTags.push(ref.split('/').slice(2).join('/'));
+    }
+
+    if (
+      new RegExp(`^refs/heads/${baseBranch}(-root|-history|-step\\d+)?$`).test(ref)
+    ) {
+      relatedBranches.push(ref.split('/').slice(2).join('/'));
+    }
+  });
+
+  const refs = [...relatedBranches, ...relatedTags];
+  const activeBranchName = Git.activeBranchName();
+
+  try {
+    const sha1 = Git(['rev-parse', activeBranchName]);
+
+    // Detach HEAD so we can change the reference of the branch
+    Git(['checkout', sha1]);
+    // --tags flag will overwrite tags
+    gitPrint(['fetch', '--tags', remote, ...refs]);
+
+    // Make sure that all local branches track the right remote branches
+    relatedBranches.forEach(branch => {
+      try {
+        Git(['branch', '-D', branch]);
+      } catch (e) {
+        // Branch doesn't exist
+      }
+
+      Git.print(['branch', '--track', branch, `remotes/${remote}/${branch}`]);
+    });
+  } finally {
+    // Get back to where we were, regardless of the outcome
+    Git(['checkout', activeBranchName]);
+  }
+}
+
 // The body of the git execution function, useful since we use the same logic both for
 // exec and spawn
 function gitBody(handler, argv, options) {
@@ -205,6 +256,7 @@ function getRevisionIdFromObject(object: string): string {
 
 export const Git = Utils.extend(git.bind(null), git, {
   pushTutorial,
+  pullTutorial,
   conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,

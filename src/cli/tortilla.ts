@@ -47,6 +47,13 @@ Program
   });
 
 Program
+  .command('pull <remote> <branch>')
+  .description('Pull tutorial <branch> and related git-assets from <remote>')
+  .action((remote, branch) => {
+    Git.pullTutorial(remote, branch);
+  });
+
+Program
   .command('dump <command...>', 'Manage dump file')
   .command('manual <command...>', 'Manage manual files')
   .command('package <command...>', 'Manage package.json')
