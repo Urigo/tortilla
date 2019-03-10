@@ -233,7 +233,8 @@ describe('Renderer', () => {
       context.git(['add', Path.basename(fooModuleDir)]);
       context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
       context.git(['rebase', '--continue']);
-      context.tortilla(['submodule', 'update', Path.basename(fooModuleDir)]);
+      context.tortilla(['submodule', 'fetch', Path.basename(fooModuleDir)]);
+      context.tortilla(['submodule', 'checkout', Path.basename(fooModuleDir), 'master@next']);
 
       Renderer.registerHelper('testHelper', function() {
         return context.tempCwd(() => {

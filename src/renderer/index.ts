@@ -259,7 +259,7 @@ function resolvePath(/* reserved path, user defined path */) {
   // First try to see if HEAD is referencing a release tag already. This is necessary
   // if we're running executing the current template helper for a submodule
   try {
-    releaseTag = Git(['describe', '--exact-match', 'HEAD']);
+    releaseTag = Git(['describe', '--tags', '--exact-match', 'HEAD']);
   // If not, manually compose it. Necessary for the main git-module
   } catch (e) {
     const currentRelease = Release.format(Release.current());
