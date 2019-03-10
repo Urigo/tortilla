@@ -4,8 +4,7 @@ import { Git } from './git'
 import { Paths } from './paths'
 import { Utils } from './utils'
 
-// Like git-submodule-add, but will ensure that we're currently at root, and it will checkout
-// the submodule to point to a hash string, not a git-ref
+// Like git-submodule-add, but will ensure that we're currently at root and will detach HEAD
 function addSubmodule(name: string, url: string) {
   if (!name) {
     throw TypeError('Submodule name must be provided')
@@ -26,8 +25,9 @@ function addSubmodule(name: string, url: string) {
   Git.print(['submodule', 'add', url, name])
 
   const cwd = resolveSubmodulePath(name)
+  const sha1 = Git(['rev-parse', 'HEAD'], { cwd })
 
-  Git.print(['checkout', 'HEAD'], { cwd })
+  Git.print(['checkout', sha1], { cwd })
   Git(['add', '.gitmodules', name])
 }
 

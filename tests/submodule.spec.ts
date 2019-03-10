@@ -48,6 +48,14 @@ describe('Submodule', () => {
 
       expect(context.exists(submoduleLocalPath)).toBe(true);
     });
+
+    it('should detach HEAD', () => {
+      context.tortilla(['submodule', 'add', Path.basename(context.hostRepo), context.hostRepo]);
+
+      const submoduleLocalPath = `${context.testDir}/${Path.basename(context.hostRepo)}`
+
+      expect(Git.activeBranchName(submoduleLocalPath)).not.toEqual('master')
+    });
   });
 
   describe('remove()', () => {

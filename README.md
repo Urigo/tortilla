@@ -429,7 +429,7 @@ Submodules are useful whenever you would like to split the tutorial into differe
 
 **command:** `tortilla submodule add <name> <url>`
 
-Like `$ git submodule add`, this will add the specified submodule name using the provided URL, but it will ensure that the repo is currently checked out at the root commit.
+Like `$ git submodule add`, this will add the specified submodule name using the provided URL, and will detach HEAD.
 
 **command:** `tortilla submodule remove <name>`
 
