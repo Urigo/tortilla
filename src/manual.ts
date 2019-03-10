@@ -47,12 +47,7 @@ function init() {
 init();
 
 // Converts manual into the opposite format
-function renderManual(step?: string | (() => void), onInitialCheckout?: () => void) {
-  if (typeof step === 'function') {
-    onInitialCheckout = step
-    step = null
-  }
-
+function renderManual(step?: string | (() => void)) {
   if (typeof step === 'string') {
     const isSuperStep = !step.split('.')[1];
 
@@ -73,10 +68,6 @@ function renderManual(step?: string | (() => void), onInitialCheckout?: () => vo
         GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} render`,
       },
     });
-  }
-
-  if (typeof onInitialCheckout === 'function') {
-    onInitialCheckout()
   }
 
   // Indicates whether we should continue rebasing at the end of the invocation.

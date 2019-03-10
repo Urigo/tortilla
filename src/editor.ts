@@ -363,6 +363,12 @@ function renderManuals(operations) {
 
     return offset;
   });
+
+  // Re-adjust branch references since hash values are outdated at this point
+  operations.push({
+    method: 'exec',
+    command: `node ${Paths.tortilla.rebase} rebranch-super`,
+  });
 }
 
 // The step limit of which sortments are needed would be determined by the step
