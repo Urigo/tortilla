@@ -192,7 +192,7 @@ function editStep(steps, options: any = {}) {
   // Map git-refs to step indexes
   steps = [].concat(steps).filter(Boolean).map((step) => {
     // If an index was provided, return it; otherwise try to find the index by SHA1
-    if (/^\d+(\.\d+)?$/.test(step) || step === 'root') { return step; }
+    if (/^\d{1,5}(\.\d+)?$/.test(step) || step === 'root') { return step; }
     if (step === rootSha1) { return 'root'; }
 
     const commitMessage = Git(['log', step, '-1', '--format=%s'])
