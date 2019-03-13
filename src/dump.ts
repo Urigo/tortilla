@@ -156,12 +156,12 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         if (stepIndex) {
           manualPath = Path.resolve(Paths.manuals.views, manualName);
           stepLog = Git([
-            'log', branchName, `--grep=^Step ${stepIndex}:`, `--format=${format}`,
+            'log', tagRevision, `--grep=^Step ${stepIndex}:`, `--format=${format}`,
           ]);
         } else {
           manualPath = Paths.readme;
           stepLog = Git([
-            'log', Git.rootHash(branchName), `--format=${format}`,
+            'log', Git.rootHash(tagRevision), `--format=${format}`,
           ]);
         }
 

@@ -94,6 +94,33 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/manuals-dump.json');
     });
 
+    it('should dump distinct manuals for 2 different releases', () => {
+      context.tortilla(['step', 'edit', '--root']);
+      Fs.writeFileSync(`${Paths.manuals.templates}/root.tmpl`, 'release 1');
+      context.git(['add', Paths.manuals.templates])
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'master release 1']);
+
+      context.tortilla(['step', 'edit', '--root']);
+      Fs.writeFileSync(`${Paths.manuals.templates}/root.tmpl`, 'release 2');
+      context.git(['add', Paths.manuals.templates])
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'master release 2']);
+
+      context.tortilla(['step', 'edit', '--root']);
+      Fs.writeFileSync(`${Paths.manuals.templates}/root.tmpl`, 'release 3');
+      context.git(['add', Paths.manuals.templates])
+      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
+      context.git(['rebase', '--continue']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'master release 3']);
+
+      context.tortilla(['dump', 'create', context.dumpFile]);
+
+      expect(context.readDumpFile()).toContainSameContentAsFile('dumps/distinct-dump.json');
+    });
+
     it('should dump all - mixed scenario', () => {
       // Manuals dump
       const comments = ['foo', 'bar', 'baz'];
