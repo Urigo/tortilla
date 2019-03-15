@@ -98,7 +98,7 @@ function fetchSubmodule(name: string) {
 
   const cwd = resolveSubmodulePath(name)
 
-  Git.print(['fetch', 'origin', '--tags'], { cwd })
+  Git.print(['fetch', 'origin', '--tags', '-f'], { cwd })
 }
 
 // This will check out the specified submodule to provided ref. It will also guide you through
