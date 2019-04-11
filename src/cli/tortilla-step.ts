@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as Program from 'commander';
+import { Git } from '../git';
 import { localStorage as LocalStorage } from '../local-storage';
 import { Step } from '../step';
 
@@ -69,6 +70,15 @@ Program
     LocalStorage.assertTortilla(true);
     step = step || (options.root && 'root');
     Step.reword(step, options.message);
+  });
+
+Program
+  .command('show <step>')
+  .description('Run git-show for given step index')
+  .allowUnknownOption(true)
+  .action((step) => {
+    const argv = Git.normalizeArgv(process.argv.slice(4))
+    Step.show(step, ...argv);
   });
 
 Program.parse(process.argv);

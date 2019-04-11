@@ -653,4 +653,19 @@ describe('Step', () => {
       expect(stepCommitMessage).toEqual('Step 2.2: target commit');
     });
   });
+
+  describe('show()', () => {
+    it('should run git-show for given step index', () => {
+      context.tortilla(['step', 'tag', '-m', 'Testing tortilla-step-show']);
+      const out = context.tortilla(['step', 'show', '1', '--format=%s']);
+
+      expect(out).toEqual(context.freeText(`
+        Step 1: Testing tortilla-step-show
+
+        diff --git a/.tortilla/manuals/templates/step1.tmpl b/.tortilla/manuals/templates/step1.tmpl
+        new file mode 100644
+        index 0000000..e69de29
+      `))
+    })
+  })
 });

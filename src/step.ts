@@ -310,6 +310,40 @@ function rewordStep(step, message) {
   });
 }
 
+// Run git-show for given step index
+function showStep(step, ...args) {
+  assertStep(step)
+
+  step = step.split('.').join('\\.')
+
+  const hash = Git(['log', `--grep=^Step ${step}`, '--format=%H'])
+
+  if (!hash) {
+    throw Error('Step not found')
+  }
+
+  Git.print(['show', hash, ...args])
+}
+
+// Asserts whether provided string is a step index or not
+function assertStep(step: string | number, silent = false) {
+  if (typeof step !== 'string' && typeof step !== 'number') {
+    if (silent) { return false }
+
+    throw TypeError('Provided argument is not of type string or number')
+  }
+
+  step = step.toString()
+
+  if (!/\d+/.test(step) && !/\d+\.\d+/.test(step)) {
+    if (silent) { return false }
+
+    throw TypeError('Provided argument is not a step')
+  }
+
+  return true
+}
+
 // Add a new commit of the provided step with the provided message
 function commitStep(step, message, options: any = {}) {
   const argv = ['commit'];
@@ -561,6 +595,8 @@ export const Step = {
   edit: editStep,
   sort: sortStep,
   reword: rewordStep,
+  show: showStep,
+  assert: assertStep,
   commit: commitStep,
   current: getCurrentStep,
   currentSuper: getCurrentSuperStep,

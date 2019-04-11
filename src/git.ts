@@ -249,6 +249,22 @@ function getEditor() {
   return editor;
 }
 
+// Commander will split equal signs e.g. `--format=%H` which is is not the desired
+// behavior for git. This puts the everything back together when necessary
+function normalizeArgv(argv: string[]): string[] {
+  argv = [...argv]
+
+  {
+    const i = argv.indexOf('--format')
+
+    if (i !== -1) {
+      argv.splice(i, 2, `--format=${argv[i + 1]}`)
+    }
+  }
+
+  return argv
+}
+
 function getRevisionIdFromObject(object: string): string {
   return git(['rev-list', '-n', '1', object]);
 }
@@ -269,5 +285,6 @@ export const Git = Utils.extend(git.bind(null), git, {
   root: getRoot,
   edit,
   editor: getEditor,
+  normalizeArgv,
   getRevisionIdFromObject,
 });

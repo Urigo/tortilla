@@ -411,6 +411,10 @@ Rename the specified step's commit message.
 
 - *option:* `-m, --message [message]` - The new message of the reworded step. If not provided, and editor will be opened instead where we can type a full document.
 
+**command:** `tortilla step show <step>`
+
+Run `git-show` for given step index.
+
 ### tortilla-strict CLI
 
 Strict mode determines whether Tortilla's git-hook validations are enabled or disabled. It's highly recommended to leave it on, since you might accidentally digress from Tortilla's strict project rules.
