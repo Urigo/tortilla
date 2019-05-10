@@ -188,9 +188,29 @@ function getStepBase(step) {
 // Edit the provided step
 function editStep(steps, options: any = {}) {
   const rootSha1 = Git.rootHash();
+  const allSteps = getAllSteps();
+
+  steps = [].concat(steps).filter(Boolean);
+
+  // Unwrap ranges, e.g.
+  // 1...3.1 may become 1 2.1 2.2 2.3 2 3.1
+  steps = steps.reduce((flattened, step) => {
+    const range = step.match(/(\d+(?:\.\d+)?)?\.\.(?:\.+)?(\d+(?:\.\d+)?)?/);
+
+    if (!range) { return flattened.concat(step); }
+
+    const start = range[1] || 'root';
+    const end = range[2] || allSteps[allSteps.length - 1];
+    let startIndex = allSteps.findIndex(s => s === start);
+    const endIndex = allSteps.findIndex(s => s === end);
+    if (startIndex === -1) { startIndex = 0; }
+    if (endIndex === -1) { startIndex = Infinity; }
+
+    return flattened.concat(allSteps.slice(startIndex, endIndex + 1));
+  }, []);
 
   // Map git-refs to step indexes
-  steps = [].concat(steps).filter(Boolean).map((step) => {
+  steps = steps.map((step) => {
     // If an index was provided, return it; otherwise try to find the index by SHA1
     if (/^\d{1,5}(\.\d+)?$/.test(step) || step === 'root') { return step; }
     if (step === rootSha1) { return 'root'; }
@@ -201,29 +221,25 @@ function editStep(steps, options: any = {}) {
     return descriptor && descriptor.number;
   }).filter(Boolean);
 
-  if (steps instanceof Array) {
-    steps = steps.slice().sort((a, b) => {
-      const [superA, subA] = a.split('.').concat('Infinity');
-      const [superB, subB] = b.split('.').concat('Infinity');
+  steps = steps.slice().sort((a, b) => {
+    const [superA, subA] = a.split('.').concat('Infinity');
+    const [superB, subB] = b.split('.').concat('Infinity');
 
-      // Always put the root on top
-      if (a === 'root') {
-        return -1;
-      }
+    // Always put the root on top
+    if (a === 'root') {
+      return -1;
+    }
 
-      if (b === 'root') {
-        return 1;
-      }
+    if (b === 'root') {
+      return 1;
+    }
 
-      // Put first steps first
-      return (
-        (superA - superB) ||
-        (subA - subB)
-      );
-    });
-  } else {
-    steps = [steps];
-  }
+    // Put first steps first
+    return (
+      (superA - superB) ||
+      (subA - subB)
+    );
+  });
 
   // The would always have to start from the first step
   const base = getStepBase(steps[0]);
@@ -542,6 +558,20 @@ function updateStepMap(type, payload) {
   LocalStorage.setItem('STEP_MAP', JSON.stringify(map));
 }
 
+// Gets a list of all steps, from root to the most recent step
+function getAllSteps() {
+  const allSteps = Git(['log', '--grep=^Step [0-9]\\+.\\?[0-9]*:', '--format=%s'])
+    .split('\n')
+    .map(message => getStepDescriptor(message))
+    .filter(Boolean)
+    .map(descriptor => descriptor.number)
+    .reverse();
+
+  allSteps.unshift('root');
+
+  return allSteps;
+}
+
 /**
  Contains step related utilities.
  */
@@ -614,4 +644,5 @@ export const Step = {
   ensureStepMap,
   disposeStepMap,
   updateStepMap,
+  all: getAllSteps,
 };

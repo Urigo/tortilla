@@ -579,6 +579,172 @@ describe('Step', () => {
       expect(context.git(['rev-parse', 'HEAD~2'])).toEqual(context.git(['rev-parse', 'master-step1']));
       expect(context.git(['rev-parse', 'HEAD~3'])).toEqual(context.git(['rev-parse', 'master-root']));
     });
+
+    it('should edit a full range of provided steps', () => {
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+
+      context.tortilla(['step', 'edit', '1.1..1.4']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.4: test');
+    });
+
+    it('should edit a range of provided steps with top limit only', () => {
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+
+      context.tortilla(['step', 'edit', '..1.3']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      const commitHash = Git.recentCommit(['--format=%H']);
+      const rootHash = Git.rootHash();
+      expect(commitHash).toEqual(rootHash);
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: test');
+    });
+
+    it('should edit a range of provided steps with bottom limit only', () => {
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+
+      context.tortilla(['step', 'edit', '1.1..']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.4: test');
+    });
+
+    it('should edit all steps', () => {
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+      context.tortilla(['step', 'push', '-m', 'test', '--allow-empty']);
+
+      context.tortilla(['step', 'edit', '..']);
+
+      let isRebasing, message;
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      const commitHash = Git.recentCommit(['--format=%H']);
+      const rootHash = Git.rootHash();
+      expect(commitHash).toEqual(rootHash);
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: test');
+
+      Git(['rebase', '--continue']);
+
+      isRebasing = Git.rebasing();
+      expect(isRebasing).toBeTruthy();
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: test');
+    });
   });
 
   describe('sort()', () => {
