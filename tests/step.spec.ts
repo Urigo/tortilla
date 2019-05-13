@@ -104,6 +104,22 @@ describe('Step', () => {
       expect(fileExists).toBeTruthy();
     });
 
+    it('should use existing manual file if already exists', () => {
+      const templateFile = `${context.testDir}/.tortilla/manuals/templates/step1.tmpl`;
+      Fs.writeFileSync(templateFile, 'contents');
+
+      context.tortilla(['step', 'tag', '-m', 'target']);
+
+      const message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1: target');
+
+      const fileExists = context.exists(templateFile);
+      expect(fileExists).toBeTruthy();
+
+      const fileContents = Fs.readFileSync(templateFile).toString();
+      expect(fileContents).toEqual('contents');
+    });
+
     it('should create a new branch referencing the tagged step', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);
       context.tortilla(['step', 'tag', '-m', 'dummy']);

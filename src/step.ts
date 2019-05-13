@@ -141,7 +141,11 @@ function tagStep(message) {
 
   Fs.ensureDirSync(Paths.manuals.templates);
   Fs.ensureDirSync(Paths.manuals.views);
-  Fs.writeFileSync(manualTemplatePath, '');
+
+  // If file exists, use it instead of overriding it
+  if (!Fs.existsSync(manualTemplatePath)) {
+    Fs.writeFileSync(manualTemplatePath, '');
+  }
 
   Git(['add', manualTemplatePath]);
 
