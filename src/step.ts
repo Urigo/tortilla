@@ -4,6 +4,8 @@ import * as Path from 'path';
 import { Git } from './git';
 import { localStorage as LocalStorage } from './local-storage';
 import { Paths } from './paths';
+import { prompt } from './prompt';
+import * as Rebase from './rebase';
 import { Utils } from './utils';
 
 // Get recent commit by specified arguments
@@ -158,6 +160,60 @@ function tagStep(message) {
   LocalStorage.setItem('REBASE_NEW_STEP', step);
 }
 
+// The opposite of git rebase --continue: Will step back to the previously edited step
+async function stepBack(targetStep: string, options = { interactive: false }) {
+  if (!Git.rebasing()) {
+    throw Error('fatal: No rebase in progress?');
+  }
+
+  // If prior to that we did `edit 1.1..1.3` and we're in 1.3 this will result in [1.1, 1.2]
+  const previousSteps = Rebase.getPreviousEditedSteps();
+
+  if (!previousSteps.length) {
+    throw Error('No previous steps found');
+  }
+
+  if (targetStep) {
+    // Multiplier e.g. x3
+    if (/x\d+/.test(targetStep)) {
+      const times = Number(targetStep.match(/x(\d+)/)![1]);
+      targetStep = previousSteps[times - 1];
+    }
+    // Step e.g. 1.1
+    else if (!/\d+(\.\d+)?/.test(targetStep)) {
+      throw TypeError('Provided argument is neither a step or a multiplier');
+    }
+  }
+  // Prompt
+  else if (options.interactive) {
+    targetStep = await prompt([
+      {
+        type: 'list',
+        name: 'stepback',
+        message: 'Which step would you like to go back to?',
+        choices: previousSteps,
+      }
+    ]);
+  }
+  // Target step was provided
+  else {
+    targetStep = previousSteps[0];
+  }
+
+  if (!targetStep) {
+    throw TypeError('targetStep must be provided');
+  }
+
+  // Make sure it's actually relevant
+  if (previousSteps.every(s => s !== targetStep)) {
+    throw TypeError(`Provided target step ${targetStep} was not edited`);
+  }
+
+  // After retrieving target step, this is where the magic happens
+  // Message will be printed over here
+  Rebase.hardResetRebaseState(targetStep);
+}
+
 // Get the hash of the step followed by ~1, mostly useful for a rebase
 function getStepBase(step) {
   if (!step) {
@@ -267,6 +323,10 @@ function editStep(steps, options: any = {}) {
   if (process.env.TORTILLA_SUBMODULE_CWD) {
     LocalStorage.setItem('SUBMODULE_CWD', process.env.TORTILLA_SUBMODULE_CWD);
   }
+
+  // Initialize rebase_states git project
+  Fs.removeSync(Paths.rebaseStates);
+  Git(['init', Paths.rebaseStates]);
 
   Git.print(['rebase', '-i', base, '--keep-empty'], {
     env: {
@@ -622,6 +682,7 @@ export const Step = {
   push: pushStep,
   pop: popStep,
   tag: tagStep,
+  back: stepBack,
   edit: editStep,
   sort: sortStep,
   reword: rewordStep,

@@ -405,6 +405,12 @@ Edits the specified steps. A step can be specified either by index or by git-ref
 - *option:* `--root` - Edit the root step (initial commit).
 - *option:* `--udiff [path]` - Updates the `diffStep` template helpers of manuals being rebased. Note that manuals prior to the current step being edited won't be updated, since the rebasing process never looks backwards. An optional can be provided which will be a reference to another repository which contains the current repository as a submodule; This will result in updating the provided repository's manuals rather than the current one. Note that submodule's package names located in `package.json` should be distinct.
 
+**command:** `tortilla step back [targetStep]`
+
+Like `git rebase --continue`, only it will go back instead of moving forward. Checkpoints will be based on the steps we've originally provided to the command `tortilla step edit`, e.g. `tortilla step edit 1.1 1.2 1.3` will have steps `1.1`, `1.2` and `1.3` as checkpoints. If no step was provided, we will go back to the most recent step by default. `targetStep` either represents one of the provided steps we would like to go back to, or it can represent a multiplier e.g. `x3` that will go `x` times backwards in history.
+
+- *option:* `-i, --interactive` - Interactively pick a step from a menu.
+
 **command:** `tortilla step reword [step]`
 
 Rename the specified step's commit message.

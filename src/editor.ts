@@ -26,6 +26,15 @@ function init() {
   const method = argv._[0];
   const steps = argv._.slice(1, -1);
   const rebaseFilePath = argv._[argv._.length - 1];
+
+  // This method doesn't require us to parse operations, it just resets todo from a string
+  if (method === 'reset-todo') {
+    const todo = new LocalStorage.native(Paths.rebaseStates).getItem('TODO');
+    Fs.writeFileSync(rebaseFilePath, todo);
+
+    return;
+  }
+
   const message = argv.message || argv.m;
   const udiff = argv.udiff;
 
@@ -112,9 +121,9 @@ function editStep(operations, steps, options) {
     }
   });
 
-  // Probably editing the recent step in which case no sortments are needed
+  // Probably editing the recent step in which case no sorts are needed
   if (operations.length > 1) {
-    // Prepare meta-data for upcoming sortments
+    // Prepare meta-data for upcoming sorts
     const descriptor = Step.descriptor(operations[0].message);
 
     // Step exists
@@ -134,6 +143,7 @@ function editStep(operations, steps, options) {
     }
 
     sort = `GIT_SEQUENCE_EDITOR="${sort}"`;
+    const saveRebaseState = `GIT_SEQUENCE_EDITOR="node ${Paths.tortilla.rebase} stash-rebase-state"`;
 
     // Continue sorting the steps after step editing has been finished
     steps.forEach((step) => {
@@ -147,6 +157,12 @@ function editStep(operations, steps, options) {
       operations.splice(index + 1, 0, {
         method: 'exec',
         command: `${sort} git rebase --edit-todo`,
+      });
+
+      // Insert the following operation BEFORE the step's operation
+      operations.splice(index, 0, {
+        method: 'exec',
+        command: `${saveRebaseState} git rebase --edit-todo`,
       });
     });
   }
@@ -168,7 +184,7 @@ function sortSteps(operations, options) {
   const newStep = LocalStorage.getItem('REBASE_NEW_STEP');
   const submoduleCwd = LocalStorage.getItem('SUBMODULE_CWD');
 
-  // If delta is 0 no sortments are needed
+  // If delta is 0 no sorts are needed
   if (oldStep === newStep) {
     LocalStorage.setItem('REBASE_HOOKS_DISABLED', 1);
 
@@ -224,8 +240,10 @@ function sortSteps(operations, options) {
     // step indexes are already sorted
     if (operation.method === 'edit') {
       // Pick BEFORE edit
-      operations.splice(index + offset++, 0, {...operation, 
-        method: 'pick'});
+      operations.splice(index + offset++, 0, {
+        ...operation,
+        method: 'pick',
+      });
 
       // Update commit's step number
       operations.splice(index + offset++, 0, {
@@ -299,7 +317,7 @@ function sortSteps(operations, options) {
 
 // Edit the commit which is presented as the current HEAD
 function editHead(operations) {
-  // Prepare meta-data for upcoming sortments
+  // Prepare meta-data for upcoming sorts
   const descriptor = Step.descriptor(operations[0].message);
 
   // Descriptor should always exist, but just in case
@@ -371,7 +389,7 @@ function renderManuals(operations) {
   });
 }
 
-// The step limit of which sortments are needed would be determined by the step
+// The step limit of which sorts are needed would be determined by the step
 // which is greater
 function getStepLimit(oldStep, newStep) {
   oldStep = oldStep === 'root' ? '0' : oldStep;
