@@ -35,6 +35,7 @@ import { Utils } from './utils';
 const cache = {};
 export const localStorage: any = {
   create: createLocalStorage,
+  native: LocalStorage,
   assertTortilla,
 };
 

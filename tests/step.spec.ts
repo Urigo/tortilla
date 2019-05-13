@@ -763,6 +763,257 @@ describe('Step', () => {
     });
   });
 
+  describe('back()', () => {
+    it('should go 1 step back', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      Git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      Git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      Git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      Fs.writeFileSync(`${context.cwd()}/qux`, 'qux');
+      Git(['add', 'qux']);
+      context.tortilla(['step', 'push', '-m', 'qux']);
+
+      context.tortilla(['step', 'edit', '1.1..1.3']);
+      Git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
+
+      let message;
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      context.tortilla(['step', 'back']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: bar');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.4: qux');
+    });
+
+    it('should go x steps back', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      Git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      Git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      Git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      Fs.writeFileSync(`${context.cwd()}/qux`, 'qux');
+      Git(['add', 'qux']);
+      context.tortilla(['step', 'push', '-m', 'qux']);
+
+      context.tortilla(['step', 'edit', '1.1..1.3']);
+      Git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
+
+      let message;
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      context.tortilla(['step', 'back', 'x2']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: foo');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: bar');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.4: qux');
+    });
+
+    it('should go back to provided step', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      Git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      Git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      Git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      Fs.writeFileSync(`${context.cwd()}/qux`, 'qux');
+      Git(['add', 'qux']);
+      context.tortilla(['step', 'push', '-m', 'qux']);
+
+      context.tortilla(['step', 'edit', '1.1..1.3']);
+      Git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
+
+      let message;
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      context.tortilla(['step', 'back', '1.1']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: foo');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: bar');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.4: qux');
+    });
+
+    it('should go back to interactively picked step', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      Git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      Git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      Git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      Fs.writeFileSync(`${context.cwd()}/qux`, 'qux');
+      Git(['add', 'qux']);
+      context.tortilla(['step', 'push', '-m', 'qux']);
+
+      context.tortilla(['step', 'edit', '1.1..1.3']);
+      Git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
+
+      let message;
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      context.setPromptAnswers([
+        '1.1'
+      ]);
+
+      context.tortilla(['step', 'back', '-i']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.1: foo');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.2: bar');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      Git(['rebase', '--continue']);
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.4: qux');
+    });
+
+    it('should throw an error if we exceeded the number of steps', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      Git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      Git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      Git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      Fs.writeFileSync(`${context.cwd()}/qux`, 'qux');
+      Git(['add', 'qux']);
+      context.tortilla(['step', 'push', '-m', 'qux']);
+
+      context.tortilla(['step', 'edit', '1.1..1.3']);
+      Git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
+
+      let message;
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      expect(() => {
+        context.tortilla(['step', 'back', 'x4']);
+      }).toThrowError();
+    });
+
+    it('should throw an error if provided step does not exist', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      Git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      Git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      Git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      Fs.writeFileSync(`${context.cwd()}/qux`, 'qux');
+      Git(['add', 'qux']);
+      context.tortilla(['step', 'push', '-m', 'qux']);
+
+      context.tortilla(['step', 'edit', '1.1..1.3']);
+      Git(['rebase', '--continue']);
+      Git(['rebase', '--continue']);
+
+      let message;
+
+      message = Step.recentCommit('%s');
+      expect(message).toEqual('Step 1.3: baz');
+
+      expect(() => {
+        context.tortilla(['step', 'back', '2']);
+      }).toThrowError();
+    });
+  });
+
   describe('sort()', () => {
     it('should sort all step indexes from the given step', () => {
       context.tortilla(['step', 'tag', '-m', 'dummy']);

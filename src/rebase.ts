@@ -1,8 +1,11 @@
+import * as Fs from 'fs-extra';
 import * as Minimist from 'minimist';
 import { Git } from './git';
 import { localStorage as LocalStorage } from './local-storage';
+import { Paths } from './paths';
 import { Step } from './step';
 import { Submodule } from './submodule';
+import { freeText } from './utils';
 
 /**
  The rebase module is responsible for performing tasks done by the editor using an
@@ -28,6 +31,8 @@ function init() {
       return superPickStep(arg1);
     case 'rebranch-super':
       return rebranchSuperSteps();
+    case 'stash-rebase-state':
+      return stashRebaseState(arg1);
   }
 }
 
@@ -148,6 +153,86 @@ export function rebranchSuperSteps() {
     .forEach((step) => {
       Git(['branch', `${rootBranch}-step${step.number}`, step.hash]);
     });
+}
+
+export function getPreviousEditedSteps() {
+  return Git(['log', '--format=%s'], {
+    cwd: Paths.rebaseStates,
+  }).split('\n').slice(1);
+}
+
+// Given a step, it will look for its belonging rebase state and will restore everything
+// to that point of time, including todo and tortilla local storage
+export function hardResetRebaseState(step) {
+  // HEAD on rebase state should now reference provided step
+  const rebaseStateObject = Git(['log', `--grep=${step}`, '--format=%H'], {
+    cwd: Paths.rebaseStates,
+  });
+
+  Git(['reset', '--hard', rebaseStateObject], {
+    cwd: Paths.rebaseStates,
+  });
+
+  const rebaseStatesStorage = new LocalStorage.native(Paths.rebaseStates);
+  const head = rebaseStatesStorage.getItem('HEAD');
+
+  // Hard reset HEAD from rebase state
+  Git(['reset', '--hard', head]);
+
+  // Restore essential local storage items
+  LocalStorage.setItem('REBASE_OLD_STEP', rebaseStatesStorage.getItem('REBASE_OLD_STEP'));
+  LocalStorage.setItem('REBASE_NEW_STEP', rebaseStatesStorage.getItem('REBASE_NEW_STEP'));
+  LocalStorage.removeItem('REBASE_HOOKS_DISABLED');
+
+  // Restore todo from rebase state
+  Git(['rebase', '--edit-todo'], {
+    env: {
+      GIT_SEQUENCE_EDITOR: `node ${Paths.tortilla.editor} reset-todo`
+    }
+  });
+
+  const statusMessage = Git(['log', '-1', '--format=%h...  %s']);
+
+  // Match git's native API log
+  console.log(freeText(`
+    Stopped at ${statusMessage}
+    You can amend the commit now, with
+
+      git commit --amend
+
+    Once you are satisfied with your changes, run
+
+      git rebase --continue
+  `));
+}
+
+// Will create a new rebase state so we can go back to it during the editing process
+export function stashRebaseState(todoFile: string) {
+  let todo = Fs.readFileSync(todoFile).toString();
+  const tasks = todo.split('\n');
+  const [, head = '', step = ''] = tasks[0].trim().match(/edit +(\w+) +Step +(\d+(?:\.\d+)?)/) || [];
+
+  if (!head || !step) { return; }
+
+  const rebaseStatesStorage = new LocalStorage.native(Paths.rebaseStates);
+  // Since the execution comes BEFORE the edit itself, we need to slice it out to get
+  // a todo list which is right for the edit state
+  todo = tasks.slice(1).join('\n');
+
+  // Save essential local storage variables for step editing
+  rebaseStatesStorage.setItem('REBASE_OLD_STEP', LocalStorage.getItem('REBASE_OLD_STEP') || step);
+  rebaseStatesStorage.setItem('REBASE_NEW_STEP', LocalStorage.getItem('REBASE_NEW_STEP') || step);
+  rebaseStatesStorage.setItem('HEAD', Git(['rev-parse', head]));
+  rebaseStatesStorage.setItem('TODO', todo);
+
+  // Edit on top of the rebase_states stack, using git commits
+  Git(['add', '.'], {
+    cwd: Paths.rebaseStates,
+  });
+
+  Git(['commit', '-m', step], {
+    cwd: Paths.rebaseStates,
+  });
 }
 
 // Calculate the next step dynamically based on its super flag

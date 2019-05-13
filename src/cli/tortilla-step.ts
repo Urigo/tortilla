@@ -81,4 +81,15 @@ Program
     Step.show(step, ...argv);
   });
 
+Program
+  .command('back [targetStep]')
+  .description('Go back to edit previous step')
+  .option('-i, --interactive [interactive]', 'interactively pick step')
+  .action((targetStep, options) => {
+    Step.back(targetStep, options).catch((e) => {
+      console.error(e.stack);
+      process.exit(1);
+    });
+  });
+
 Program.parse(process.argv);
