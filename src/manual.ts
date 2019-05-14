@@ -137,16 +137,16 @@ function renderManual(step?: string | (() => void)) {
     Git(['add', symlinkPath]);
   });
 
-  // Continue if should
-  if (shouldContinue) {
-    Git.print(['rebase', '--continue'], {
+  if (shouldContinue || Git.stagedFiles().length) {
+    Git.print(['commit', '--amend'], {
       env: {
         GIT_EDITOR: true,
       },
     });
-  // Amend only if necessary, otherwise there might be unexpected things going on
-  } else if (Git.stagedFiles().length) {
-    Git.print(['commit', '--amend'], {
+  }
+
+  if (shouldContinue) {
+    Git.print(['rebase', '--continue'], {
       env: {
         GIT_EDITOR: true,
       },
