@@ -54,6 +54,13 @@ Program
   });
 
 Program
+  .command('status')
+  .description('Print edit status followed by git-status')
+  .action(() => {
+    Git.tutorialStatus();
+  });
+
+Program
   .command('dump <command...>', 'Manage dump file')
   .command('manual <command...>', 'Manage manual files')
   .command('package <command...>', 'Manage package.json')

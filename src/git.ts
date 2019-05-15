@@ -97,6 +97,39 @@ function pullTutorial(remote: string, baseBranch: string) {
   }
 }
 
+// Used internally by tutorialStatus() to get the right step message
+function stepStatus(head = 'HEAD') {
+  if (getRootHash() === Git(['rev-parse', head])) {
+    return 'root';
+  }
+
+  const match = Git(['log', head, '-1', '--format=%s']).match(/^Step (\d+(?:\.\d+)?)/);
+
+  if (match) {
+    return `step ${match[1]}`;
+  }
+
+  return Git(['rev-parse', '--short', head]);
+}
+
+function isConflicting() {
+  return Git(['rev-parse', 'HEAD']) !== Git(['rev-parse', 'REBASE_HEAD']);
+}
+
+// Print edit status followed by git-status
+function tutorialStatus() {
+  if (isRebasing()) {
+    if (isConflicting()) {
+      console.log(`Solving conflict between ${stepStatus('HEAD')} (HEAD) and ${stepStatus('REBASE_HEAD')}`);
+    }
+    else {
+      console.log(`Editing ${stepStatus()}`);
+    }
+  }
+
+  Git.print(['status']);
+}
+
 // The body of the git execution function, useful since we use the same logic both for
 // exec and spawn
 function gitBody(handler, argv, options) {
@@ -273,6 +306,8 @@ function getRevisionIdFromObject(object: string): string {
 export const Git = Utils.extend(git.bind(null), git, {
   pushTutorial,
   pullTutorial,
+  tutorialStatus,
+  isConflicting,
   conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,

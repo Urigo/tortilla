@@ -126,4 +126,80 @@ describe('Git', () => {
       );
     });
   });
+
+  describe('tutorialStatus()', () => {
+    it('should show step being edited', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      context.git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      context.git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      context.git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      context.tortilla(['step', 'edit', '1.2']);
+
+      expect(
+        context.tortilla(['status'])
+      ).toMatch(
+        /^Editing step 1\.2/
+      );
+    });
+
+    it('should show conflicting steps', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      context.git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      context.git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      context.git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      context.tortilla(['step', 'edit', '1.2']);
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'bazooka');
+
+      try {
+        context.git(['rebase', '--continue']);
+      }
+      catch (e) {
+        // Error is expected
+      }
+
+      expect(
+        context.tortilla(['status'])
+      ).toMatch(
+        /^Solving conflict between step 1\.2 \(HEAD\) and step 1\.3/
+      );
+    });
+
+    it('should print root', () => {
+      Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+      context.git(['add', 'foo']);
+      context.tortilla(['step', 'push', '-m', 'foo']);
+
+      Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+      context.git(['add', 'bar']);
+      context.tortilla(['step', 'push', '-m', 'bar']);
+
+      Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+      context.git(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
+
+      context.tortilla(['step', 'edit', '--root']);
+
+      expect(
+        context.tortilla(['status'])
+      ).toMatch(
+        /^Editing root/
+      );
+    });
+  });
 });

@@ -310,6 +310,10 @@ Push a tutorial based on the provided branch. e.g. given `master` then `master-h
 
 Pull a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pulled.
 
+**command:** `tortilla status`
+
+Will print the tutorial status prior to git-status. If for example, we're editing step 1.2, this will print `Editing step 1.2`. In case there's a conflict, let's say between steps 1.2 and 1.3, this will print `Solving conflict between step 1.2 (HEAD) and step 1.3`.
+
 ### tortilla-dump CLI
 
 **command:** `tortilla dump create [out]`
