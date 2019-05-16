@@ -56,8 +56,9 @@ Program
 Program
   .command('status')
   .description('Print edit status followed by git-status')
-  .action(() => {
-    Git.tutorialStatus();
+  .option('-i, --instruct [instruct]', 'Print additional instructions')
+  .action((options) => {
+    Git.tutorialStatus(options);
   });
 
 Program

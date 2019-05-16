@@ -314,6 +314,8 @@ Pull a tutorial based on the provided branch. e.g. given `master` then `master-h
 
 Will print the tutorial status prior to git-status. If for example, we're editing step 1.2, this will print `Editing step 1.2`. In case there's a conflict, let's say between steps 1.2 and 1.3, this will print `Solving conflict between step 1.2 (HEAD) and step 1.3`.
 
+- *option:* `-i, --instruct` - Print additional instructions: how to continue from current state. Am I allowed to push new steps? Should I amend my changes? etc.
+
 ### tortilla-dump CLI
 
 **command:** `tortilla dump create [out]`

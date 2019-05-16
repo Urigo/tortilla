@@ -2,7 +2,7 @@ import * as Fs from 'fs-extra';
 import * as Tmp from 'tmp';
 import { localStorage } from './local-storage';
 import { Paths, resolveProject } from './paths';
-import { Utils } from './utils';
+import { freeText, Utils } from './utils';
 
 /**
  Contains general git utilities.
@@ -114,30 +114,76 @@ function getRefStep(ref = 'HEAD') {
 }
 
 // Print edit status followed by git-status
-function tutorialStatus() {
-  extraStatus:
+function tutorialStatus(options: { instruct?: boolean } = {}) {
+  Git.print(['status']);
+
+  let instructions;
+  position:
   if (isRebasing()) {
     const head = Git(['rev-parse', 'HEAD']);
     const rebaseHead = Git(['rev-parse', 'REBASE_HEAD']);
     const headStep = getRefStep('HEAD');
 
     if (head === rebaseHead) {
-      console.log(`Editing ${headStep}`);
-      break extraStatus;
+      console.log(`\nEditing ${headStep}`);
+      instructions = 'edit';
+      break position;
     }
 
     const rebaseHeadStep = getRefStep('REBASE_HEAD');
     const isConflict = localStorage.getItem('REBASE_NEW_STEP') !== headStep;
 
     if (isConflict) {
-      console.log(`Solving conflict between ${headStep} and ${rebaseHeadStep}`);
-      break extraStatus;
+      console.log(`\nSolving conflict between ${headStep} and ${rebaseHeadStep}`);
+      instructions = 'conflict';
+      break position;
     }
 
-    console.log(`Branched out from ${rebaseHeadStep} to ${headStep}`);
+    console.log(`\nBranched out from ${rebaseHeadStep} to ${headStep}`);
+    instructions = 'edit';
   }
 
-  Git.print(['status']);
+  switch (options.instruct && instructions) {
+    case 'edit':
+      console.log('\n' + freeText(`
+        To edit the current step, stage your changes and amend them:
+
+            $ git add xxx
+            $ git commit --amend
+
+        Feel free to push or pop steps:
+
+            $ tortilla step push/pop
+
+        Once you finish, continue the rebase and Tortilla will take care of the rest:
+
+            $ git rebase --continue
+
+        You can go back to re-edit previous steps at any point, but be noted that this will discard all your changes thus far:
+
+            $ tortilla step back
+
+        If for some reason, at any point you decide to quit, use the comand:
+
+            $ git rebase --abort
+      `))
+    case 'conflict':
+      console.log('\n' + freeText(`
+        Once you solved the conflict, stage your changes and continue the rebase.
+        DO NOT amend your changes, push or pop steps:
+
+            $ git add xxx
+            $ git rebase --continue
+
+        You can go back to re-edit previous steps at any point, but be noted that this will discard all your changes thus far:
+
+            $ tortilla step back
+
+        If for some reason, at any point you decide to quit, use the comand:
+
+            $ git rebase --abort
+      `))
+  }
 }
 
 // The body of the git execution function, useful since we use the same logic both for

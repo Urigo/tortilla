@@ -127,7 +127,7 @@ describe('Git', () => {
     });
   });
 
-  describe.only('tutorialStatus()', () => {
+  describe('tutorialStatus()', () => {
     it('should show step being edited', () => {
       Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
       context.git(['add', 'foo']);
@@ -146,7 +146,7 @@ describe('Git', () => {
       expect(
         context.tortilla(['status'])
       ).toMatch(
-        /^Editing 1\.2/
+        /Editing 1\.2$/
       );
     });
 
@@ -165,6 +165,8 @@ describe('Git', () => {
 
       context.tortilla(['step', 'edit', '1.2']);
       Fs.writeFileSync(`${context.cwd()}/baz`, 'bazooka');
+      context.tortilla(['add', 'baz']);
+      context.tortilla(['step', 'push', '-m', 'baz']);
 
       try {
         context.git(['rebase', '--continue']);
@@ -176,7 +178,7 @@ describe('Git', () => {
       expect(
         context.tortilla(['status'])
       ).toMatch(
-        /^Solving conflict between 1\.2 and 1\.3/
+        /Solving conflict between 1\.2 and 1\.3$/
       );
     });
 
@@ -198,7 +200,7 @@ describe('Git', () => {
       expect(
         context.tortilla(['status'])
       ).toMatch(
-        /^Editing root/
+        /Editing root$/
       );
     });
 
@@ -222,7 +224,7 @@ describe('Git', () => {
         expect(
           context.tortilla(['status'])
         ).toMatch(
-          /^Branched out from 1\.2 to 1\.1/
+          /Branched out from 1\.2 to 1\.1$/
         );
       });
 
@@ -247,7 +249,7 @@ describe('Git', () => {
         expect(
           context.tortilla(['status'])
         ).toMatch(
-          /^Branched out from 1\.2 to 1\.3/
+          /Branched out from 1\.2 to 1\.3$/
         );
       });
 
@@ -273,8 +275,131 @@ describe('Git', () => {
         expect(
           context.tortilla(['status'])
         ).toMatch(
-          /^Branched out from 1\.2 to 1\.2/
+          /Branched out from 1\.2 to 1\.2$/
         );
+      });
+    });
+
+    describe('instruct', () => {
+      test('edit', () => {
+        Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+        context.git(['add', 'foo']);
+        context.tortilla(['step', 'push', '-m', 'foo']);
+
+        Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+        context.git(['add', 'bar']);
+        context.tortilla(['step', 'push', '-m', 'bar']);
+
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        context.tortilla(['step', 'edit', '1.2']);
+
+        expect(context.tortilla(['status', '-i'])).toContain(context.freeText(`
+          To edit the current step, stage your changes and amend them:
+
+              $ git add xxx
+              $ git commit --amend
+
+          Feel free to push or pop steps:
+
+              $ tortilla step push/pop
+
+          Once you finish, continue the rebase and Tortilla will take care of the rest:
+
+              $ git rebase --continue
+
+          You can go back to re-edit previous steps at any point, but be noted that this will discard all your changes thus far:
+
+              $ tortilla step back
+
+          If for some reason, at any point you decide to quit, use the comand:
+
+              $ git rebase --abort
+        `))
+      });
+
+      test('edit (branch out)', () => {
+        Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+        context.git(['add', 'foo']);
+        context.tortilla(['step', 'push', '-m', 'foo']);
+
+        Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+        context.git(['add', 'bar']);
+        context.tortilla(['step', 'push', '-m', 'bar']);
+
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        context.tortilla(['step', 'edit', '1.2']);
+        context.tortilla(['step', 'pop']);
+
+        expect(context.tortilla(['status', '-i'])).toContain(context.freeText(`
+          To edit the current step, stage your changes and amend them:
+
+              $ git add xxx
+              $ git commit --amend
+
+          Feel free to push or pop steps:
+
+              $ tortilla step push/pop
+
+          Once you finish, continue the rebase and Tortilla will take care of the rest:
+
+              $ git rebase --continue
+
+          You can go back to re-edit previous steps at any point, but be noted that this will discard all your changes thus far:
+
+              $ tortilla step back
+
+          If for some reason, at any point you decide to quit, use the comand:
+
+              $ git rebase --abort
+        `))
+      });
+
+      test('conflict', () => {
+        Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+        context.git(['add', 'foo']);
+        context.tortilla(['step', 'push', '-m', 'foo']);
+
+        Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+        context.git(['add', 'bar']);
+        context.tortilla(['step', 'push', '-m', 'bar']);
+
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        context.tortilla(['step', 'edit', '1.2']);
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'bazooka');
+        context.tortilla(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        try {
+          context.git(['rebase', '--continue']);
+        }
+        catch (e) {
+          // Error is expected
+        }
+
+        expect(context.tortilla(['status', '-i'])).toContain(context.freeText(`
+          Once you solved the conflict, stage your changes and continue the rebase.
+          DO NOT amend your changes, push or pop steps:
+
+              $ git add xxx
+              $ git rebase --continue
+
+          You can go back to re-edit previous steps at any point, but be noted that this will discard all your changes thus far:
+
+              $ tortilla step back
+
+          If for some reason, at any point you decide to quit, use the comand:
+
+              $ git rebase --abort
+        `))
       });
     });
   });
