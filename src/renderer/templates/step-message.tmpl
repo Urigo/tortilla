@@ -1,5 +1,5 @@
 {{~#if number~}}
-{{t "_.step" postT="upperFirst"}} {{number}}: {{message}}
+{{#if module}}{{module}} {{/if}}{{t "_.step" postT="upperFirst"}} {{number}}: {{message}}
 {{~else~}}
 {{message}}
 {{~/if~}}

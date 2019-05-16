@@ -210,7 +210,8 @@ Should be rendered to:
 
 - `diffStep <step>` - Will run `git diff` for the specified step's commit. This template helper may receives the following options:
   - `files` - A list of specific file paths separated by a comma (`,`) that we would like to present in our diff. The rest of the files in the diff will be ignored.
-  - `submodule` - The name of the submodule which contains the step we would like to reference.
+  - `module` - The name of the submodule which contains the step we would like to reference.
+  - `noTitle` - A flag which indicates whether we should render the step title prior to diffs or not.
 
 ### Releases
 

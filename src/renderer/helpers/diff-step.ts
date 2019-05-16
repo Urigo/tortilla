@@ -94,6 +94,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // Translate step message, if at all
   const stepMessage = Renderer.call('stepMessage', {
     commitMessage: stepData.slice(1).join(' '),
+    module: hash.module,
   });
 
   let stepTitle;

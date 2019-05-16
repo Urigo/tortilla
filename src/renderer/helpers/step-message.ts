@@ -1,7 +1,7 @@
-import { Step} from '../../step';
-import { Translator} from '../../translator';
-import { Utils} from '../../utils';
-import { Renderer} from '../index';
+import { Step } from '../../step';
+import { Translator } from '../../translator';
+import { Utils } from '../../utils';
+import { Renderer } from '../index';
 
 /**
   Renders a step's commit message including its translation
@@ -15,6 +15,7 @@ Renderer.registerHelper('stepMessage', function(options) {
 
   const stepDescriptor: any = Step.descriptor(commitMessage) || {};
   const stepNumber = stepDescriptor.number || 'root';
+  stepDescriptor.module = params.module && Utils.upperFirst(params.module);
   stepDescriptor.message = t(`step:${stepNumber}`, {
     defaultValue: stepDescriptor.message || commitMessage,
     keySeparator: ':',
