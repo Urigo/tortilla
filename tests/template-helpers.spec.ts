@@ -75,7 +75,7 @@ describe('Template Helpers', () => {
       expect(view).toContainSameContentAsFile('referenced-diff.md');
     });
 
-    it.only('should render step from the specified submodule', function() {
+    it('should render step from the specified submodule', function() {
       const repoDir = context.createRepo();
 
       context.tortilla(['submodule', 'add', Path.basename(repoDir), repoDir]);
@@ -83,6 +83,14 @@ describe('Template Helpers', () => {
       const view = Renderer.renderTemplate(`{{{diffStep 1.1 module="${Path.basename(repoDir)}"}}}`);
 
       expect(view).toContainSameContentAsFile('submodule-diff.md');
+    });
+
+    it('should not render title if specified not to', function() {
+      context.applyTestPatch('add-file');
+      context.applyTestPatch('change-file');
+
+      const view = Renderer.renderTemplate('{{{diffStep 1.2 noTitle=true}}}');
+      expect(view).toContainSameContentAsFile('change-file-notitle.md');
     });
 
     describe('render target set to Medium', function() {

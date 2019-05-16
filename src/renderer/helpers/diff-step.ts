@@ -74,7 +74,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
   // In case step doesn't exist just render the error message.
   // It's better to have a silent error like this rather than a real one otherwise
   // the rebase process will skrew up very easily and we don't want that
-  if (!stepData.length) {
+  if (!hash.noTitle && !stepData.length) {
     return `#### ${t('step.commit.missing', { number: step })}`;
   }
 
@@ -118,6 +118,10 @@ Renderer.registerHelper('diffStep', (step, options) => {
   const mdDiffs = files
     .map(getMdDiff)
     .join('\n\n');
+
+  if (hash.noTitle) {
+    return mdDiffs;
+  }
 
   return `${stepTitle}\n\n${mdDiffs}`;
 }, {
