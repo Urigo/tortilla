@@ -127,7 +127,7 @@ describe('Git', () => {
     });
   });
 
-  describe('tutorialStatus()', () => {
+  describe.only('tutorialStatus()', () => {
     it('should show step being edited', () => {
       Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
       context.git(['add', 'foo']);
@@ -146,7 +146,7 @@ describe('Git', () => {
       expect(
         context.tortilla(['status'])
       ).toMatch(
-        /^Editing step 1\.2/
+        /^Editing 1\.2/
       );
     });
 
@@ -176,7 +176,7 @@ describe('Git', () => {
       expect(
         context.tortilla(['status'])
       ).toMatch(
-        /^Solving conflict between step 1\.2 \(HEAD\) and step 1\.3/
+        /^Solving conflict between 1\.2 and 1\.3/
       );
     });
 
@@ -200,6 +200,82 @@ describe('Git', () => {
       ).toMatch(
         /^Editing root/
       );
+    });
+
+    describe('branching out', () => {
+      test('REBEASE_HEAD behind of HEAD', () => {
+        Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+        context.git(['add', 'foo']);
+        context.tortilla(['step', 'push', '-m', 'foo']);
+
+        Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+        context.git(['add', 'bar']);
+        context.tortilla(['step', 'push', '-m', 'bar']);
+
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        context.tortilla(['step', 'edit', '1.2']);
+        context.tortilla(['step', 'pop']);
+
+        expect(
+          context.tortilla(['status'])
+        ).toMatch(
+          /^Branched out from 1\.2 to 1\.1/
+        );
+      });
+
+      test('REBEASE_HEAD ahead of HEAD', () => {
+        Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+        context.git(['add', 'foo']);
+        context.tortilla(['step', 'push', '-m', 'foo']);
+
+        Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+        context.git(['add', 'bar']);
+        context.tortilla(['step', 'push', '-m', 'bar']);
+
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        context.tortilla(['step', 'edit', '1.2']);
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        expect(
+          context.tortilla(['status'])
+        ).toMatch(
+          /^Branched out from 1\.2 to 1\.3/
+        );
+      });
+
+      test('REBEASE_HEAD parallel to HEAD', () => {
+        Fs.writeFileSync(`${context.cwd()}/foo`, 'foo');
+        context.git(['add', 'foo']);
+        context.tortilla(['step', 'push', '-m', 'foo']);
+
+        Fs.writeFileSync(`${context.cwd()}/bar`, 'bar');
+        context.git(['add', 'bar']);
+        context.tortilla(['step', 'push', '-m', 'bar']);
+
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        context.tortilla(['step', 'edit', '1.2']);
+        context.tortilla(['step', 'pop']);
+        Fs.writeFileSync(`${context.cwd()}/baz`, 'baz');
+        context.git(['add', 'baz']);
+        context.tortilla(['step', 'push', '-m', 'baz']);
+
+        expect(
+          context.tortilla(['status'])
+        ).toMatch(
+          /^Branched out from 1\.2 to 1\.2/
+        );
+      });
     });
   });
 });

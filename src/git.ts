@@ -1,5 +1,6 @@
 import * as Fs from 'fs-extra';
 import * as Tmp from 'tmp';
+import { localStorage } from './local-storage';
 import { Paths, resolveProject } from './paths';
 import { Utils } from './utils';
 
@@ -98,33 +99,42 @@ function pullTutorial(remote: string, baseBranch: string) {
 }
 
 // Used internally by tutorialStatus() to get the right step message
-function stepStatus(head = 'HEAD') {
-  if (getRootHash() === Git(['rev-parse', head])) {
+function getRefStep(ref = 'HEAD') {
+  if (getRootHash() === Git(['rev-parse', ref])) {
     return 'root';
   }
 
-  const match = Git(['log', head, '-1', '--format=%s']).match(/^Step (\d+(?:\.\d+)?)/);
+  const match = Git(['log', ref, '-1', '--format=%s']).match(/^Step (\d+(?:\.\d+)?)/);
 
   if (match) {
-    return `step ${match[1]}`;
+    return match[1];
   }
 
-  return Git(['rev-parse', '--short', head]);
-}
-
-function isConflicting() {
-  return Git(['rev-parse', 'HEAD']) !== Git(['rev-parse', 'REBASE_HEAD']);
+  return Git(['rev-parse', '--short', ref]);
 }
 
 // Print edit status followed by git-status
 function tutorialStatus() {
+  extraStatus:
   if (isRebasing()) {
-    if (isConflicting()) {
-      console.log(`Solving conflict between ${stepStatus('HEAD')} (HEAD) and ${stepStatus('REBASE_HEAD')}`);
+    const head = Git(['rev-parse', 'HEAD']);
+    const rebaseHead = Git(['rev-parse', 'REBASE_HEAD']);
+    const headStep = getRefStep('HEAD');
+
+    if (head === rebaseHead) {
+      console.log(`Editing ${headStep}`);
+      break extraStatus;
     }
-    else {
-      console.log(`Editing ${stepStatus()}`);
+
+    const rebaseHeadStep = getRefStep('REBASE_HEAD');
+    const isConflict = localStorage.getItem('REBASE_NEW_STEP') !== headStep;
+
+    if (isConflict) {
+      console.log(`Solving conflict between ${headStep} and ${rebaseHeadStep}`);
+      break extraStatus;
     }
+
+    console.log(`Branched out from ${rebaseHeadStep} to ${headStep}`);
   }
 
   Git.print(['status']);
@@ -307,7 +317,6 @@ export const Git = Utils.extend(git.bind(null), git, {
   pushTutorial,
   pullTutorial,
   tutorialStatus,
-  isConflicting,
   conflict,
   rebasing: isRebasing,
   cherryPicking: isCherryPicking,
