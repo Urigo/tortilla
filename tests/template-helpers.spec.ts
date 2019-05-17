@@ -45,6 +45,11 @@ describe('Template Helpers', () => {
       expect(view).toContainSameContentAsFile('rename-file.md');
     });
 
+    it('should render root diff', function() {
+      const view = Renderer.renderTemplate('{{{diffStep "root"}}}');
+      expect(view).toContainSameContentAsFile('root.md');
+    });
+
     it('should render only the file matching the pattern', function() {
       context.applyTestPatch('add-multiple-files');
 

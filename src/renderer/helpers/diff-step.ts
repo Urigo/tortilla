@@ -64,12 +64,21 @@ Renderer.registerHelper('diffStep', (step, options) => {
     }
   }
 
-  const stepData = Git.recentCommit([
-    `--grep=^Step ${step}:`, '--format=%h %s',
-  ], {
-    cwd,
-  }).split(' ')
-    .filter(Boolean);
+  let stepData;
+  if (step === 'root') {
+    const rootHash = Git.rootHash('HEAD', { cwd });
+    const message = Git(['log', rootHash, '-1', '--format=%s'], { cwd });
+    // Simulating split result because it will be joined soon
+    stepData = [rootHash, ...message.split(' ')];
+  } else {
+    stepData = Git.recentCommit([
+      `--grep=^Step ${step}:`, '--format=%h %s',
+    ], {
+      cwd,
+    }).split(' ')
+      .filter(Boolean);
+  }
+
 
   // In case step doesn't exist just render the error message.
   // It's better to have a silent error like this rather than a real one otherwise
@@ -106,7 +115,13 @@ Renderer.registerHelper('diffStep', (step, options) => {
     stepTitle = `#### [${stepMessage}](${commitReference})`;
   }
 
-  const diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
+  let diff;
+  if (step === 'root') {
+    diff = Git(['show', stepHash, '--format='], { cwd });
+  }
+  else {
+    diff = Git(['diff', `${stepHash}^`, stepHash], { cwd });
+  }
 
   const blacklist: any = Config.getBlacklist();
 
