@@ -21,6 +21,13 @@ describe('Template Helpers', () => {
       expect(view).toContainSameContentAsFile('add-file.md');
     });
 
+    it('should escape file path with __pattern__', function() {
+      context.applyTestPatch('add-private-file');
+
+      const view = Renderer.renderTemplate('{{{diffStep 1.1}}}');
+      expect(view).toContainSameContentAsFile('add-private-file.md');
+    });
+
     it('should render changes made in file', function() {
       context.applyTestPatch('add-file');
       context.applyTestPatch('change-file');

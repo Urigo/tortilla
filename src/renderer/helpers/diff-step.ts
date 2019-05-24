@@ -158,6 +158,8 @@ function getMdDiff(file) {
     fileTitle = `##### ${t('diff.changed', { path: file.from })}`;
   }
 
+  fileTitle = fileTitle.replace(/__(\w+)__/g, '\\__$1__')
+
   const mdChunks = file.chunks
     .map(getMdChunk)
     .join('\n');
