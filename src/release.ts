@@ -399,7 +399,9 @@ function createDiffReleasesRepo(...tags) {
 
     // Clone only if haven't cloned before
     if (!existingSubmodules.includes(submodule)) {
-      Git.print(['clone', url, submodule], { cwd: submodulesProjectsDir });
+      const authorizedUrl = addHttpCredentials(url)
+
+      Git.print(['clone', authorizedUrl, submodule], { cwd: submodulesProjectsDir });
     }
 
     return result;
@@ -501,6 +503,24 @@ function printCurrentRelease() {
   console.log(`🌟 Release: ${formattedRelease}`);
   console.log(`🌟 Branch:  ${branch}`);
   console.log();
+}
+
+// Will transform SSH url into HTTP and will add credentials to HTTP. Originally created
+// because of tortilla.academy github app.
+function addHttpCredentials(url) {
+  if (!process.env.TORTILLA_USERNAME || !process.env.TORTILLA_PASSWORD) { return url }
+
+  // e.g. git@github.com:Urigo/WhatsApp.git
+  const sshMatch = url.match(/^\w+@(\w+\.\w+):([\w-]+\/[\w-]+)\.git$/)
+
+  if (sshMatch) {
+    url = `https://${sshMatch[1]}/${sshMatch[2]}`
+  }
+
+  return url.replace(
+    /^http(s)?:\/\/(.+)$/,
+    `http$1://${process.env.TORTILLA_USERNAME}:${process.env.TORTILLA_PASSWORD}@$2`
+  )
 }
 
 // Gets the current release based on the latest release tag
