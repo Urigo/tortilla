@@ -6,6 +6,7 @@ import * as Tmp from 'tmp';
 import { Git } from './git';
 import { Paths } from './paths';
 import { Release } from './release';
+import { Submodule } from './submodule';
 import { Utils } from './utils';
 
 const defaultDumpFileName = 'tutorial.json';
@@ -46,6 +47,13 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
   console.log();
   console.log(`Dumping into ${out}...`);
   console.log();
+
+  // Ensure submodules are updated
+  // Note that we don't necessarily have to init tortilla, which is useful if we wanna reset
+  // the submodules url before we proceed any further
+  Submodule.list().forEach((submodule) => {
+    Submodule.update(submodule);
+  });
 
   // Will recursively ensure dirs as well
   Fs.ensureFileSync(out);
