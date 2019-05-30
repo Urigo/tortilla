@@ -59,7 +59,7 @@
     "@types/i18next": "8.4.5",
     "@types/inquirer": "0.0.43",
     "@types/minimist": "1.2.0",
-    "@types/node": "9.6.31",
+    "@types/node": "9.6.49",
     "@types/semver": "5.5.0",
     "@types/tmp": "0.0.33",
     "commander": "2.20.0",
