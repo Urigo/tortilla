@@ -1,6 +1,6 @@
 {
   "name": "tortilla",
-  "version": "0.0.1-alpha.57",
+  "version": "0.0.1-alpha.58",
   "description": "A tutorials framework based on git and NodeJS",
   "main": "dist/lib.js",
   "contributors": [
