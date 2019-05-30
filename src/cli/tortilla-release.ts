@@ -18,6 +18,14 @@ Program
   });
 
 Program
+  .command('revert')
+  .description('Reverts the most recent commit')
+  .action(() => {
+    LocalStorage.assertTortilla(true);
+    Release.revert();
+  })
+
+Program
   .command('current')
   .description('Prints the current release')
   .action(() => {

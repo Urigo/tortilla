@@ -257,6 +257,57 @@ async function bumpRelease(releaseType, options) {
   printCurrentRelease();
 }
 
+// Removes all the references of the most recent release so the previous one would be the latest
+function revertRelease() {
+  const branch = Git.activeBranchName();
+
+  // Getting all branch release tags. Most recent would be first
+  const branchTags = Git(['tag', '-l'])
+    .split('\n')
+    .map((tag) => {
+      if (!tag) { return null; }
+      if (new RegExp(`^${branch}@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
+      if (new RegExp(`^${branch}@root@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
+      if (new RegExp(`^${branch}@step\\d+@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
+    })
+    .filter(Boolean)
+    .map((tag) => {
+      const splitted = tag.split('@');
+
+      return {
+        tag,
+        deformatted: deformatRelease(splitted[1]),
+      };
+    })
+    .sort((a, b) => (
+      b.deformatted.next ? 1 : a.deformatted.next ? -1 :
+      (b.deformatted.major - a.deformatted.major) ||
+      (b.deformatted.minor - a.deformatted.minor) ||
+      (b.deformatted.patch - a.deformatted.patch)
+    ))
+    .map(({ tag }) => tag);
+
+  if (!branchTags.length) {
+    throw Error(`No release found for branch ${branch}`)
+  }
+
+  const recentRelease = branchTags[0].split('@').pop()
+  const recentReleaseTags = branchTags.filter(t => t.split('@').pop() === recentRelease)
+
+  Git.print(['tag', '--delete', ...recentReleaseTags])
+
+  // Move history branch pointer one commit backward
+  try {
+    Git.print(['branch', '-f', `${branch}-history`, `${branch}-history~1`])
+  }
+  // was probably root, in which case we will delete the history branch
+  catch (e) {
+    Git.print(['branch', '--delete', `${branch}-history`])
+  }
+
+  console.log(`${branch}@${recentReleaseTags} has been successfuly reverted`)
+}
+
 // Creates a branch that represents a list of our releases, this way we can view any
 // diff combination in the git-host
 function createDiffReleasesBranch() {
@@ -717,6 +768,7 @@ function deleteNextReleaseTags() {
 
 export const Release = {
   bump: bumpRelease,
+  revert: revertRelease,
   createDiffBranch: createDiffReleasesBranch,
   printCurrent: printCurrentRelease,
   current: getCurrentRelease,
