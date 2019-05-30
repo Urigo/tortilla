@@ -1,6 +1,6 @@
 [{]: <helper> (diffStep 1.1 module="tmp-???")
 
-#### Tmp-??? Step 1.1: Hello World
+#### __Tmp-???__ Step 1.1: Hello World
 
 ##### Added hello_world
 ```diff
