@@ -480,7 +480,7 @@ This will check out the specified submodule to provided ref. It will also guide 
 
 `package.json` related commands are useful when we wanna update our dependencies' versions all across the tutorial, without needing to deal with any conflicts across the process.
 
-**command:** `tortilla pacakge update-deps`
+**command:** `tortilla package update-deps`
 
 This will start the dependencies updating process by creating a temporary file will contain a list of all our dependencies (merged with dev and peer) where we can specify the new versions that we would like to use in our tutorial. Once this file has been saved and closed Tortilla will handle the rebasing process.
 
