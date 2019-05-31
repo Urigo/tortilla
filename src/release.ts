@@ -305,7 +305,7 @@ function revertRelease() {
     Git.print(['branch', '--delete', `${branch}-history`])
   }
 
-  console.log(`${branch}@${recentReleaseTags} has been successfuly reverted`)
+  console.log(`${branch}@${recentRelease} has been successfuly reverted`)
 }
 
 // Creates a branch that represents a list of our releases, this way we can view any

@@ -59,6 +59,46 @@ describe('Git', () => {
         context.git(['rev-parse', 'master@next'], { cwd: context.localRepo });
       }).not.toThrowError();
     });
+
+    it('should push deleted refs', () => {
+      context.tortilla(['step', 'tag', '-m', 'Chapter I'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+      context.tortilla(['release', 'bump', 'major', '-m', 'Test Release I'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+      context.tortilla(['push', 'origin', 'master'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+
+      context.tortilla(['step', 'tag', '-m', 'Chapter II'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+      context.tortilla(['release', 'bump', 'major', '-m', 'Test Release II'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+      context.tortilla(['push', 'origin', 'master'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+
+      Fs.removeSync(context.localRepo);
+      context.git(['clone', context.hostRepo, context.localRepo]);
+      context.tortilla(['init'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+
+      expect(() => {
+        context.git(['rev-parse', 'remotes/origin/master-history'], { cwd: context.localRepo });
+      }).not.toThrowError();
+
+      expect(() => {
+        context.git(['rev-parse', 'remotes/origin/master-root'], { cwd: context.localRepo });
+      }).not.toThrowError();
+
+      expect(() => {
+        context.git(['rev-parse', 'remotes/origin/master-step1'], { cwd: context.localRepo });
+      }).not.toThrowError();
+
+      expect(() => {
+        context.git(['rev-parse', 'master@2.0.0'], { cwd: context.localRepo });
+      }).not.toThrowError();
+
+      context.tortilla(['release', 'revert'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+      context.tortilla(['push', 'origin', 'master'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } });
+
+      Fs.removeSync(context.localRepo);
+      context.git(['clone', context.hostRepo, context.localRepo]);
+
+      expect(() => {
+        context.git(['rev-parse', 'master@2.0.0'], { cwd: context.localRepo });
+      }).toThrowError();
+    });
   });
 
   describe('pullTutorial()', () => {

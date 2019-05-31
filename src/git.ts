@@ -24,15 +24,22 @@ const gitPrint = (git as any).print = (argv, options = {}) => {
 // e.g. given 'master' then 'master-history', 'master-root', 'master@0.1.0', etc, will be pushed.
 // Note that everything will be pushed by FORCE and will override existing refs within the remote
 function pushTutorial(remote: string, baseBranch: string) {
-  const relatedBranches = git(['branch', '-l']).split('\n').map(branch => {
+  const relatedBranches = git(['branch', '-l', '-a']).split('\n').map(branch => {
     if (!branch) { return null; }
 
     branch = branch.split(/\*?\s+/)[1];
+    const pathNodes = branch.split('/')
 
-    if (branch === baseBranch) { return branch; }
-    if (branch === `${baseBranch}-history`) { return branch; }
-    if (branch === `${baseBranch}-root`) { return branch; }
-    if (new RegExp(`^${baseBranch}-step\\d+$`).test(branch)) { return branch; }
+    if (pathNodes[0] === 'remotes') {
+      if (pathNodes[1] !== remote) { return; }
+    }
+
+    const branchName = pathNodes.pop();
+
+    if (branchName === baseBranch) { return branch; }
+    if (branchName === `${baseBranch}-history`) { return branch; }
+    if (branchName === `${baseBranch}-root`) { return branch; }
+    if (new RegExp(`^${baseBranch}-step\\d+$`).test(branchName)) { return branch; }
   }).filter(Boolean);
 
   const relatedTags = git(['tag', '-l']).split('\n').map(tag => {
@@ -42,7 +49,40 @@ function pushTutorial(remote: string, baseBranch: string) {
     if (new RegExp(`^${baseBranch}@step\\d+@(\\d+\\.\\d+\\.\\d+|next)$`).test(tag)) { return tag; }
   }).filter(Boolean);
 
-  const refs = [...relatedBranches, ...relatedTags];
+  const relatedBranchesNames = relatedBranches.map(b => b.split('/').pop())
+
+  const deletedBranches = git(['ls-remote', '--heads', remote])
+    .split('\n')
+    .filter(Boolean)
+    .map(line => line.split(/\s+/).pop())
+    .filter(ref => !relatedBranchesNames.includes(ref.split('/').pop()))
+    .filter(ref => {
+      const branch = ref.split('/').pop();
+
+      return (
+        branch === baseBranch ||
+        branch === `${baseBranch}-history` ||
+        branch === `${baseBranch}-root` ||
+        new RegExp(`^${baseBranch}-step\\d+$`).test(branch)
+      );
+    })
+    // https://stackoverflow.com/questions/5480258/how-to-delete-a-remote-tag
+    .map(ref => `:${ref}`);
+
+  const deletedTags = git(['ls-remote', '--tags', remote])
+    .split('\n')
+    .filter(Boolean)
+    .map(line => line.split(/\s+/).pop())
+    .filter(ref => !relatedTags.includes(ref.split('/').pop()))
+    .filter(ref =>
+      new RegExp(`^refs/tags/${baseBranch}@(\\d+\\.\\d+\\.\\d+|next)$`).test(ref) ||
+      new RegExp(`^refs/tags/${baseBranch}@root@(\\d+\\.\\d+\\.\\d+|next)$`).test(ref) ||
+      new RegExp(`^refs/tags/${baseBranch}@step\\d+@(\\d+\\.\\d+\\.\\d+|next)$`).test(ref)
+    )
+    // https://stackoverflow.com/questions/5480258/how-to-delete-a-remote-tag
+    .map(ref => `:${ref}`)
+
+  const refs = [...relatedBranches, ...relatedTags, ...deletedBranches, ...deletedTags];
 
   return gitPrint(['push','-f', remote, ...refs]);
 }

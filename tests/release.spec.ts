@@ -365,7 +365,7 @@ describe('Release', () => {
     });
   });
 
-  describe('revert()', () => {
+  describe.only('revert()', () => {
     it('should revert most recent release', () => {
       context.tortilla(['release', 'bump', 'major', '-m', 'first release']);
       context.tortilla(['release', 'bump', 'major', '-m', 'second release']);
