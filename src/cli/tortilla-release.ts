@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as Program from 'commander';
+import { Git } from '../git';
 import { localStorage as LocalStorage } from '../local-storage';
 import { Release } from '../release';
 
@@ -24,6 +25,17 @@ Program
     LocalStorage.assertTortilla(true);
     Release.revert();
   })
+
+Program
+  .command('list [branch]')
+  .description('Lists all releases for given branch')
+  .action((branch = Git.activeBranchName()) => {
+    LocalStorage.assertTortilla(true);
+    const releases = Release.all(null, branch)
+      .map(release => `${branch}@${Release.format(release)}`);
+    releases[0] += ' -> current release';
+    console.log(releases.join('\n'));
+  });
 
 Program
   .command('current')

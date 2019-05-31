@@ -365,7 +365,7 @@ describe('Release', () => {
     });
   });
 
-  describe.only('revert()', () => {
+  describe('revert()', () => {
     it('should revert most recent release', () => {
       context.tortilla(['release', 'bump', 'major', '-m', 'first release']);
       context.tortilla(['release', 'bump', 'major', '-m', 'second release']);
@@ -375,6 +375,40 @@ describe('Release', () => {
       context.tortilla(['release', 'revert']);
 
       expect(context.tortilla(['release', 'current'])).toContain('1.0.0')
+    });
+  });
+
+  describe('list()', () => {
+    it('should print all versions of current branch', () => {
+      context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+      context.tortilla(['release', 'bump', 'next', '-m', 'next version test']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
+      context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
+
+      const releasesList = context.tortilla(['release', 'list']);
+
+      expect(releasesList).toEqual([
+        'master@1.1.1 -> current release',
+        'master@1.1.0',
+        'master@1.0.0'
+      ].join('\n'));
+    });
+
+    it('should print all versions of given branch', () => {
+      context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+      context.tortilla(['release', 'bump', 'next', '-m', 'next version test']);
+      context.tortilla(['release', 'bump', 'minor', '-m', 'minor version test']);
+      context.tortilla(['release', 'bump', 'patch', '-m', 'patch version test']);
+
+      context.git(['checkout', '-b', 'test-branch']);
+
+      context.tortilla(['release', 'bump', 'major', '-m', 'major version test']);
+
+      const releasesList = context.tortilla(['release', 'list']);
+
+      expect(releasesList).toEqual([
+        'test-branch@1.0.0 -> current release'
+      ].join('\n'));
     });
   });
 

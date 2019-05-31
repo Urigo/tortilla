@@ -305,7 +305,7 @@ Initializes Tortilla essentials in the provided project.
 
 **command:** `tortilla push <remote> <branch>`
 
-Push a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pushed. Note that everything will be pushed by FORCE and will override existing refs within the remote.
+Push a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pushed. Note that everything will be pushed by FORCE and will override existing refs within the remote, **even deleted refs**.
 
 **command:** `tortilla pull <remote> <branch>`
 
@@ -380,6 +380,10 @@ Bumps the current release of the tutorial. This will create some new release tag
 **command:** `tortilla release bump <type>`
 
 Reverts release to the most recent one. For example, if we have 2 releases: `master@2.0.0` and `master@1.0.0`, this command will delete `master@2.0.0`, leaving `master@1.0.0`. If no more releases are left, the `history` branch will be deleted. This is useful if we've released something by accident and we would like to fix it.
+
+**command:** `tortilla release list [branch]`
+
+Prints a list of all releases of the given `branch`. If no `branch` was provided, the active branch will be used by default.
 
 **command:** `tortilla release current`
 

@@ -651,9 +651,7 @@ function getAllReleasesOfAllBranches(path = null) {
 }
 // Gets a list of all the releases represented as JSONs e.g.
 // [{ major: 0, minor: 1, patch: 0 }]
-function getAllReleases(path = null) {
-  const branch = Git.activeBranchName(path);
-
+function getAllReleases(path = null, branch = Git.activeBranchName(path)) {
   return Git(['tag'], path ? { cwd: path } : null)
   // Put tags into an array
     .split('\n')
