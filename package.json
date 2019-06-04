@@ -61,7 +61,7 @@
     "@types/minimist": "1.2.0",
     "@types/node": "9.6.49",
     "@types/semver": "5.5.0",
-    "@types/tmp": "0.0.33",
+    "@types/tmp": "0.1.0",
     "commander": "2.20.0",
     "fs-extra": "7.0.0",
     "handlebars": "4.0.12",
@@ -72,7 +72,7 @@
     "parse-diff": "0.5.1",
     "readline-sync": "1.4.9",
     "semver": "5.7.0",
-    "tmp": "0.0.33"
+    "tmp": "0.1.0"
   },
   "devDependencies": {
     "@types/jest": "23.3.14",
