@@ -8,10 +8,10 @@
         "releaseVersion": "0.3.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.3.0",
-        "keywords": [],
+        "keywords": ["tutorial", "master", "release 3"],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "changesDiff": "",
+        "changesDiff": "diff --git a/package.json b/package.json\nindex 0fcd174..142c4c7 100644\n--- a/package.json\n+++ b/package.json\n@@ -5,6 +5,6 @@\n   \"keywords\": [\n     \"tutorial\",\n     \"master\",\n-    \"release 2\"\n+    \"release 3\"\n   ]\n }\n\\ No newline at end of file\n",
         "manuals": [
           {
             "manualTitle": "Test tortilla project",
@@ -24,10 +24,10 @@
         "releaseVersion": "0.2.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.2.0",
-        "keywords": [],
+        "keywords": ["tutorial", "master", "release 2"],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "changesDiff": "",
+        "changesDiff": "diff --git a/package.json b/package.json\nindex 3034311..0fcd174 100644\n--- a/package.json\n+++ b/package.json\n@@ -5,6 +5,6 @@\n   \"keywords\": [\n     \"tutorial\",\n     \"master\",\n-    \"release 1\"\n+    \"release 2\"\n   ]\n }\n\\ No newline at end of file\n",
         "manuals": [
           {
             "manualTitle": "Test tortilla project",
@@ -40,10 +40,10 @@
         "releaseVersion": "0.1.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.1.0",
-        "keywords": [],
+        "keywords": ["tutorial", "master", "release 1"],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nnew file mode 100644\nindex 0000000..37c481e\n--- /dev/null\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -0,0 +1 @@\n+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..975808a\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
+        "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nnew file mode 100644\nindex 0000000..37c481e\n--- /dev/null\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -0,0 +1 @@\n+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..3034311\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,10 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true,\n+  \"keywords\": [\n+    \"tutorial\",\n+    \"master\",\n+    \"release 1\"\n+  ]\n+}\n\\ No newline at end of file\n",
         "manuals": [
           {
             "manualTitle": "Test tortilla project",

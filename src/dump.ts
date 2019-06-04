@@ -135,6 +135,8 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
       const prevReleaseTag = releaseTags[releaseIndex + 1] || {};
       const tagName = `${branchName}@${releaseTag.version}`;
       const tagRevision = Git(['rev-parse', tagName]);
+      const releasePack = JSON.parse(Git(['show', `${tagName}:package.json`]));
+      const keywords = releasePack.keywords || [];
 
       const historyRevision = Git([
         'log', historyBranchName, `--grep=^${tagName}:`, '--format=%H',
@@ -209,6 +211,7 @@ function dumpProject(out: any = Utils.cwd(), options: any = {}) {
         releaseVersion: releaseTag.version,
         releaseDate: releaseTag.date,
         tagName,
+        keywords,
         tagRevision,
         historyRevision,
         changesDiff,
