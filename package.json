@@ -54,7 +54,7 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
-    "@types/fs-extra": "5.1.0",
+    "@types/fs-extra": "7.0.0",
     "@types/handlebars": "4.0.39",
     "@types/i18next": "8.4.6",
     "@types/inquirer": "0.0.43",
@@ -63,7 +63,7 @@
     "@types/semver": "5.5.0",
     "@types/tmp": "0.0.33",
     "commander": "2.20.0",
-    "fs-extra": "7.0.0",
+    "fs-extra": "7.0.1",
     "handlebars": "4.0.12",
     "i18next": "11.7.0",
     "inquirer": "6.2.0",
