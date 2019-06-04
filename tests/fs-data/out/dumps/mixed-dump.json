@@ -8,7 +8,6 @@
         "releaseVersion": "0.3.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "baz@0.3.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "",
@@ -16,22 +15,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       },
@@ -39,7 +42,6 @@
         "releaseVersion": "0.2.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "baz@0.2.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "",
@@ -47,22 +49,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       },
@@ -70,7 +76,6 @@
         "releaseVersion": "0.1.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "baz@0.1.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nnew file mode 100644\nindex 0000000..37c481e\n--- /dev/null\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -0,0 +1 @@\n+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step1.tmpl b/.tortilla/manuals/templates/step1.tmpl\nnew file mode 100644\nindex 0000000..1910281\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step1.tmpl\n@@ -0,0 +1 @@\n+foo\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step2.tmpl b/.tortilla/manuals/templates/step2.tmpl\nnew file mode 100644\nindex 0000000..ba0e162\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step2.tmpl\n@@ -0,0 +1 @@\n+bar\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step3.tmpl b/.tortilla/manuals/templates/step3.tmpl\nnew file mode 100644\nindex 0000000..3f95386\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step3.tmpl\n@@ -0,0 +1 @@\n+baz\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..975808a\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
@@ -78,22 +83,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       }
@@ -108,7 +117,6 @@
         "releaseVersion": "0.3.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "bar@0.3.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "",
@@ -116,22 +124,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       },
@@ -139,7 +151,6 @@
         "releaseVersion": "0.2.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "bar@0.2.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "",
@@ -147,22 +158,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       },
@@ -170,7 +185,6 @@
         "releaseVersion": "0.1.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "bar@0.1.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nnew file mode 100644\nindex 0000000..37c481e\n--- /dev/null\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -0,0 +1 @@\n+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step1.tmpl b/.tortilla/manuals/templates/step1.tmpl\nnew file mode 100644\nindex 0000000..1910281\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step1.tmpl\n@@ -0,0 +1 @@\n+foo\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step2.tmpl b/.tortilla/manuals/templates/step2.tmpl\nnew file mode 100644\nindex 0000000..ba0e162\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step2.tmpl\n@@ -0,0 +1 @@\n+bar\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step3.tmpl b/.tortilla/manuals/templates/step3.tmpl\nnew file mode 100644\nindex 0000000..3f95386\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step3.tmpl\n@@ -0,0 +1 @@\n+baz\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..975808a\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
@@ -178,22 +192,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       }
@@ -208,7 +226,6 @@
         "releaseVersion": "0.3.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "foo@0.3.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "",
@@ -216,22 +233,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       },
@@ -239,7 +260,6 @@
         "releaseVersion": "0.2.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "foo@0.2.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "",
@@ -247,22 +267,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       },
@@ -270,7 +294,6 @@
         "releaseVersion": "0.1.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "foo@0.1.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nnew file mode 100644\nindex 0000000..37c481e\n--- /dev/null\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -0,0 +1 @@\n+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step1.tmpl b/.tortilla/manuals/templates/step1.tmpl\nnew file mode 100644\nindex 0000000..1910281\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step1.tmpl\n@@ -0,0 +1 @@\n+foo\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step2.tmpl b/.tortilla/manuals/templates/step2.tmpl\nnew file mode 100644\nindex 0000000..ba0e162\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step2.tmpl\n@@ -0,0 +1 @@\n+bar\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/step3.tmpl b/.tortilla/manuals/templates/step3.tmpl\nnew file mode 100644\nindex 0000000..3f95386\n--- /dev/null\n+++ b/.tortilla/manuals/templates/step3.tmpl\n@@ -0,0 +1 @@\n+baz\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..975808a\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
@@ -278,22 +301,26 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla."
+            "manualView": "A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.",
+            "keywords": []
           },
           {
             "manualTitle": "Step 1: foo",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "foo"
+            "manualView": "foo",
+            "keywords": []
           },
           {
             "manualTitle": "Step 2: bar",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "bar"
+            "manualView": "bar",
+            "keywords": []
           },
           {
             "manualTitle": "Step 3: baz",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "baz"
+            "manualView": "baz",
+            "keywords": []
           }
         ]
       }

@@ -246,38 +246,28 @@ describe('Dump', () => {
       expect(context.readDumpFile()).toContainSameContentAsFile('dumps/submodules-dump.json');
     });
 
-    it('should dump keywords for each release', () => {
+    it.only('should dump keywords for each chapter', () => {
       let pack
 
-      context.tortilla(['step', 'edit', '--root']);
       pack = Fs.readJsonSync(Paths.npm.package);
-      pack.keywords = ['tutorial', 'master', 'release 1'];
+      pack.keywords = ['tutorial', 'master', 'chapter 1', 'release 1'];
       Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
       context.git(['add', Paths.npm.package]);
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      context.git(['rebase', '--continue']);
+      context.tortilla(['step', 'tag', '-m', 'chapter I']);
+
+      pack = Fs.readJsonSync(Paths.npm.package);
+      pack.keywords = ['tutorial', 'master', 'chapter 2', 'release 1'];
+      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
+      context.git(['add', Paths.npm.package]);
+      context.tortilla(['step', 'tag', '-m', 'chapter II']);
+
+      pack = Fs.readJsonSync(Paths.npm.package);
+      pack.keywords = ['tutorial', 'master', 'chapter 3', 'release 1'];
+      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
+      context.git(['add', Paths.npm.package]);
+      context.tortilla(['step', 'tag', '-m', 'chapter III']);
 
       context.tortilla(['release', 'bump', 'minor', '-m', 'master release 1']);
-
-      context.tortilla(['step', 'edit', '--root']);
-      pack = Fs.readJsonSync(Paths.npm.package);
-      pack.keywords = ['tutorial', 'master', 'release 2'];
-      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
-      context.git(['add', Paths.npm.package]);
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      context.git(['rebase', '--continue']);
-
-      context.tortilla(['release', 'bump', 'minor', '-m', 'master release 2']);
-
-      context.tortilla(['step', 'edit', '--root']);
-      pack = Fs.readJsonSync(Paths.npm.package);
-      pack.keywords = ['tutorial', 'master', 'release 3'];
-      Fs.writeFileSync(Paths.npm.package, JSON.stringify(pack, null, 2));
-      context.git(['add', Paths.npm.package]);
-      context.git(['commit', '--amend'], { env: { GIT_EDITOR: true } });
-      context.git(['rebase', '--continue']);
-
-      context.tortilla(['release', 'bump', 'minor', '-m', 'master release 3']);
 
       context.tortilla(['dump', 'create', context.dumpFile]);
 

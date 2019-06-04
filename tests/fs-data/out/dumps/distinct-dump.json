@@ -8,7 +8,6 @@
         "releaseVersion": "0.3.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.3.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "diff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nindex ba73c6e..840326f 100644\n--- a/.tortilla/manuals/templates/root.tmpl\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -1 +1 @@\n-release 2\n\\ No newline at end of file\n+release 3\n\\ No newline at end of file\n",
@@ -16,7 +15,8 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "release 3"
+            "manualView": "release 3",
+            "keywords": []
           }
         ]
       },
@@ -24,7 +24,6 @@
         "releaseVersion": "0.2.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.2.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "diff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nindex 61ce17b..ba73c6e 100644\n--- a/.tortilla/manuals/templates/root.tmpl\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -1 +1 @@\n-release 1\n\\ No newline at end of file\n+release 2\n\\ No newline at end of file\n",
@@ -32,7 +31,8 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "release 2"
+            "manualView": "release 2",
+            "keywords": []
           }
         ]
       },
@@ -40,7 +40,6 @@
         "releaseVersion": "0.1.0",
         "releaseDate": "XXXXXXXXXXXXXXXXXXXXXXXXX",
         "tagName": "master@0.1.0",
-        "keywords": [],
         "tagRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "historyRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "changesDiff": "diff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..5171c54\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,2 @@\n+node_modules\n+npm-debug.log\n\\ No newline at end of file\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\nnew file mode 100644\nindex 0000000..61ce17b\n--- /dev/null\n+++ b/.tortilla/manuals/templates/root.tmpl\n@@ -0,0 +1 @@\n+release 1\n\\ No newline at end of file\ndiff --git a/package.json b/package.json\nnew file mode 100644\nindex 0000000..975808a\n--- /dev/null\n+++ b/package.json\n@@ -0,0 +1,5 @@\n+{\n+  \"name\": \"tortilla-project\",\n+  \"description\": \"A newly created Tortilla project\",\n+  \"private\": true\n+}\n",
@@ -48,7 +47,8 @@
           {
             "manualTitle": "Test tortilla project",
             "stepRevision": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "manualView": "release 1"
+            "manualView": "release 1",
+            "keywords": []
           }
         ]
       }

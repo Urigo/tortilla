@@ -45,6 +45,7 @@ function run() {
       `.tortilla/manuals/templates/${tag}.tmpl`,
       `.tortilla/manuals/views/${tag}.md`,
       '.tortilla/config.js',
+      'package.json',
     ];
 
     const localesDir = `${Paths.manuals.templates}/locales`;
