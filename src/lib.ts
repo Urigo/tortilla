@@ -14,7 +14,7 @@ const callTortillaFn = (fnName, ...args) => {
     // Note that we use a child_process here and not a cluster since we don't wanna
     // fork the main module
     const worker = child_process.fork(__filename, [], {
-      env: { ...process.env, TORTILLA_WORKER: 1 }
+      env: { ...process.env, TORTILLA_WORKER: '1' }
     })
 
     worker.send({

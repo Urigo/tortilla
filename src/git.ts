@@ -340,7 +340,7 @@ function getRoot() {
 
 function edit(initialContent) {
   const editor = getEditor();
-  const file = Tmp.fileSync({ unsafeCleanup: true });
+  const file = Tmp.fileSync();
 
   Fs.writeFileSync(file.name, initialContent);
   (exec as any).print('sh', ['-c', `${editor} ${file.name}`]);

@@ -1,4 +1,4 @@
-import * as i18n from 'i18next';
+import i18n from 'i18next';
 import * as Path from 'path';
 import { Paths } from '../paths';
 import { Utils } from '../utils';
