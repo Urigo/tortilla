@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@types/fs-extra": "5.1.0",
-    "@types/handlebars": "4.0.39",
+    "@types/handlebars": "4.0.40",
     "@types/i18next": "8.4.6",
     "@types/inquirer": "0.0.43",
     "@types/minimist": "1.2.0",
@@ -64,7 +64,7 @@
     "@types/tmp": "0.0.33",
     "commander": "2.20.0",
     "fs-extra": "7.0.0",
-    "handlebars": "4.0.12",
+    "handlebars": "4.1.2",
     "i18next": "11.7.0",
     "inquirer": "6.2.0",
     "minimist": "1.2.0",
