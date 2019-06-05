@@ -13,6 +13,20 @@ describe('Template Helpers', () => {
   beforeAll(tortillaBeforeAll.bind(context));
   beforeEach(tortillaBeforeEach.bind(context));
 
+  describe('comment', function () {
+    it('should render nothing', function () {
+      const view = Renderer.renderTemplate(`
+        {{#comment}}
+          block
+          comment
+        {{/comment}}
+        {{comment "comment"}}
+        {{noop "alias"}}
+      `).trim();
+      expect(view).toEqual('');
+    });
+  })
+
   describe('diffStep', function() {
     it('should render an added file', function() {
       context.applyTestPatch('add-file');
