@@ -40,6 +40,15 @@ Program
   });
 
 Program
+  .command('dispose [cwd]')
+  .description('Remove tortilla from project')
+  .action(cwd => {
+    LocalStorage.assertTortilla(true);
+    Essentials.dispose(cwd);
+    console.log('Tortilla successfully disposed');
+  })
+
+Program
   .command('push <remote> <branch>')
   .description('Push tutorial <branch> and related git-assets to <remote>')
   .action((remote, branch) => {

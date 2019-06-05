@@ -260,6 +260,24 @@ function pushChanges(remote = 'origin') {
   Git.print(['push', remote, '--mirror'])
 }
 
+function disposeTortilla(cwd = process.cwd()) {
+  cwd = Path.resolve(cwd, process.cwd())
+  const root = Git(['rev-parse', '--show-toplevel'], { cwd })
+  const paths = Paths.resolveProject(root)
+  Fs.removeSync(paths.storage)
+
+  // If hooks dir doesn't exist there's nothing to remove
+  if (!Fs.existsSync(paths.git.hooks)) { return }
+
+  // Remove tortilla logic from hooks
+  Fs.readdirSync(paths.git.hooks).forEach((hookFileName) => {
+    const hookFilePath = `${paths.git.hooks}/${hookFileName}`
+    let contents = Fs.readFileSync(hookFilePath).toString()
+    contents = contents.replace(/### TORTILLA ###\n[^\n]+\n[^\n]+\n?/, '')
+    Fs.writeFileSync(hookFilePath, contents)
+  })
+}
+
 function overwriteTemplateFile(path, scope) {
   const templateContent = Fs.readFileSync(path, 'utf8');
   const viewContent = Handlebars.compile(templateContent)(scope);
@@ -273,4 +291,5 @@ export const Essentials = {
   create: createProject,
   ensure: ensureTortilla,
   push: pushChanges,
+  dispose: disposeTortilla
 };
