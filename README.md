@@ -36,10 +36,12 @@ See:
 - [manuals](#manuals)
   - [translations](#translations)
   - [template-helpers](#template-helpers)
+  - [chapter-keywords](#chapter-keywords)
 - [releases](#releases)
   - [release-tags](#release-tags)
   - [history-branches](#history-branches)
 - [submodules](#submodules)
+  - [submodules-setup](#submodules-setup)
 
 ### Steps
 
@@ -213,6 +215,10 @@ Should be rendered to:
   - `module` - The name of the submodule which contains the step we would like to reference.
   - `noTitle` - A flag which indicates whether we should render the step title prior to diffs or not.
 
+#### Chapter Keywords
+
+Each chapter can be specify keywords that can help with [SEO](https://en.wikipedia.org/wiki/Search_engine_optimization). By editing the `package.json` and adding a `keywords` section at the manual's step we can achieve. First run `tortilla step edit [step]` and then a your [keywords](https://docs.npmjs.com/files/package.json#keywords). [tortilla.academy] will take care of putting these keywords together under a single `meta` tag based on the generated dump file.
+
 ### Releases
 
 A Tortilla project may contain [release tags](#release-tags) which represent different versions of the tutorial in different time points. Here's a list of tags for example:
@@ -251,6 +257,19 @@ The history is specific for a certain branch. Its name should end with `history`
 Often times, we would like to have a single repository where we include all the manual files, and the implementation logic would be implemented in different repositories which will be referenced from the main repository using git's submodules architecture; E.g. a single repository that includes submodules referencing the client and the server. Another advantage for that architecture is that we can implement similar applications using different stacks, or having a single back-end for multiple front-end applications, with almost identical instructions.
 
 **Related CLI:** [tortilla-submodule CLI](#tortilla-submodule-cli)
+
+#### Submodules Setup
+
+When rendering manuals which reference steps from submodules, the git host URL is taken from `package.json` to compose the path of the commit that contains the file. Thus, you need to define the url in `package.json` of the submodule repository like so:
+
+```json
+{
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Urigo/tortilla.git"
+  }
+}
+```
 
 ## Quick Startup
 
