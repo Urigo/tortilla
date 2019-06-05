@@ -124,6 +124,8 @@ function ensureTortilla(projectDir) {
     return;
   }
 
+  // Otherwise it might throw an error that dir doesn't exist
+  Fs.ensureDirSync(projectPaths.git.hooks)
   const hookFiles = Fs.readdirSync(projectPaths.tortilla.hooks);
 
   // For each hook file in the hooks directory
