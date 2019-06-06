@@ -45,6 +45,7 @@ function run() {
       `.tortilla/manuals/templates/${tag}.tmpl`,
       `.tortilla/manuals/views/${tag}.md`,
       '.tortilla/config.js',
+      '.circleci/config.yml',
       'package.json',
     ];
 
