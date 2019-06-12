@@ -337,6 +337,12 @@ Push a tutorial based on the provided branch. e.g. given `master` then `master-h
 
 Pull a tutorial based on the provided branch. e.g. given `master` then `master-history`, `master-root`, `master@0.1.0`, etc, will be pulled.
 
+**command:** `tortilla review <remote> <branch>`
+
+Push the necessary refs to GitHub (or any other host) and open the browser with the comparison URI. A comparison URI is one that can be used to view the diff between our changes, and the current branch in the remote. Example URI: `https://github.com/Urigo/WhatsApp-Clone-Client-React/compare/7131782c5db1be873d3c315e4f60a322aa641490..c306dbe91df195d49ae52a7630c2a2fe1a215879`. This will be useful to view the changes before we're actually gonna push them.
+
+- *option:* `-p, --print` - Don't open in the browser, only print.
+
 **command:** `tortilla status`
 
 Will print the tutorial status prior to git-status. If for example, we're editing step 1.2, this will print `Editing step 1.2`. In case there's a conflict, let's say between steps 1.2 and 1.3, this will print `Solving conflict between step 1.2 (HEAD) and step 1.3`.

@@ -17,6 +17,27 @@ describe('Git', () => {
     context.createRepo(context.hostRepo, context.localRepo);
   });
 
+  describe('reviewTutorial()', () => {
+    it('should compose comparison link between remote branch and current branch', () => {
+      context.tortilla(['step', 'tag', '-m', 'test chapter'], { cwd: context.localRepo env: { TORTILLA_CWD: context.localRepo } })
+      const compareUri = context.tortilla(['review', 'origin', 'master', '--print'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } })
+      expect(compareUri).toMatch(/https:\/\/host\/owner\/repo\/compare\/\w{40}\.\.\w{40}/)
+    });
+
+    it('should throw an error if no changes were made', () => {
+      let e
+
+      try {
+        context.tortilla(['review', 'origin', 'master', '--print'], { cwd: context.localRepo, env: { TORTILLA_CWD: context.localRepo } })
+      } catch (_e) {
+        e = _e
+      }
+
+      expect(e).toBeDefined()
+      expect(e.message).toContain('Remote and local branches are equal')
+    });
+  });
+
   describe('pushTutorial()', () => {
     it('should push tutorial based on specified branch and all related git-refs', () => {
       expect(() => {

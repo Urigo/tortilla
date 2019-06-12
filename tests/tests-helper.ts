@@ -4,6 +4,7 @@ import * as Fs from 'fs-extra';
 import * as ChildProcess from 'child_process';
 import { type } from 'os';
 
+// This should be defined BEFORE we load utils
 process.env.TORTILLA_CWD = Tmp.dirSync({ unsafeCleanup: true }).name;
 // process.env.DEBUG = '1';
 

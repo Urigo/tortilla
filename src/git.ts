@@ -2,7 +2,7 @@ import * as Fs from 'fs-extra';
 import * as Tmp from 'tmp';
 import { localStorage } from './local-storage';
 import { Paths, resolveProject } from './paths';
-import { freeText, Utils } from './utils';
+import { freeText, pluckRemoteData, Utils } from './utils';
 
 /**
  Contains general git utilities.
@@ -19,6 +19,75 @@ function git(argv, options?) {
 const gitPrint = (git as any).print = (argv, options = {}) => {
   return gitBody(Utils.git.print, argv, options);
 };
+
+// Create a compare link e.g. https://github.com/Urigo/WhatsApp/compare/xxxxxxx..xxxxxxx
+function reviewTutorial(remote: string, branch: string) {
+  const remoteUrl = Git(['remote', 'get-url', remote])
+  let remoteData = pluckRemoteData(remoteUrl)
+
+  if (process.env.NODE_ENV === 'test') {
+    remoteData = { host: 'host', owner: 'owner', repo: 'repo' }
+  }
+
+  if (!remoteData) {
+    throw Error('Provided remote is neither HTTP nor SSH')
+  }
+
+  const { host, owner, repo } = remoteData
+  const checkoutDir = Tmp.dirSync({ unsafeCleanup: true })
+  const compareDir = Tmp.dirSync({ unsafeCleanup: true })
+  let compareUrl = `https://${host}/${owner}/${repo}`
+
+  try {
+    // This will contain a new branch with 2 commits:
+    // The first commit represents the current branch and the second one represents the changed one
+    Git(['init', compareDir.name])
+
+    // Create the commit for the current branch
+    Fs.copySync(`${Utils.cwd()}/.git`, `${checkoutDir.name}/.git`)
+    Git(['stash'], { cwd: checkoutDir.name })
+    Git(['fetch', remote], { cwd: checkoutDir.name })
+    Git(['checkout', `remotes/${remote}/${branch}`], { cwd: checkoutDir.name })
+    Fs.removeSync(`${checkoutDir.name}/.git`)
+
+    Fs.moveSync(`${compareDir.name}/.git`, `${checkoutDir.name}/.git`)
+    Git(['add', '.'], { cwd: checkoutDir.name })
+    Git(['commit', '-m', `Current ${branch}`], { cwd: checkoutDir.name })
+    Fs.moveSync(`${checkoutDir.name}/.git`, `${compareDir.name}/.git`)
+
+    // Create the commit for the new branch
+    Fs.copySync(`${Utils.cwd()}/.git`, `${checkoutDir.name}/.git`)
+    Git(['stash'], { cwd: checkoutDir.name })
+    Git(['checkout', `refs/heads/${branch}`], { cwd: checkoutDir.name })
+    Fs.removeSync(`${checkoutDir.name}/.git`)
+
+    Fs.moveSync(`${compareDir.name}/.git`, `${checkoutDir.name}/.git`)
+    Git(['add', '.'], { cwd: checkoutDir.name })
+    try {
+      Git(['commit', '-m', `New ${branch}`], { cwd: checkoutDir.name })
+    } catch (e) {
+      throw Error('Remote and local branches are equal')
+    }
+    Fs.moveSync(`${checkoutDir.name}/.git`, `${compareDir.name}/.git`)
+
+    // Prepare and push
+    const currBranchHash = Git(['rev-list', '--max-parents=0', 'HEAD'], { cwd: compareDir.name })
+    const newBranchHash = Git(['rev-parse', 'HEAD'], { cwd: compareDir.name })
+    const compareBranch = `compare-${currBranchHash.slice(0, 7)}_${newBranchHash.slice(0, 7)}`
+    Git(['checkout', '-b', compareBranch], { cwd: compareDir.name })
+    Git.print(['push', remoteUrl, compareBranch], { cwd: compareDir.name })
+    Git(['checkout', newBranchHash], { cwd: compareDir.name })
+    Git(['branch', '-D', compareBranch], { cwd: compareDir.name })
+    Git.print(['push', remoteUrl, `:refs/heads/${compareBranch}`], { cwd: compareDir.name })
+
+    compareUrl += `/compare/${currBranchHash}..${newBranchHash}`
+  } finally {
+    checkoutDir.removeCallback()
+    compareDir.removeCallback()
+  }
+
+  return compareUrl
+}
 
 // Push a tutorial based on the provided branch.
 // e.g. given 'master' then 'master-history', 'master-root', 'master@0.1.0', etc, will be pushed.
@@ -409,6 +478,7 @@ function getRevisionIdFromObject(object: string): string {
 export const Git = Utils.extend(git.bind(null), git, {
   pushTutorial,
   pullTutorial,
+  reviewTutorial,
   tutorialStatus,
   conflict,
   rebasing: isRebasing,

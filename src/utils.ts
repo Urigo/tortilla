@@ -503,6 +503,22 @@ export const freeText = (text) => {
     .replace(/\n +\n/g, '\n\n')
 }
 
+export function pluckRemoteData(remoteUrl) {
+  // git@github.com:Urigo/WhatsApp-Clone-Client-React.git
+  const match = (
+    remoteUrl.match(/^git@([^\n:]+):([^\n\/]+)\/([^\n\.]+)(\.git)?$/) ||
+    remoteUrl.match(/^https?:\/\/([^\n\/]+)\/([^\n\/]+)\/([^\n\.]+)(\.git)?$/)
+  )
+
+  if (!match) { return null }
+
+  return {
+    host: match[1],
+    owner: match[2],
+    repo: match[3],
+  }
+}
+
 function log(...args) {
   console.log(...args);
 }
@@ -541,6 +557,7 @@ export const Utils = Object.assign(new EventEmitter(), {
   naturalSort,
   tempCwd: setTempCwd,
   freeText,
+  pluckRemoteData,
   log,
   debug,
 });
