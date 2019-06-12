@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as Program from 'commander';
+import * as open from 'open';
 import * as semver from 'semver';
 import * as Pack from '../../package.json';
 import { Essentials } from '../essentials';
@@ -60,6 +61,13 @@ Program
   .description('Pull tutorial <branch> and related git-assets from <remote>')
   .action((remote, branch) => {
     Git.pullTutorial(remote, branch);
+  });
+
+Program
+  .command('review <remote> <branch>')
+  .description('Print a comparison URL between original branch currently changed branch')
+  .action((remote, branch) => {
+    open(Git.reviewTutorial(remote, branch));
   });
 
 Program
