@@ -105,6 +105,7 @@ function spawn(file: string, argv?: string[], options?) {
     cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: process.env.TORTILLA_STDIO || 'inherit',
     env: {},
+    maxBuffer: 10 * 1024 * 1024,
   }, options);
 
   const envRedundantKeys = Object.keys(options.env).filter((key) => {
@@ -129,6 +130,7 @@ function exec(file: string, argv?: string[], options?) {
   options = extend({
     cwd: process.env.TORTILLA_CWD || cwd(),
     stdio: 'pipe',
+    maxBuffer: 10 * 1024 * 1024,
     env: {},
   }, options);
 
