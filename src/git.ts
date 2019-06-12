@@ -24,14 +24,21 @@ const gitPrint = (git as any).print = (argv, options = {}) => {
 // e.g. given 'master' then 'master-history', 'master-root', 'master@0.1.0', etc, will be pushed.
 // Note that everything will be pushed by FORCE and will override existing refs within the remote
 function pushTutorial(remote: string, baseBranch: string) {
-  const relatedBranches = git(['branch', '-l', '-a']).split('\n').map(branch => {
+  const allBranches = git(['branch', '-l', '-a'])
+    .split('\n')
+    .map(b => b.split(/\*?\s+/).filter(Boolean)[0])
+
+  const relatedBranches = allBranches.map((branch) => {
     if (!branch) { return null; }
 
-    branch = branch.split(/\*?\s+/).pop();
     const pathNodes = branch.split('/')
 
     if (pathNodes[0] === 'remotes') {
       if (pathNodes[1] !== remote) { return; }
+    // `remotes/remote/branch` and `branch` are essentially the same and with duplication
+    // an error will be thrown
+    } else if (allBranches.includes(`remotes/${remote}/${branch}`)) {
+      return;
     }
 
     const branchName = pathNodes.pop();
