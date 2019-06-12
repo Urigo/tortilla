@@ -27,7 +27,7 @@ function pushTutorial(remote: string, baseBranch: string) {
   const relatedBranches = git(['branch', '-l', '-a']).split('\n').map(branch => {
     if (!branch) { return null; }
 
-    branch = branch.split(/\*?\s+/)[1];
+    branch = branch.split(/\*?\s+/).pop();
     const pathNodes = branch.split('/')
 
     if (pathNodes[0] === 'remotes') {
