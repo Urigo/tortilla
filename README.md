@@ -4,7 +4,9 @@
 
 <p align="center"><img src="https://cloud.githubusercontent.com/assets/7648874/24250888/833ec58e-0fbf-11e7-95e5-42d5827f0dd6.png" alt="tortilla" width="500"></p>
 
-Tortilla is a framework for building tutorials based on git and NodeJS which will help you create AWESOME tutorials and upload them to any git-host which supports markdown rendering, like GitHub. Tortilla operates by simply wrapping an existing git project, thus providing you with some advanced git functions dedicated to create the most perfect and most beautiful tutorial in the world. In addition, Tortilla is easily accessible through a CLI, making it very convenient to use.
+Tortilla is a framework for building tutorials based on git and NodeJS which will help you create AWESOME tutorials and upload them to any git-host which supports markdown rendering, like GitHub. 
+
+Tortilla operates by simply wrapping an existing git project, thus providing you with some advanced git functions dedicated to create the most perfect and most beautiful tutorial in the world. In addition, Tortilla is easily accessible through a CLI, making it very convenient to use.
 
 What's the advantages of using Tortilla over writing a simple blog-post?
 - The code and the instructions will always stay correlatively updated.
@@ -17,11 +19,12 @@ What's the advantages of using Tortilla over writing a simple blog-post?
 - You can easily navigate through the project at any specific point of the tutorial.
 - You can historicize different versions of your tutorial.
 - You can compare different versions of the tutorial and see the differences.
+- You can render the tutorial anywhere you want - Github, your own website, Medium and more...  all at the same time
 - The list goes on and on and on...
 
 Tutorials for example:
+- [Full stack Whatsapp-clone using React and GraphQL](https://github.com/urigo/whatsApp-Clone-Tutorial)
 - [How to implement a game engine in JavaScript and build a Tron-style game](https://github.com/DAB0mB/radial-snake)
-- [How to build a Whatsapp-clone using Ionic 2 CLI and Meteor](https://github.com/Urigo/Ionic2CLI-Meteor-WhatsApp)
 
 If you're not familiar with Tortilla I recommend you to go through the this `README.md` file since it contains everything you have to know about Tortilla in order to use it.
 
