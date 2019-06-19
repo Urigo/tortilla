@@ -72,7 +72,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
     stepData = [rootHash, ...message.split(' ')];
   } else {
     stepData = Git.recentCommit([
-      `--grep=^Step ${step}:`, '--format=%h %s',
+      `--grep=^Step ${step}:`, '--format=%H %s',
     ], {
       cwd,
     }).split(' ')
