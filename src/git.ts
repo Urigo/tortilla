@@ -101,16 +101,14 @@ function pushTutorial(remote: string, baseBranch: string) {
     if (!branch) { return null; }
 
     const pathNodes = branch.split('/')
+    const branchName = pathNodes.pop();
 
     if (pathNodes[0] === 'remotes') {
       if (pathNodes[1] !== remote) { return; }
-    // `remotes/remote/branch` and `branch` are essentially the same and with duplication
-    // an error will be thrown
-    } else if (allBranches.includes(`remotes/${remote}/${branch}`)) {
-      return;
+      // Local branch is more important than upstream branch
+      // ie: master > remotes/origin/master
+      if (allBranches.includes(branchName)) { return; }
     }
-
-    const branchName = pathNodes.pop();
 
     if (branchName === baseBranch) { return branch; }
     if (branchName === `${baseBranch}-history`) { return branch; }
