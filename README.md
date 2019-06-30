@@ -508,6 +508,20 @@ In other words, this will "unclone" the submodule, but will keep it initialized.
 
 This will check out the specified submodule to provided ref. It will also guide you through with some detailed instructions if you should do things beforehand, this can prevent a lot of potential issues and confusion.
 
+**example for updating submodules for WhatsApp Clone and release a new version**:
+
+```
+# Make sure to push refs to GitHub first, on WhatsApp-Clone-Client and WhatsApp-Clone-Server
+tortilla step edit --root
+tortilla submodule fetch client
+tortilla submodule fetch server
+tortilla submodule checkout client master@next
+tortilla submodule checkout server master@next
+git commit --amend
+git rebase --continue
+tortilla release bump next
+```
+
 ### tortilla-package CLI
 
 `package.json` related commands are useful when we wanna update our dependencies' versions all across the tutorial, without needing to deal with any conflicts across the process.
