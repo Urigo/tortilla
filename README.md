@@ -524,6 +524,15 @@ git rebase --continue
 tortilla release bump next
 ```
 
+**Example of reinitializing Tortilla on a repo**
+```
+git checkout master
+git rebase --abort
+tortilla dispose
+tortilla init
+tortilla release bump next -m "comment"
+```
+
 ### tortilla-package CLI
 
 `package.json` related commands are useful when we wanna update our dependencies' versions all across the tutorial, without needing to deal with any conflicts across the process.
