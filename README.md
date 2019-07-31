@@ -409,6 +409,8 @@ Bumps the current release of the tutorial. This will create some new release tag
 
 - *option:* `-m, --message [message]` - A message describing the newly created release. If not provided, and editor will be opened instead where we can type a full document.
 
+Example: `tortilla release bump next -m "Fixes from the community and dependency update"`
+
 **command:** `tortilla release bump <type>`
 
 Reverts release to the most recent one. For example, if we have 2 releases: `master@2.0.0` and `master@1.0.0`, this command will delete `master@2.0.0`, leaving `master@1.0.0`. If no more releases are left, the `history` branch will be deleted. This is useful if we've released something by accident and we would like to fix it.
