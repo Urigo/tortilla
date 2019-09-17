@@ -1753,10 +1753,10 @@ husky@2.3.0:
     run-node "^1.0.0"
     slash "^3.0.0"
 
-i18next@16.0.0:
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-16.0.0.tgz#57dbaae4558a8a476c5edf058a97272130c61621"
-  integrity sha512-2kR0Bh1j0PxFQXNxgLjGdC1REPnwEK9bgmYsRR9w+kD4hQ5V40kwxKWNoC8RKpvHL45XoavBfOjWd470aFlWOQ==
+i18next@17.0.16:
+  version "17.0.16"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-17.0.16.tgz#4bee0f84d6c79db3095f4eca6ded7920eea6b139"
+  integrity sha512-PtPiycw8H/45AAy2nuS3Ehov1X9k5V/gTJ89Uh8VAA3dx8EbsWwyP3c25fd4PWlLUey3YbRLTNPbre/dPho8Og==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
