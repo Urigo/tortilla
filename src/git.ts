@@ -2,6 +2,7 @@ import * as Fs from 'fs-extra';
 import * as Tmp from 'tmp';
 import { localStorage } from './local-storage';
 import { Paths, resolveProject } from './paths';
+import { Submodule } from './submodule';
 import { freeText, pluckRemoteData, Utils } from './utils';
 
 /**
@@ -472,6 +473,22 @@ function getRevisionIdFromObject(object: string): string {
   return git(['rev-list', '-n', '1', object]);
 }
 
+function getCWD(module?) {
+  let cwd = git(['rev-parse', '--show-toplevel']);
+  // In case a submodule was specified then all our git commands should be executed
+  // from that module
+  if (module) {
+    // Use the cloned repo that is used for development
+    if (process.env.TORTILLA_SUBDEV) {
+      cwd = Submodule.getCwd(module);
+    } else {
+      cwd = `${cwd}/${module}`;
+    }
+  }
+
+  return cwd;
+}
+
 
 export const Git = Utils.extend(git.bind(null), git, {
   pushTutorial,
@@ -492,4 +509,5 @@ export const Git = Utils.extend(git.bind(null), git, {
   editor: getEditor,
   normalizeArgv,
   getRevisionIdFromObject,
+  getCWD
 });
