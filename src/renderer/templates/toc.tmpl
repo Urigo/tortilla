@@ -1,0 +1,6 @@
+{{#each steps}}
+{{ @index + 1 }}. [{{ title }}]({{ url }})
+{{#each children}}
+    {{ @../index + 1 }}. [{{ title }}]({{ url }})
+{{/each}}
+{{/each}}
