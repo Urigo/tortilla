@@ -1,12 +1,22 @@
+import { Git } from '../../git';
+import { History } from '../../manual';
 import { Renderer } from '../index';
 
-interface Step {
+interface IStep {
   title: string
   url: string
-  children?: Step[]
+  children?: IStep[]
 }
 
 Renderer.registerHelper('toc', (options) => {
+  const hash = options.hash;
+
+  const cwd = Git.getCWD(hash.module);
+
+  // const history = Git(['--no-pager', 'log', '--format="%h | %s"', '--reverse'], { cwd }).split('\n');
+
+  console.log(History);
+
   return Renderer.renderTemplateFile('toc', {
     steps: [
       {
@@ -23,6 +33,6 @@ Renderer.registerHelper('toc', (options) => {
           }
         ]
       }
-    ] as Step[]
+    ] as IStep[]
   })
 });

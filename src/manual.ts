@@ -211,6 +211,8 @@ function getStepCommitMessage(step) {
   return Git(['log', '-1', '--grep', `^Step ${step}:`, '--format=%s']);
 }
 
+export const History = Step.all();
+
 export const Manual = {
   render: renderManual,
   manualTemplatePath: getManualTemplatePath,
