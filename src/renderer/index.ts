@@ -93,7 +93,7 @@ function resolveTemplatePath(templatePath) {
 
 // Register a new helper. Registered helpers will be wrapped with a
 // [{]: <helper> (name ...args) [}]: #
-function registerHelper(name, helper, options) {
+function registerHelper(name, helper, options?) {
   options = options || {};
 
   const wrappedHelper = function() {
@@ -312,4 +312,5 @@ import './helpers/diff-step';
 import './helpers/nav-step';
 import './helpers/resolve-path';
 import './helpers/step-message';
+import './helpers/toc';
 import './helpers/translate';
