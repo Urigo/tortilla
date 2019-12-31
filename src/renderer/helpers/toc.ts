@@ -24,11 +24,7 @@ const generateAnchor = (title: string) =>
 const generateURL = (title: string, superstep: number) => `.tortilla/manuals/views/step${superstep}.md#${generateAnchor(title)}`;
 
 const extractChildren = (slice: HistoryArray, superstep: number) => {
-  const filterNonSiblings = slice.filter(([hash, title]) => {
-    console.log(title);
-
-    return new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title);
-  });
+  const filterNonSiblings = slice.filter(([hash, title]) => new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title));
 
   return filterNonSiblings
     .map(([hash, title]) => ({
