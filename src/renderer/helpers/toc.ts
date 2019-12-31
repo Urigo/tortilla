@@ -1,38 +1,67 @@
-import { Git } from '../../git';
-import { History } from '../../manual';
+import { Manual } from '../../manual';
 import { Renderer } from '../index';
 
+export const LOG_SEPARATOR = ' -|- ';
+
 interface IStep {
-  title: string
-  url: string
-  children?: IStep[]
+  title: string;
+  url: string;
+  children?: IStep[];
 }
 
-Renderer.registerHelper('toc', (options) => {
-  const hash = options.hash;
+type HistoryArray = Array<[string, string]>;
 
-  const cwd = Git.getCWD(hash.module);
+const generateAnchor = (title: string) =>
+  title
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/ /g, '-');
 
-  // const history = Git(['--no-pager', 'log', '--format="%h | %s"', '--reverse'], { cwd }).split('\n');
+const generateURL = (title: string, superstep: number) => `.tortilla/manuals/views/step${superstep}.md#${generateAnchor(title)}`;
 
-  console.log(History);
+const extractChildren = (slice: HistoryArray, superstep: number) => {
+  const filterNonSiblings = slice.filter(([hash, title]) => {
+    console.log(title);
+
+    return new RegExp(`^Step ${superstep}\.[0-1]+:`).test(title);
+  });
+
+  return filterNonSiblings
+    .map(([hash, title]) => ({
+      title,
+      url: generateURL(title, superstep)
+    }))
+    .reverse();
+};
+
+const parseLog = (logs: string[]) => {
+  const split = logs.map(log => log.split(LOG_SEPARATOR)) as HistoryArray;
+
+  const results: IStep[] = [];
+
+  split.forEach(([hash, title], index) => {
+    const match = title.match(/^Step (\d+):/);
+
+    if (match) {
+      const superstep = Number(match[1]);
+
+      results.push({
+        title,
+        url: generateURL(title, superstep),
+        children: extractChildren(split.slice(index + 1), superstep)
+      });
+    }
+  });
+
+  return results.reverse();
+};
+
+Renderer.registerHelper('toc', () => {
+  const parsed = parseLog(Manual.history);
+
+  console.log(JSON.stringify(parsed, null, 4));
 
   return Renderer.renderTemplateFile('toc', {
-    steps: [
-      {
-        title: 'Step 1: Create Project',
-        url: '.tortilla/manual/views/step1.md',
-        children: [
-          {
-            title: 'Step 1.1: Open Terminal',
-            url: '.tortilla/manual/views/step1.md#step-11-open-terminal'
-          },
-          {
-            title: 'Step 1.2: Type Commands',
-            url: '.tortilla/manual/views/step1.md#step-12-type-commands'
-          }
-        ]
-      }
-    ] as IStep[]
-  })
+    steps: parsed
+  });
 });

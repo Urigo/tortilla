@@ -5,6 +5,7 @@ import { Config } from './config';
 import { Git } from './git';
 import { Paths } from './paths';
 import { Renderer } from './renderer';
+import { LOG_SEPARATOR } from './renderer/helpers/toc';
 import { Step } from './step';
 import { Translator } from './translator';
 import { Utils } from './utils';
@@ -211,9 +212,8 @@ function getStepCommitMessage(step) {
   return Git(['log', '-1', '--grep', `^Step ${step}:`, '--format=%s']);
 }
 
-export const History = Step.all();
-
 export const Manual = {
+  history: Git(['--no-pager', 'log', '--format=%H' + LOG_SEPARATOR + '%s'], { cwd: Git.getCWD() }).split('\n'),
   render: renderManual,
   manualTemplatePath: getManualTemplatePath,
   manualViewPath: getManualViewPath,
