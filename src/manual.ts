@@ -213,6 +213,7 @@ function getStepCommitMessage(step) {
 }
 
 export const Manual = {
+  // TODO: Must fetch the log before rebasing starts. Surely must be a better way/place to do/put this.
   history: Git(['--no-pager', 'log', '--format=%H' + LOG_SEPARATOR + '%s'], { cwd: Git.getCWD() }).split('\n'),
   render: renderManual,
   manualTemplatePath: getManualTemplatePath,

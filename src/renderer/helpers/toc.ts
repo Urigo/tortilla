@@ -1,6 +1,10 @@
 import { Manual } from '../../manual';
 import { Renderer } from '../index';
 
+// The commit hash is not needed right now, but it surely must be useful in the future. It must be...
+
+// TODO: Support internationalization, and support other TOC flavors other than for GitHub's Markdown.
+
 export const LOG_SEPARATOR = ' -|- ';
 
 interface IStep {
@@ -58,8 +62,6 @@ const parseLog = (logs: string[]) => {
 
 Renderer.registerHelper('toc', () => {
   const parsed = parseLog(Manual.history);
-
-  console.log(JSON.stringify(parsed, null, 4));
 
   return Renderer.renderTemplateFile('toc', {
     steps: parsed
