@@ -23,7 +23,7 @@ const extractChildren = (slice: HistoryArray, superstep: number) => {
   const filterNonSiblings = slice.filter(([hash, title]) => {
     console.log(title);
 
-    return new RegExp(`^Step ${superstep}\.[0-1]+:`).test(title);
+    return new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title);
   });
 
   return filterNonSiblings
