@@ -1,6 +1,6 @@
 {{#each steps}}
-{{sum @index 1}}. [{{ title }}]({{ url }})
+- [{{ title }}]({{ url }})
 {{#each children}}
-    {{sum @index 1}}. [{{ title }}]({{ url }})
+    - [{{ title }}]({{ url }})
 {{/each}}
 {{/each}}
