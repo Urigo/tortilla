@@ -312,6 +312,5 @@ import './helpers/diff-step';
 import './helpers/nav-step';
 import './helpers/resolve-path';
 import './helpers/step-message';
-import './helpers/sum';
 import './helpers/toc';
 import './helpers/translate';
