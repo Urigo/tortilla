@@ -30,6 +30,8 @@ import { Utils } from './utils';
     the manuals being rebased later on.
   - STEP_MAP_PENDING - Indicates that this stored step map will be used in another
     tortilla repo and not in the current repo where the process started running at.
+  - TABLE_OF_CONTENTS - Store git log information transformed into useful TOC data
+    to be used between processes.
  */
 
 const cache = {};

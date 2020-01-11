@@ -1,19 +1,13 @@
-import { Manual } from '../../manual';
+import { localStorage as LocalStorage } from '../../local-storage';
 import { Renderer } from '../index';
 
-// The commit hash is not needed right now, but it surely must be useful in the future. It must be...
-
 // TODO: Support internationalization, and support other TOC flavors other than for GitHub's Markdown.
-
-export const LOG_SEPARATOR = ' -|- ';
 
 interface IStep {
   title: string;
   url: string;
   children?: IStep[];
 }
-
-type HistoryArray = Array<[string, string]>;
 
 const generateAnchor = (title: string) =>
   title
@@ -23,11 +17,11 @@ const generateAnchor = (title: string) =>
 
 const generateURL = (title: string, superstep: number) => `.tortilla/manuals/views/step${superstep}.md#${generateAnchor(title)}`;
 
-const extractChildren = (slice: HistoryArray, superstep: number) => {
-  const filterNonSiblings = slice.filter(([hash, title]) => new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title));
+const extractChildren = (slice: string[], superstep: number) => {
+  const filterNonSiblings = slice.filter(title => new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title));
 
   return filterNonSiblings
-    .map(([hash, title]) => ({
+    .map((title) => ({
       title,
       url: generateURL(title, superstep)
     }))
@@ -35,11 +29,10 @@ const extractChildren = (slice: HistoryArray, superstep: number) => {
 };
 
 const parseLog = (logs: string[]) => {
-  const split = logs.map(log => log.split(LOG_SEPARATOR)) as HistoryArray;
-
   const results: IStep[] = [];
 
-  split.forEach(([hash, title], index) => {
+  logs.forEach((title, index) => {
+
     const match = title.match(/^Step (\d+):/);
 
     if (match) {
@@ -48,7 +41,7 @@ const parseLog = (logs: string[]) => {
       results.push({
         title,
         url: generateURL(title, superstep),
-        children: extractChildren(split.slice(index + 1), superstep)
+        children: extractChildren(logs.slice(index + 1), superstep)
       });
     }
   });
@@ -57,7 +50,15 @@ const parseLog = (logs: string[]) => {
 };
 
 Renderer.registerHelper('toc', () => {
-  const parsed = parseLog(Manual.history);
+  const history = LocalStorage.getItem('TABLE_OF_CONTENTS');
+
+  if (!history) {
+    console.error('No table of contents found.');
+
+    return '';
+  }
+
+  const parsed = parseLog(JSON.parse(history));
 
   return Renderer.renderTemplateFile('toc', {
     steps: parsed

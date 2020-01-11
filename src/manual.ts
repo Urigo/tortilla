@@ -1,11 +1,12 @@
 import * as Fs from 'fs-extra';
 import * as Minimist from 'minimist';
 import * as Path from 'path';
+
 import { Config } from './config';
 import { Git } from './git';
+import { localStorage as LocalStorage } from './local-storage';
 import { Paths } from './paths';
 import { Renderer } from './renderer';
-import { LOG_SEPARATOR } from './renderer/helpers/toc';
 import { Step } from './step';
 import { Translator } from './translator';
 import { Utils } from './utils';
@@ -49,6 +50,19 @@ init();
 
 // Converts manual into the opposite format
 function renderManual(step?: string | (() => void)) {
+
+  /**
+   * Generate Table of Contents here, must not be rebasing.
+   */
+  if (!Git.rebasing()) {
+    const log = [ Git(['--no-pager', 'log', '--format=%s'], { cwd: Git.getCWD() }) ]
+      .map(str => str.split('\n'))
+      .map(arr => JSON.stringify(arr, null, 4))
+      .pop();
+
+    LocalStorage.setItem('TABLE_OF_CONTENTS', log);
+  }
+
   if (typeof step === 'string') {
     const isSuperStep = !step.split('.')[1];
 
@@ -213,8 +227,6 @@ function getStepCommitMessage(step) {
 }
 
 export const Manual = {
-  // TODO: Must fetch the log before rebasing starts. Surely must be a better way/place to do/put this.
-  history: Git(['--no-pager', 'log', '--format=%H' + LOG_SEPARATOR + '%s'], { cwd: Git.getCWD() }).split('\n'),
   render: renderManual,
   manualTemplatePath: getManualTemplatePath,
   manualViewPath: getManualViewPath,
