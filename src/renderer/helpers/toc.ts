@@ -1,7 +1,15 @@
 import { localStorage as LocalStorage } from '../../local-storage';
 import { Renderer } from '../index';
 
-// TODO: Support internationalization, and support other TOC flavors other than for GitHub's Markdown.
+/**
+ * Must insert second-level headers for sub-steps manually for now, with the same text present on the commit or the
+ * Table of Contents item, so the "#" anchors match exactly. Tried to mimic GitHub "#" anchor generation as best
+ * as possible but there might be some divergences there at some point, specially if the titles get too long.
+ *
+ * TODO: Find work-around for anchor consistency.
+ * TODO: Internationalization support.
+ * TODO: Other flavors of TOC/Anchor generation besides GitHub.
+ */
 
 interface IStep {
   title: string;
@@ -18,9 +26,8 @@ const generateAnchor = (title: string) =>
 const generateURL = (title: string, superstep: number) => `.tortilla/manuals/views/step${superstep}.md#${generateAnchor(title)}`;
 
 const extractChildren = (slice: string[], superstep: number) => {
-  const filterNonSiblings = slice.filter(title => new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title));
-
-  return filterNonSiblings
+  return slice
+    .filter(title => new RegExp(`^Step ${superstep}\.[0-9]+:`).test(title))
     .map((title) => ({
       title,
       url: generateURL(title, superstep)
