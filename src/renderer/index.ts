@@ -44,13 +44,11 @@ function renderTemplateFile(templatePath, scope) {
 }
 
 // Render provided template
-function renderTemplate(template, scope) {
+function renderTemplate(template, scope: any = {}) {
   // Template can either be a string or a compiled template object
   if (typeof template === 'string') {
     template = handlebars.compile(template);
   }
-
-  scope = scope || {};
 
   let viewDir;
 
