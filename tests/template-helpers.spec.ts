@@ -426,13 +426,15 @@ describe('Template Helpers', () => {
     });
   });
 
-  describe('render table of contents', () => {
-    const log = require('./fixtures/logMock.json');
+  describe('table of contents', () => {
+    it('renders correctly', () => {
+      const log = require('./fixtures/logMock.json');
 
-    LocalStorage.setItem('TABLE_OF_CONTENTS', log);
+      LocalStorage.setItem('TABLE_OF_CONTENTS', JSON.stringify(log));
 
-    const view = Renderer.renderTemplate('{{{ toc }}}');
+      const view = Renderer.renderTemplate('{{{ toc }}}');
 
-    expect(view).toMatchSnapshot();
+      expect(view).toMatchSnapshot('render-toc');
+    });
   });
 });
