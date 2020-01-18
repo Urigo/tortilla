@@ -4,6 +4,7 @@ import * as Fs from 'fs-extra';
 import * as Path from 'path';
 import { Renderer } from '../src/renderer';
 import { Translator } from '../src/translator';
+import { localStorage as LocalStorage } from '../src/local-storage';
 
 const Pack = require('../package.json');
 
@@ -423,5 +424,15 @@ describe('Template Helpers', () => {
         expect(view).toContainSameContentAsFile('he/prev-root.md');
       });
     });
+  });
+
+  describe('render table of contents', () => {
+    const log = require('./fixtures/logMock.json');
+
+    LocalStorage.setItem('TABLE_OF_CONTENTS', log);
+
+    const view = Renderer.renderTemplate('{{{ toc }}}');
+
+    expect(view).toMatchSnapshot();
   });
 });
