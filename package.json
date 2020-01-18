@@ -78,7 +78,7 @@
   "devDependencies": {
     "@types/jest": "24.0.13",
     "babel-register": "6.26.0",
-    "copyfiles": "2.1.0",
+    "copyfiles": "2.2.0",
     "escape-string-regexp": "2.0.0",
     "husky": "2.3.0",
     "jest": "24.8.0",
