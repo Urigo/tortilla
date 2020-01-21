@@ -208,4 +208,42 @@ describe('Manual', () => {
       });
     });
   });
+
+  it('should render table of contents', () => {
+    console.log(context.cwd());
+    console.log(context.exec('ls', ['-lah']));
+
+    context.tortilla(['step', 'edit', '--root']);
+
+    context.exec('bash', ['-c', 'echo "{{{ toc }}}" >> .tortilla/manuals/templates/root.tmpl']);
+    context.git(['add', '.']);
+    context.git(['commit', '--amend', '--no-edit']);
+    context.git(['rebase', '--continue']);
+
+    context.exec('touch', ['test-file.js']);
+
+    context.exec('bash', ['-c', 'echo "// 1" >> test-file.js']);
+    context.git(['add', '.']);
+    context.tortilla(['step', 'push', '-m', 'Add First Comment']);
+
+    context.exec('bash', ['-c', 'echo "// 2" >> test-file.js']);
+    context.git(['add', '.']);
+    context.tortilla(['step', 'push', '-m', 'Add Second Comment']);
+
+    context.exec('bash', ['-c', 'echo "// 3" >> test-file.js']);
+    context.git(['add', '.']);
+    context.tortilla(['step', 'push', '-m', 'Add Third Comment']);
+
+    context.exec('bash', ['-c', 'echo "// 4" >> test-file.js']);
+    context.git(['add', '.']);
+    context.tortilla(['step', 'push', '-m', 'Add Fourth Comment']);
+
+    context.tortilla(['step', 'tag', '-m', 'Add Comments']);
+
+    context.tortilla(['manual', 'render', '--all']);
+
+    const manual = context.exec('cat', ['README.md']);
+
+    expect(manual).toMatchSnapshot('toc-render');
+  });
 });

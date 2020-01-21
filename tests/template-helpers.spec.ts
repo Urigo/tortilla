@@ -425,16 +425,4 @@ describe('Template Helpers', () => {
       });
     });
   });
-
-  describe('table of contents', () => {
-    it('renders correctly', () => {
-      const log = require('./fixtures/logMock.json');
-
-      LocalStorage.setItem('TABLE_OF_CONTENTS', JSON.stringify(log));
-
-      const view = Renderer.renderTemplate('{{{ toc }}}');
-
-      expect(view).toMatchSnapshot('render-toc');
-    });
-  });
 });
