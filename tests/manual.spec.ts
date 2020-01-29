@@ -210,9 +210,6 @@ describe('Manual', () => {
   });
 
   it('should render table of contents', () => {
-    console.log(context.cwd());
-    console.log(context.exec('ls', ['-lah']));
-
     context.tortilla(['step', 'edit', '--root']);
 
     context.exec('bash', ['-c', 'echo "{{{ toc }}}" >> .tortilla/manuals/templates/root.tmpl']);
@@ -245,5 +242,20 @@ describe('Manual', () => {
     const manual = context.exec('cat', ['README.md']);
 
     expect(manual).toMatchSnapshot('toc-render');
+  });
+
+  it('should render table of contents in a step as well', () => {
+    context.tortilla(['step', 'edit', '3']);
+
+    context.exec('bash', ['-c', 'echo "{{{ toc }}}" >> .tortilla/manuals/templates/step3.tmpl']);
+    context.git(['add', '.']);
+    context.git(['commit', '--amend', '--no-edit']);
+    context.git(['rebase', '--continue']);
+
+    context.tortilla(['manual', 'render', '--all']);
+
+    const manual = context.exec('cat', ['.tortilla/manuals/views/step3.md']);
+
+    expect(manual).toMatchSnapshot('toc-render-step');
   });
 });

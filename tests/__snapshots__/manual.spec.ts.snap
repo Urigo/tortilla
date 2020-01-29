@@ -1,5 +1,28 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Manual should render table of contents in a step as well: toc-render-step 1`] = `
+"# Step 3: dummy
+
+[//]: # (head-end)
+
+
+Step 3 manual
+- [Step 1: dummy](.tortilla/manuals/views/step1.md#step-1-dummy)
+- [Step 2: dummy](.tortilla/manuals/views/step2.md#step-2-dummy)
+- [Step 3: dummy](.tortilla/manuals/views/step3.md#step-3-dummy)
+
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+| [< Previous Step](step2.md) |
+|:----------------------|
+
+[}]: #"
+`;
+
 exports[`Manual should render table of contents: toc-render 1`] = `
 "# Test tortilla project
 
