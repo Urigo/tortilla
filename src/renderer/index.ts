@@ -44,13 +44,11 @@ function renderTemplateFile(templatePath, scope) {
 }
 
 // Render provided template
-function renderTemplate(template, scope) {
+function renderTemplate(template, scope: any = {}) {
   // Template can either be a string or a compiled template object
   if (typeof template === 'string') {
     template = handlebars.compile(template);
   }
-
-  scope = scope || {};
 
   let viewDir;
 
@@ -93,7 +91,7 @@ function resolveTemplatePath(templatePath) {
 
 // Register a new helper. Registered helpers will be wrapped with a
 // [{]: <helper> (name ...args) [}]: #
-function registerHelper(name, helper, options) {
+function registerHelper(name, helper, options?) {
   options = options || {};
 
   const wrappedHelper = function() {
@@ -312,4 +310,5 @@ import './helpers/diff-step';
 import './helpers/nav-step';
 import './helpers/resolve-path';
 import './helpers/step-message';
+import './helpers/toc';
 import './helpers/translate';

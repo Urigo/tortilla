@@ -4,6 +4,7 @@ import * as Fs from 'fs-extra';
 import * as Path from 'path';
 import { Renderer } from '../src/renderer';
 import { Translator } from '../src/translator';
+import { localStorage as LocalStorage } from '../src/local-storage';
 
 const Pack = require('../package.json');
 

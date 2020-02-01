@@ -52,17 +52,7 @@ Renderer.registerHelper('diffStep', (step, options) => {
     pattern = /.*/;
   }
 
-  let cwd = Git(['rev-parse', '--show-toplevel']);
-  // In case a submodule was specified then all our git commands should be executed
-  // from that module
-  if (hash.module) {
-    // Use the cloned repo that is used for development
-    if (process.env.TORTILLA_SUBDEV) {
-      cwd = Submodule.getCwd(hash.module);
-    } else {
-      cwd = `${cwd}/${hash.module}`;
-    }
-  }
+  const cwd = Git.getCWD(hash.module);
 
   let stepData;
   if (step === 'root') {
