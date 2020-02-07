@@ -1,19 +1,10 @@
-import i18n from 'i18next';
+import i18next from 'i18next';
 import * as Path from 'path';
 import { Paths } from '../paths';
 import { Utils } from '../utils';
 import { Translation } from './translation';
 
-const superTranslate = i18n.t.bind(i18n);
-
-i18n.init({
-  lng: 'en',
-  initImmediate: true,
-  resources: {
-    en: { translation: getTranslationResource('en') },
-    he: { translation: getTranslationResource('he') },
-  },
-});
+// TODO: Convert to async functions/promises.
 
 // Gets a locale and returns the full resource object
 function getTranslationResource(locale) {
@@ -27,7 +18,7 @@ function getTranslationResource(locale) {
     // Static locales
     Path.resolve(paths.tortilla.translator.locales, `${locale}.json`),
     // User defined locales
-    Path.resolve(paths.locales, `${locale}.json`),
+    Path.resolve(paths.locales, `${locale}.json`)
   ];
 
   // Unite all resources and return a single one
@@ -45,6 +36,8 @@ function getTranslationResource(locale) {
   }, {});
 }
 
+const superTranslate = i18next.t.bind(i18next);
+
 // Returns i18n translation wrapped with some extra functionality
 function translate(...args) {
   const result = superTranslate(...args);
@@ -53,23 +46,46 @@ function translate(...args) {
 }
 
 // Any translation would be done using the provided locale
-function scopeLanguage(language, fn) {
+async function scopeLanguage(language, fn) {
   if (!language) {
     return fn();
   }
 
-  const oldLanguage = (i18n as any).translator.language;
+  const oldLanguage = i18next.language;
 
   try {
-    (i18n as any).translator.changeLanguage(language);
+    await i18next.changeLanguage(language);
     fn();
   } finally {
-    (i18n as any).translator.changeLanguage(oldLanguage);
+    await i18next.changeLanguage(oldLanguage);
   }
 }
 
-// Shallow cloning i18n so it won't be changed
-export const Translator = Utils.extend(i18n, {
+export const Translator = Utils.extend(i18next, {
   translate,
-  scopeLanguage,
+  scopeLanguage
 });
+
+/**
+ * Gets a cloned instance of the translator asynchronously.
+ */
+
+let translator = null;
+
+export async function getTranslator() {
+  i18next.isInitialized ||
+    (await i18next.init({
+      lng: 'en',
+      initImmediate: false,
+      resources: {
+        en: { translation: getTranslationResource('en') },
+        he: { translation: getTranslationResource('he') }
+      }
+    }));
+
+  if (!translator) {
+    translator = Utils.extend(i18next, { translate, scopeLanguage });
+  }
+
+  return translator;
+}
