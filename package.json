@@ -85,7 +85,7 @@
     "lint-staged": "8.1.7",
     "prettier": "1.17.1",
     "rimraf": "2.6.3",
-    "ts-jest": "24.0.2",
+    "ts-jest": "24.3.0",
     "tslint": "5.17.0",
     "tslint-config-prettier": "1.18.0",
     "typescript": "3.5.1"
