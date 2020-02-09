@@ -2,9 +2,11 @@ import * as Path from 'path';
 import * as Fs from 'fs-extra';
 import * as EscapeRegExp from 'escape-string-regexp';
 
-declare namespace jest {
-  interface Matchers<R> {
-    toContainSameContentAsFile(path: string): R;
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toContainSameContentAsFile(path: string): R;
+    }
   }
 }
 
