@@ -127,7 +127,7 @@ export function tortillaBeforeAll() {
       .toString()
       .replace(/`/g, '\\`')
       .replace(/\\/g, '\\\\');
-    const scriptFile = Tmp.fileSync({ unsafeCleanup: true });
+    const scriptFile = Tmp.fileSync();
 
     Fs.writeFileSync(
       scriptFile.name,
