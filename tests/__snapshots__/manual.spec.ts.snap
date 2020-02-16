@@ -1,5 +1,136 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Manual render target set to Medium should render all manual files through out history 1`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+<b>║</b> <a href=\\".tortilla/manuals/views/step1.md\\">BEGIN TUTORIAL</a> ⟹
+
+[}]: #"
+`;
+
+exports[`Manual render target set to Medium should render root manual if specified 1`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+<b>║</b> <a href=\\".tortilla/manuals/views/step1.md\\">BEGIN TUTORIAL</a> ⟹
+
+[}]: #"
+`;
+
+exports[`Manual should not create a symlink to root manual if already exists 1`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+| [Begin Tutorial >](.tortilla/manuals/views/step1.md) |
+|----------------------:|
+
+[}]: #"
+`;
+
+exports[`Manual should not create a symlink to root manual if already exists 2`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+| [Begin Tutorial >](.tortilla/manuals/views/step1.md) |
+|----------------------:|
+
+[}]: #"
+`;
+
+exports[`Manual should render all manual files through out history 1`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+| [Begin Tutorial >](.tortilla/manuals/views/step1.md) |
+|----------------------:|
+
+[}]: #"
+`;
+
+exports[`Manual should render root manual if specified and create a symlink to it 1`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+| [Begin Tutorial >](.tortilla/manuals/views/step1.md) |
+|----------------------:|
+
+[}]: #"
+`;
+
+exports[`Manual should render root manual if specified and create a symlink to it 2`] = `
+"# Test tortilla project
+
+[//]: # (head-end)
+
+
+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.
+
+
+[//]: # (foot-start)
+
+[{]: <helper> (navStep)
+
+| [Begin Tutorial >](.tortilla/manuals/views/step1.md) |
+|----------------------:|
+
+[}]: #"
+`;
+
 exports[`Manual should render table of contents in a step as well: toc-render-step 1`] = `
 "# Step 3: dummy
 

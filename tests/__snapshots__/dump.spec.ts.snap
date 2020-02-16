@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dump create() should dump keywords for each chapter 1`] = `
+"[
+  {
+    \\"repoUrl\\": \\"\\",
+    \\"branchName\\": \\"master\\",
+    \\"historyBranchName\\": \\"master-history\\",
+    \\"releases\\": [
+      {
+        \\"releaseVersion\\": \\"0.1.0\\",
+        \\"releaseDate\\": \\"2020-02-16 09:20:34 -0400\\",
+        \\"tagName\\": \\"master@0.1.0\\",
+        \\"tagRevision\\": \\"f5b4b104c997b59815075108bcc02b325a0f2cc5\\",
+        \\"historyRevision\\": \\"2b90d8dfd7f544ae64960f031003f5a612e3c40d\\",
+        \\"changesDiff\\": \\"diff --git a/.gitignore b/.gitignore\\\\nnew file mode 100644\\\\nindex 0000000..5171c54\\\\n--- /dev/null\\\\n+++ b/.gitignore\\\\n@@ -0,0 +1,2 @@\\\\n+node_modules\\\\n+npm-debug.log\\\\n\\\\\\\\ No newline at end of file\\\\ndiff --git a/.tortilla/manuals/templates/root.tmpl b/.tortilla/manuals/templates/root.tmpl\\\\nnew file mode 100644\\\\nindex 0000000..4c874a6\\\\n--- /dev/null\\\\n+++ b/.tortilla/manuals/templates/root.tmpl\\\\n@@ -0,0 +1 @@\\\\n+A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\\\\ndiff --git a/.tortilla/manuals/templates/step1.tmpl b/.tortilla/manuals/templates/step1.tmpl\\\\nnew file mode 100644\\\\nindex 0000000..e69de29\\\\ndiff --git a/.tortilla/manuals/templates/step2.tmpl b/.tortilla/manuals/templates/step2.tmpl\\\\nnew file mode 100644\\\\nindex 0000000..e69de29\\\\ndiff --git a/.tortilla/manuals/templates/step3.tmpl b/.tortilla/manuals/templates/step3.tmpl\\\\nnew file mode 100644\\\\nindex 0000000..e69de29\\\\ndiff --git a/package.json b/package.json\\\\nnew file mode 100644\\\\nindex 0000000..364594f\\\\n--- /dev/null\\\\n+++ b/package.json\\\\n@@ -0,0 +1,11 @@\\\\n+{\\\\n+  \\\\\\"name\\\\\\": \\\\\\"tortilla-project\\\\\\",\\\\n+  \\\\\\"description\\\\\\": \\\\\\"A newly created Tortilla project\\\\\\",\\\\n+  \\\\\\"private\\\\\\": true,\\\\n+  \\\\\\"keywords\\\\\\": [\\\\n+    \\\\\\"tutorial\\\\\\",\\\\n+    \\\\\\"master\\\\\\",\\\\n+    \\\\\\"chapter 3\\\\\\",\\\\n+    \\\\\\"release 1\\\\\\"\\\\n+  ]\\\\n+}\\\\n\\\\\\\\ No newline at end of file\\\\n\\",
+        \\"manuals\\": [
+          {
+            \\"manualTitle\\": \\"Test tortilla project\\",
+            \\"stepRevision\\": \\"e4ae78fef1758aeff0562dc861f0d50c18feb4b9\\",
+            \\"manualView\\": \\"A newly created Tortilla project. For more information, see https://github.com/Urigo/tortilla.\\",
+            \\"keywords\\": []
+          },
+          {
+            \\"manualTitle\\": \\"Step 1: chapter I\\",
+            \\"stepRevision\\": \\"145f3460bc80b731a85b685a9a1293a82ba8b904\\",
+            \\"manualView\\": \\"\\",
+            \\"keywords\\": [
+              \\"tutorial\\",
+              \\"master\\",
+              \\"chapter 1\\",
+              \\"release 1\\"
+            ]
+          },
+          {
+            \\"manualTitle\\": \\"Step 2: chapter II\\",
+            \\"stepRevision\\": \\"33b5b18d943272b8904b2bd933aee233dca7a8bf\\",
+            \\"manualView\\": \\"\\",
+            \\"keywords\\": [
+              \\"tutorial\\",
+              \\"master\\",
+              \\"chapter 2\\",
+              \\"release 1\\"
+            ]
+          },
+          {
+            \\"manualTitle\\": \\"Step 3: chapter III\\",
+            \\"stepRevision\\": \\"c5ca6d382a0dfc787d96b1cdcdbe7c14a5763359\\",
+            \\"manualView\\": \\"\\",
+            \\"keywords\\": [
+              \\"tutorial\\",
+              \\"master\\",
+              \\"chapter 3\\",
+              \\"release 1\\"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
+"
+`;

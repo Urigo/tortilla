@@ -69,7 +69,7 @@ describe('Template Helpers', () => {
 
     it('should render root diff', function() {
       const view = Renderer.renderTemplate('{{{diffStep "root"}}}');
-      expect(view).toContainSameContentAsFile('root.md');
+      expect(view).toMatchSnapshot();
     });
 
     it('should render only the file matching the pattern', function() {

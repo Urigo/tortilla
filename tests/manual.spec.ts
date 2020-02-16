@@ -39,10 +39,10 @@ describe('Manual', () => {
     context.tortilla(['manual', 'render', '--root']);
 
     let manual = context.exec('cat', ['README.md']);
-    expect(manual).toContainSameContentAsFile('manuals/root.md');
+    expect(manual).toMatchSnapshot();
 
     manual = context.exec('cat', ['.tortilla/manuals/views/root.md']);
-    expect(manual).toContainSameContentAsFile('manuals/root.md');
+    expect(manual).toMatchSnapshot();
   });
 
   it('should not create a symlink to root manual if already exists', function() {
@@ -50,17 +50,17 @@ describe('Manual', () => {
     context.tortilla(['manual', 'render', '--root']);
 
     let manual = context.exec('cat', ['README.md']);
-    expect(manual).toContainSameContentAsFile('manuals/root.md');
+    expect(manual).toMatchSnapshot();
 
     manual = context.exec('cat', ['.tortilla/manuals/views/root.md']);
-    expect(manual).toContainSameContentAsFile('manuals/root.md');
+    expect(manual).toMatchSnapshot();
   });
 
   it('should render all manual files through out history', function() {
     context.tortilla(['manual', 'render', '--all']);
 
     let manual = context.exec('cat', ['README.md']);
-    expect(manual).toContainSameContentAsFile('manuals/root.md');
+    expect(manual).toMatchSnapshot();
 
     manual = context.exec('cat', ['.tortilla/manuals/views/step1.md']);
     expect(manual).toContainSameContentAsFile('manuals/step1.md');
@@ -99,14 +99,14 @@ describe('Manual', () => {
       context.tortilla(['manual', 'render', '--root']);
 
       const manual = context.exec('cat', ['.tortilla/manuals/views/medium/root.md']);
-      expect(manual).toContainSameContentAsFile('manuals/medium/root.md');
+      expect(manual).toMatchSnapshot();
     });
 
     it('should render all manual files through out history', function() {
       context.tortilla(['manual', 'render', '--all']);
 
       let manual = context.exec('cat', ['.tortilla/manuals/views/medium/root.md']);
-      expect(manual).toContainSameContentAsFile('manuals/medium/root.md');
+      expect(manual).toMatchSnapshot();
 
       manual = context.exec('cat', ['.tortilla/manuals/views/medium/step1.md']);
       expect(manual).toContainSameContentAsFile('manuals/medium/step1.md');
