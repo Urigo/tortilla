@@ -4,6 +4,8 @@ import { Utils } from '../utils';
 import { Translation } from './translation';
 
 import i18default from 'i18next';
+
+// tslint:disable-next-line:no-var-requires
 const i18n: typeof i18default = require('i18next');
 
 const superTranslate = i18n.t.bind(i18n);
