@@ -271,7 +271,7 @@ describe('Dump', () => {
 
       context.tortilla(['dump', 'create', context.dumpFile]);
 
-      expect(context.readDumpFile()).toMatchSnapshot();
+      expect(context.readDumpFile()).toContainSameContentAsFile('dumps/keywords-dump.json');
     });
   });
 
