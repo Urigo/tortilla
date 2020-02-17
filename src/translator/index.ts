@@ -1,19 +1,24 @@
-import i18n from 'i18next';
 import * as Path from 'path';
 import { Paths } from '../paths';
 import { Utils } from '../utils';
 import { Translation } from './translation';
 
+import i18default from 'i18next';
+
+// tslint:disable-next-line:no-var-requires
+const i18n: typeof i18default = require('i18next');
+
 const superTranslate = i18n.t.bind(i18n);
 
 i18n.init({
   lng: 'en',
-  initImmediate: true,
+  initImmediate: false,
   resources: {
     en: { translation: getTranslationResource('en') },
-    he: { translation: getTranslationResource('he') },
-  },
+    he: { translation: getTranslationResource('he') }
+  }
 });
+
 
 // Gets a locale and returns the full resource object
 function getTranslationResource(locale) {
@@ -27,7 +32,7 @@ function getTranslationResource(locale) {
     // Static locales
     Path.resolve(paths.tortilla.translator.locales, `${locale}.json`),
     // User defined locales
-    Path.resolve(paths.locales, `${locale}.json`),
+    Path.resolve(paths.locales, `${locale}.json`)
   ];
 
   // Unite all resources and return a single one
@@ -71,5 +76,5 @@ function scopeLanguage(language, fn) {
 // Shallow cloning i18n so it won't be changed
 export const Translator = Utils.extend(i18n, {
   translate,
-  scopeLanguage,
+  scopeLanguage
 });
