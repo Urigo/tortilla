@@ -58,7 +58,7 @@
     "fs-extra": "8.1.0",
     "handlebars": "4.7.2",
     "i18next": "19.1.0",
-    "inquirer": "7.0.4",
+    "inquirer": "7.3.3",
     "minimist": "1.2.0",
     "node-localstorage": "2.1.5",
     "open": "7.0.2",
@@ -70,7 +70,7 @@
   "devDependencies": {
     "@types/jest": "25.1.2",
     "@types/fs-extra": "8.0.1",
-    "@types/inquirer": "6.5.0",
+    "@types/inquirer": "7.3.1",
     "@types/minimist": "1.2.0",
     "@types/node": "13.7.0",
     "@types/semver": "7.1.0",
