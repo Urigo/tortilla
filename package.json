@@ -76,7 +76,7 @@
     "@types/semver": "7.1.0",
     "@types/tmp": "0.1.0",
     "babel-register": "6.26.0",
-    "copyfiles": "2.2.0",
+    "copyfiles": "2.4.1",
     "escape-string-regexp": "2.0.0",
     "husky": "4.2.1",
     "jest": "25.1.0",
