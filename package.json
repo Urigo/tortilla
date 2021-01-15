@@ -78,7 +78,7 @@
     "babel-register": "6.26.0",
     "copyfiles": "2.2.0",
     "escape-string-regexp": "2.0.0",
-    "husky": "4.2.1",
+    "husky": "4.3.8",
     "jest": "25.1.0",
     "lint-staged": "10.0.7",
     "prettier": "1.19.1",
