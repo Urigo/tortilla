@@ -61,7 +61,7 @@
     "inquirer": "7.0.4",
     "minimist": "1.2.0",
     "node-localstorage": "2.1.5",
-    "open": "7.0.2",
+    "open": "7.4.2",
     "parse-diff": "0.6.0",
     "readline-sync": "1.4.10",
     "semver": "7.1.2",
