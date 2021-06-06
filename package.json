@@ -60,7 +60,7 @@
     "i18next": "19.1.0",
     "inquirer": "7.0.4",
     "minimist": "1.2.0",
-    "node-localstorage": "2.1.5",
+    "node-localstorage": "2.2.1",
     "open": "7.0.2",
     "parse-diff": "0.6.0",
     "readline-sync": "1.4.10",
