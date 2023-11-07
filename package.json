@@ -71,7 +71,7 @@
     "@types/jest": "25.1.2",
     "@types/fs-extra": "8.0.1",
     "@types/inquirer": "6.5.0",
-    "@types/minimist": "1.2.0",
+    "@types/minimist": "1.2.5",
     "@types/node": "13.7.0",
     "@types/semver": "7.1.0",
     "@types/tmp": "0.1.0",
