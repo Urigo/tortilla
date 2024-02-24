@@ -64,7 +64,7 @@
     "open": "7.0.2",
     "parse-diff": "0.6.0",
     "readline-sync": "1.4.10",
-    "semver": "7.1.2",
+    "semver": "7.6.0",
     "tmp": "0.1.0"
   },
   "devDependencies": {
@@ -73,7 +73,7 @@
     "@types/inquirer": "6.5.0",
     "@types/minimist": "1.2.0",
     "@types/node": "13.7.0",
-    "@types/semver": "7.1.0",
+    "@types/semver": "7.5.8",
     "@types/tmp": "0.1.0",
     "babel-register": "6.26.0",
     "copyfiles": "2.2.0",
