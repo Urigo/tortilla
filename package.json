@@ -65,7 +65,7 @@
     "parse-diff": "0.6.0",
     "readline-sync": "1.4.10",
     "semver": "7.1.2",
-    "tmp": "0.1.0"
+    "tmp": "0.2.6"
   },
   "devDependencies": {
     "@types/jest": "25.1.2",
